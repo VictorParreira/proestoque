@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { Platform } from "react-native";
 import { theme } from "../../src/constants/theme";
 
 export default function TabLayout() {
@@ -12,8 +13,8 @@ export default function TabLayout() {
         tabBarStyle: {
           borderTopWidth: 1,
           borderTopColor: theme.colors.border,
-          height: 60,
-          paddingBottom: 8,
+          height: Platform.OS === "ios" ? 85 : 65,
+          paddingBottom: Platform.OS === "ios" ? 25 : 10,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
@@ -35,6 +36,21 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="produtos"
+        options={{
+          title: "Produtos",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "cube" : "cube-outline"}
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="configuracoes"
         options={{

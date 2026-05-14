@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { theme } from "../../src/constants/theme";
 
-export default function Configuracoes() {
+export default function ConfiguracoesScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
