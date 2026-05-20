@@ -17,7 +17,8 @@ import { useAuth } from "../../src/contexts/AuthContext";
 
 export default function Login() {
   const router = useRouter();
-  const { signIn } = useAuth();
+
+  const { login, isLoading } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +28,7 @@ export default function Login() {
     undefined,
   );
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setErrorEmail(undefined);
     setErrorPassword(undefined);
 
@@ -46,8 +47,8 @@ export default function Login() {
     if (isError) return;
 
     const nameSimulado = email.split("@")[0] || "Usuário";
-    signIn(nameSimulado, email);
-    router.replace("/(tabs)");
+
+    await login(nameSimulado, email);
   };
 
   return (
@@ -71,6 +72,7 @@ export default function Login() {
             value={email}
             onChangeText={setEmail}
             error={errorEmail}
+            editable={!isLoading}
           />
 
           <Text style={styles.label}>Senha</Text>
@@ -81,10 +83,12 @@ export default function Login() {
             value={password}
             onChangeText={setPassword}
             error={errorPassword}
+            editable={!isLoading}
           />
 
           <TouchableOpacity
             onPress={() => router.push("/(auth)/recuperar-senha")}
+            disabled={isLoading}
           >
             <Text style={styles.forgotPassword}>Esqueci minha senha</Text>
           </TouchableOpacity>
@@ -94,11 +98,16 @@ export default function Login() {
             fullWidth
             onPress={handleLogin}
             style={styles.loginButton}
+            loading={isLoading}
+            disabled={isLoading}
           />
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Não tem conta? </Text>
-            <TouchableOpacity onPress={() => router.push("/(auth)/cadastro")}>
+            <TouchableOpacity
+              onPress={() => router.push("/(auth)/cadastro")}
+              disabled={isLoading}
+            >
               <Text style={styles.linkText}>Cadastrar</Text>
             </TouchableOpacity>
           </View>

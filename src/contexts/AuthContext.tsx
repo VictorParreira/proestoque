@@ -1,36 +1,109 @@
-import React, { createContext, useContext, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
-type User = {
+export type User = {
   name: string;
   email: string;
 };
 
-type AuthContextData = {
+export type AuthContextType = {
   user: User | null;
-  signIn: (name: string, email: string) => void;
-  signOut: () => void;
+  token: string | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (name: string, email: string) => Promise<void>;
+  logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const signIn = (name: string, email: string) => {
-    setUser({ name, email });
+  useEffect(() => {
+    async function loadStorageData() {
+      try {
+        const storedUser = await AsyncStorage.getItem("@ProEstoque:user");
+        const storedToken = await AsyncStorage.getItem("@ProEstoque:token");
+
+        if (storedUser && storedToken) {
+          setUser(JSON.parse(storedUser));
+          setToken(storedToken);
+        }
+      } catch (error) {
+        console.error("Erro ao restaurar a sessão:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadStorageData();
+  }, []);
+
+  const login = async (name: string, email: string) => {
+    setIsLoading(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const loggedUser = { name, email };
+      const fakeToken = `fake-jwt-token-${Date.now()}`;
+
+      await AsyncStorage.setItem(
+        "@ProEstoque:user",
+        JSON.stringify(loggedUser),
+      );
+      await AsyncStorage.setItem("@ProEstoque:token", fakeToken);
+
+      setUser(loggedUser);
+      setToken(fakeToken);
+    } catch (error) {
+      console.error("Erro no login:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const signOut = () => {
-    setUser(null);
+  const logout = async () => {
+    setIsLoading(true);
+
+    try {
+      await AsyncStorage.removeItem("@ProEstoque:user");
+      await AsyncStorage.removeItem("@ProEstoque:token");
+
+      setUser(null);
+      setToken(null);
+    } catch (error) {
+      console.error("Erro no logout:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isLoading,
+        isAuthenticated: !!user,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth deve ser usado dentro de um AuthProvider");
+  }
+
+  return context;
 }

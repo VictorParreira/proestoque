@@ -20,6 +20,15 @@ export default function HomeScreen() {
   const alertas = useMemo(() => getProdutosComEstoqueBaixo(), []);
   const valorTotal = useMemo(() => getValorTotalEstoque(), []);
 
+  const saudacao = useMemo(() => {
+    const hora = new Date().getHours();
+    if (hora >= 5 && hora < 12) return "Bom dia";
+    if (hora >= 12 && hora < 18) return "Boa tarde";
+    return "Boa noite";
+  }, []);
+
+  const inicialUsuario = user?.name ? user.name.charAt(0).toUpperCase() : "?";
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 1500);
@@ -69,14 +78,14 @@ export default function HomeScreen() {
       <View style={styles.saudacaoContainer}>
         <View>
           <Text style={styles.saudacaoTitulo}>
-            Olá, {user?.name || "Visitante"}
+            {saudacao}, {user?.name || "Visitante"}
           </Text>
           <Text style={styles.saudacaoSub}>
             {dataHoje.charAt(0).toUpperCase() + dataHoje.slice(1)}
           </Text>
         </View>
         <View style={styles.avatar}>
-          <Ionicons name="person" size={16} color="#fff" />
+          <Text style={styles.avatarText}>{inicialUsuario}</Text>
         </View>
       </View>
 
@@ -195,6 +204,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#7c3aed",
     justifyContent: "center",
     alignItems: "center",
+  },
+  avatarText: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 
   cardsGrid: {
