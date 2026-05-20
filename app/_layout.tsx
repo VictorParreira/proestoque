@@ -1,7 +1,7 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { SplashScreen } from "../src/components/SplashScreen";
 import { AuthProvider, useAuth } from "../src/contexts/AuthContext";
 
 function NavigationGuard({ children }: { children: React.ReactNode }) {
@@ -22,11 +22,7 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
   }, [isLoading, isAuthenticated, segments, router]);
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#2196F3" />
-      </View>
-    );
+    return <SplashScreen />;
   }
 
   return <>{children}</>;

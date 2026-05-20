@@ -18,14 +18,12 @@ import { useAuth } from "../../src/contexts/AuthContext";
 
 export default function Cadastro() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { login, isLoading } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState({
     name: "",
@@ -34,7 +32,7 @@ export default function Cadastro() {
     confirmPassword: "",
   });
 
-  const handleCadastro = () => {
+  const handleCadastro = async () => {
     let newError = { name: "", email: "", password: "", confirmPassword: "" };
     let isError = false;
 
@@ -67,13 +65,8 @@ export default function Cadastro() {
     }
 
     setError({ name: "", email: "", password: "", confirmPassword: "" });
-    setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      signIn(name, email);
-      router.replace("/(tabs)");
-    }, 2000);
+    await login(name, email);
   };
 
   return (
@@ -100,6 +93,7 @@ export default function Cadastro() {
               value={name}
               onChangeText={setName}
               error={error.name}
+              editable={!isLoading}
             />
 
             <Text style={styles.label}>E-mail</Text>
@@ -111,6 +105,7 @@ export default function Cadastro() {
               value={email}
               onChangeText={setEmail}
               error={error.email}
+              editable={!isLoading}
             />
 
             <Text style={styles.label}>Senha</Text>
@@ -121,6 +116,7 @@ export default function Cadastro() {
               value={password}
               onChangeText={setPassword}
               error={error.password}
+              editable={!isLoading}
             />
 
             <Text style={styles.label}>Confirmar senha</Text>
@@ -131,17 +127,22 @@ export default function Cadastro() {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               error={error.confirmPassword}
+              editable={!isLoading}
             />
 
             <Button
               title="Criar Conta"
               fullWidth
-              loading={loading}
+              loading={isLoading}
+              disabled={isLoading}
               onPress={handleCadastro}
               style={styles.submitButton}
             />
 
-            <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
+            <TouchableOpacity
+              onPress={() => router.push("/(auth)/login")}
+              disabled={isLoading}
+            >
               <Text style={styles.linkText}>Já tenho conta</Text>
             </TouchableOpacity>
           </View>
