@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
+  Image,
   ScrollView,
   SectionList,
   StyleSheet,
@@ -12,12 +14,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { theme } from "../../src/constants/theme";
-import {
-  CATEGORIAS_MOCK,
-  Produto,
-  PRODUTOS_MOCK,
-} from "../../src/data/mockData";
+import { theme } from "../../../src/constants/theme";
+import { useProducts } from "../../../src/contexts/ProductsContext";
+import { CATEGORIAS_MOCK, Produto } from "../../../src/data/mockData";
 
 type ViewMode = "lista" | "grade" | "agrupado";
 
@@ -26,13 +25,17 @@ type SecaoProduto = {
   data: Produto[];
 };
 
-export default function ProdutosScreen() {
+export default function ListaProdutos() {
+  const router = useRouter();
+
+  const { products } = useProducts();
+
   const [busca, setBusca] = useState("");
   const [categoriaAtiva, setCategoriaAtiva] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("lista");
 
   const produtosFiltrados = useMemo(() => {
-    return PRODUTOS_MOCK.filter((produto) => {
+    return products.filter((produto) => {
       const coincideBusca = produto.nome
         .toLowerCase()
         .includes(busca.toLowerCase().trim());
@@ -41,7 +44,7 @@ export default function ProdutosScreen() {
         : true;
       return coincideBusca && coincideCategoria;
     });
-  }, [busca, categoriaAtiva]);
+  }, [busca, categoriaAtiva, products]);
 
   const secoesFiltradas = useMemo<SecaoProduto[]>(() => {
     return CATEGORIAS_MOCK.map((cat) => {
@@ -59,15 +62,37 @@ export default function ProdutosScreen() {
     const isGrade = viewMode === "grade";
 
     return (
-      <View style={[styles.produtoCard, isGrade && styles.produtoCardGrade]}>
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() =>
+          router.push({
+            pathname: "/(tabs)/produtos/[id]",
+            params: { id: item.id },
+          })
+        }
+        style={[styles.produtoCard, isGrade && styles.produtoCardGrade]}
+      >
         <View style={isGrade ? styles.produtoInfoGrade : styles.produtoInfo}>
-          <View style={styles.iconeContainer}>
-            <Ionicons
-              name="cube-outline"
-              size={isGrade ? 24 : 20}
-              color={theme.colors.primary}
+          {item.foto ? (
+            <Image
+              source={{ uri: item.foto }}
+              style={[styles.thumbnail, isGrade && styles.thumbnailGrade]}
             />
-          </View>
+          ) : (
+            <View
+              style={[
+                styles.iconeContainer,
+                isGrade && styles.iconeContainerGrade,
+              ]}
+            >
+              <Ionicons
+                name="cube-outline"
+                size={isGrade ? 24 : 20}
+                color={theme.colors.primary}
+              />
+            </View>
+          )}
+
           <View style={isGrade && styles.textosGrade}>
             <Text style={styles.produtoNome} numberOfLines={1}>
               {item.nome}
@@ -77,6 +102,7 @@ export default function ProdutosScreen() {
             </Text>
           </View>
         </View>
+
         {!isGrade && (
           <Ionicons
             name="chevron-forward"
@@ -84,7 +110,7 @@ export default function ProdutosScreen() {
             color={theme.colors.textLight}
           />
         )}
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -235,15 +261,21 @@ export default function ProdutosScreen() {
           ListEmptyComponent={emptyComponent}
         />
       )}
+
+      <TouchableOpacity
+        style={styles.fab}
+        activeOpacity={0.8}
+        onPress={() => router.push("/(tabs)/produtos/novo")}
+      >
+        <Ionicons name="add" size={30} color="#fff" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-
   header: { paddingTop: 10 },
-
   tituloRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -252,7 +284,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   titulo: { fontSize: 28, fontWeight: "bold", color: theme.colors.text },
-
   toggleContainer: {
     flexDirection: "row",
     backgroundColor: "#f3f4f6",
@@ -261,7 +292,6 @@ const styles = StyleSheet.create({
   },
   toggleBtn: { padding: 6, borderRadius: 6 },
   toggleBtnAtivo: { backgroundColor: theme.colors.primary },
-
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
@@ -278,7 +308,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.text,
   },
-
   categoriesScroll: { marginBottom: 15 },
   categoriesContent: { gap: 8, paddingHorizontal: 20 },
   chip: {
@@ -300,7 +329,7 @@ const styles = StyleSheet.create({
   },
   chipTextAtivo: { color: "#fff" },
 
-  listContent: { paddingBottom: 30 },
+  listContent: { paddingBottom: 100 },
 
   produtoCard: {
     flexDirection: "row",
@@ -324,15 +353,32 @@ const styles = StyleSheet.create({
   },
   rowWrapper: { paddingHorizontal: 0 },
 
-  produtoInfo: { flexDirection: "row", alignItems: "center", gap: 15 },
+  produtoInfo: { flexDirection: "row", alignItems: "center", gap: 15, flex: 1 },
   produtoInfoGrade: { alignItems: "center", width: "100%", gap: 10 },
+
   iconeContainer: {
-    width: 45,
-    height: 45,
+    width: 50,
+    height: 50,
     borderRadius: 10,
     backgroundColor: "#f5f3ff",
     justifyContent: "center",
     alignItems: "center",
+  },
+  iconeContainerGrade: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+  thumbnail: {
+    width: 50,
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: "#f3f4f6",
+  },
+  thumbnailGrade: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
 
   textosGrade: { alignItems: "center" },
@@ -376,5 +422,22 @@ const styles = StyleSheet.create({
     color: theme.colors.textLight,
     fontSize: 16,
     textAlign: "center",
+  },
+
+  fab: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
   },
 });
