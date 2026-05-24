@@ -3,42 +3,33 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/contexts/AuthContext";
+import { useProducts } from "../../src/contexts/ProductsContext";
 
 import {
   CATEGORIAS_MOCK,
   formatarPreco,
-  getProdutosComEstoqueBaixo,
-  getValorTotalEstoque,
   Produto,
-  PRODUTOS_MOCK,
 } from "../../src/data/mockData";
 
 export default function HomeScreen() {
   const { user } = useAuth();
+
+  const { products } = useProducts();
   const [refreshing, setRefreshing] = useState(false);
 
-  const alertas = useMemo(() => getProdutosComEstoqueBaixo(), []);
-  const valorTotal = useMemo(() => getValorTotalEstoque(), []);
+  const alertas = useMemo(() => {
+    return products.filter((p) => p.quantidade < p.quantidadeMinima);
+  }, [products]);
 
-  const saudacao = useMemo(() => {
-    const hora = new Date().getHours();
-    if (hora >= 5 && hora < 12) return "Bom dia";
-    if (hora >= 12 && hora < 18) return "Boa tarde";
-    return "Boa noite";
-  }, []);
+  const valorTotal = useMemo(() => {
+    return products.reduce((total, p) => total + p.quantidade * p.preco, 0);
+  }, [products]);
 
-  const inicialUsuario = user?.name ? user.name.charAt(0).toUpperCase() : "?";
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1500);
-  }, []);
-
-  const cardsResumo = [
+  const cardResumo = [
     {
       id: "total",
       titulo: "Produtos",
-      valor: PRODUTOS_MOCK.length,
+      valor: products.length,
       icone: "cube-outline" as const,
       corFundo: "#f5f3ff",
       corIcone: "#7c3aed",
@@ -69,6 +60,20 @@ export default function HomeScreen() {
     },
   ];
 
+  const saudacao = useMemo(() => {
+    const hora = new Date().getHours();
+    if (hora >= 5 && hora < 12) return "Bom dia";
+    if (hora >= 12 && hora < 18) return "Boa tarde";
+    return "Boa noite";
+  }, []);
+
+  const inicialUsuario = user?.name ? user.name.charAt(0).toUpperCase() : "?";
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 1500);
+  }, []);
+
   const dataHoje = new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "full",
   }).format(new Date());
@@ -90,7 +95,7 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.cardsGrid}>
-        {cardsResumo.map((card) => (
+        {cardResumo.map((card) => (
           <View
             key={card.id}
             style={[styles.card, { backgroundColor: card.corFundo }]}
@@ -162,7 +167,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <FlatList
-        data={PRODUTOS_MOCK}
+        data={products.slice(-5).reverse()}
         keyExtractor={(item) => item.id}
         renderItem={renderProduto}
         ListHeaderComponent={DashboardHeader}
@@ -210,7 +215,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-
   cardsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -232,7 +236,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   cardTitulo: { fontSize: 12, color: "#6b7280", marginTop: 2 },
-
   alertasContainer: {
     backgroundColor: "#fef2f2",
     borderColor: "#fecaca",
@@ -259,7 +262,6 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
     fontSize: 12,
   },
-
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
