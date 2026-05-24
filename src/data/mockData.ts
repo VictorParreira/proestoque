@@ -1,8 +1,15 @@
+import type { ThemeType } from "../constants/theme";
+
+export type CategoriaColorToken = Extract<
+  keyof ThemeType["colors"],
+  "primary" | "success" | "info" | "warning" | "error"
+>;
+
 export type Categoria = {
   id: string;
   nome: string;
   icone: any;
-  cor: string;
+  colorToken: CategoriaColorToken;
 };
 
 export type Produto = {
@@ -18,21 +25,36 @@ export type Produto = {
 };
 
 export const CATEGORIAS_MOCK: Categoria[] = [
-  { id: "cat_1", nome: "Bebidas", icone: "cafe-outline", cor: "#7c3aed" },
+  {
+    id: "cat_1",
+    nome: "Bebidas",
+    icone: "cafe-outline",
+    colorToken: "primary",
+  },
   {
     id: "cat_2",
     nome: "Alimentos",
     icone: "fast-food-outline",
-    cor: "#059669",
+    colorToken: "success",
   },
-  { id: "cat_3", nome: "Limpeza", icone: "sparkles-outline", cor: "#0284c7" },
+  {
+    id: "cat_3",
+    nome: "Limpeza",
+    icone: "sparkles-outline",
+    colorToken: "info",
+  },
   {
     id: "cat_4",
     nome: "Eletrônicos",
     icone: "hardware-chip-outline",
-    cor: "#d97706",
+    colorToken: "warning",
   },
-  { id: "cat_5", nome: "Papelaria", icone: "document-outline", cor: "#db2777" },
+  {
+    id: "cat_5",
+    nome: "Papelaria",
+    icone: "document-outline",
+    colorToken: "error",
+  },
 ];
 
 export const PRODUTOS_MOCK: Produto[] = [
@@ -119,7 +141,9 @@ export const PRODUTOS_MOCK: Produto[] = [
 ];
 
 export const getProdutosComEstoqueBaixo = () => {
-  return PRODUTOS_MOCK.filter((p) => p.quantidade < p.quantidadeMinima);
+  return PRODUTOS_MOCK.filter(
+    (produto) => produto.quantidade < produto.quantidadeMinima,
+  );
 };
 
 export const getValorTotalEstoque = () => {
@@ -130,5 +154,8 @@ export const getValorTotalEstoque = () => {
 };
 
 export const formatarPreco = (valor: number) => {
-  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  return valor.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 };

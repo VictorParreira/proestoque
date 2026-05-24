@@ -1,27 +1,31 @@
 import { Stack } from "expo-router";
-import { theme } from "../../../src/constants/theme";
+
+import { useAppTheme } from "../../../src/contexts/ThemeContext";
 
 export default function ProdutosLayout() {
+  const { theme } = useAppTheme();
+
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: "#f9fafb" },
-        headerTintColor: theme.colors.primary,
-        headerTitleStyle: { fontWeight: "700", fontSize: 18 },
-        headerShadowVisible: false,
+        headerShown: false,
+        contentStyle: {
+          backgroundColor: theme.colors.background,
+        },
       }}
     >
-      <Stack.Screen
-        name="index"
-        options={{ title: "Lista de Produtos", headerShown: false }}
-      />
+      <Stack.Screen name="index" />
       <Stack.Screen
         name="novo"
-        options={{ title: "Novo Produto", presentation: "modal" }}
+        options={{
+          presentation: "modal",
+        }}
       />
       <Stack.Screen
         name="[id]"
-        options={{ title: "Editar Produto", presentation: "modal" }}
+        options={{
+          presentation: "modal",
+        }}
       />
     </Stack>
   );

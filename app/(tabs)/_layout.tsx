@@ -1,69 +1,54 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { Platform } from "react-native";
-import { theme } from "../../src/constants/theme";
+import { StatusBar } from "expo-status-bar";
+import React from "react";
 
-export default function TabLayout() {
+import { AppleLiquidTabBar } from "../../src/components/navigation/AppleLiquidTabBar";
+import { useAppTheme } from "../../src/contexts/ThemeContext";
+
+export default function TabsLayout() {
+  const { theme, isDark } = useAppTheme();
+
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.textLight,
-        tabBarStyle: {
-          borderTopWidth: 1,
-          borderTopColor: theme.colors.border,
-          height: Platform.OS === "ios" ? 85 : 65,
-          paddingBottom: Platform.OS === "ios" ? 25 : 10,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontWeight: "600",
-          fontSize: 12,
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "home" : "home-outline"}
-              size={24}
-              color={color}
-            />
-          ),
-        }}
+    <>
+      <StatusBar
+        animated
+        style={isDark ? "light" : "dark"}
+        backgroundColor={theme.colors.background}
       />
 
-      <Tabs.Screen
-        name="produtos"
-        options={{
-          title: "Produtos",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "cube" : "cube-outline"}
-              size={24}
-              color={color}
-            />
-          ),
+      <Tabs
+        tabBar={(props) => <AppleLiquidTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+          sceneStyle: {
+            backgroundColor: theme.colors.background,
+          },
         }}
-      />
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Início",
+            tabBarAccessibilityLabel: "Ir para Início",
+          }}
+        />
 
-      <Tabs.Screen
-        name="configuracoes"
-        options={{
-          title: "Config",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "settings" : "settings-outline"}
-              size={24}
-              color={color}
-            />
-          ),
-        }}
-      />
-    </Tabs>
+        <Tabs.Screen
+          name="produtos"
+          options={{
+            title: "Produtos",
+            tabBarAccessibilityLabel: "Ir para Produtos",
+          }}
+        />
+
+        <Tabs.Screen
+          name="configuracoes"
+          options={{
+            title: "Ajustes",
+            tabBarAccessibilityLabel: "Ir para Ajustes",
+          }}
+        />
+      </Tabs>
+    </>
   );
 }

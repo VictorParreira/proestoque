@@ -14,9 +14,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { theme } from "../../../src/constants/theme";
+import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
-import { CATEGORIAS_MOCK, Produto } from "../../../src/data/mockData";
+import { useAppTheme } from "../../../src/contexts/ThemeContext";
+import { CATEGORIAS_MOCK, type Produto } from "../../../src/data/mockData";
 
 type ViewMode = "lista" | "grade" | "agrupado";
 
@@ -25,33 +26,48 @@ type SecaoProduto = {
   data: Produto[];
 };
 
+const VIEW_MODES: Array<{
+  value: ViewMode;
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+}> = [
+  { value: "lista", icon: "list-outline", label: "Lista" },
+  { value: "grade", icon: "grid-outline", label: "Grade" },
+  { value: "agrupado", icon: "albums-outline", label: "Agrupado" },
+];
+
 export default function ListaProdutos() {
   const router = useRouter();
   const { products } = useProducts();
+  const { theme } = useAppTheme();
 
   const [busca, setBusca] = useState("");
   const [categoriaAtiva, setCategoriaAtiva] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("lista");
 
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const produtosFiltrados = useMemo(() => {
+    const termoBusca = busca.toLowerCase().trim();
+
     return products.filter((produto) => {
-      const coincideBusca = produto.nome
-        .toLowerCase()
-        .includes(busca.toLowerCase().trim());
+      const coincideBusca = produto.nome.toLowerCase().includes(termoBusca);
       const coincideCategoria = categoriaAtiva
         ? produto.categoriaId === categoriaAtiva
         : true;
+
       return coincideBusca && coincideCategoria;
     });
   }, [busca, categoriaAtiva, products]);
 
   const secoesFiltradas = useMemo<SecaoProduto[]>(() => {
-    return CATEGORIAS_MOCK.map((cat) => {
+    return CATEGORIAS_MOCK.map((categoria) => {
       const produtosDaCategoria = produtosFiltrados.filter(
-        (p) => p.categoriaId === cat.id,
+        (produto) => produto.categoriaId === categoria.id,
       );
+
       return {
-        title: cat.nome,
+        title: categoria.nome,
         data: produtosDaCategoria,
       };
     }).filter((secao) => secao.data.length > 0);
@@ -62,41 +78,54 @@ export default function ListaProdutos() {
 
     return (
       <TouchableOpacity
-        activeOpacity={0.7}
+        activeOpacity={0.72}
+        accessibilityRole="button"
+        accessibilityLabel={`Abrir produto ${item.nome}`}
         onPress={() =>
           router.push({
             pathname: "/(tabs)/produtos/[id]",
             params: { id: item.id },
           })
         }
-        style={[styles.produtoCard, isGrade && styles.produtoCardGrade]}
+        style={[styles.productCard, isGrade && styles.productCardGrid]}
       >
-        <View style={isGrade ? styles.produtoInfoGrade : styles.produtoInfo}>
+        <View style={isGrade ? styles.productInfoGrid : styles.productInfo}>
           {item.foto ? (
             <Image
               source={{ uri: item.foto }}
-              style={[styles.thumbnail, isGrade && styles.thumbnailGrade]}
+              style={[styles.thumbnail, isGrade && styles.thumbnailGrid]}
+              accessibilityIgnoresInvertColors
             />
           ) : (
             <View
               style={[
-                styles.iconeContainer,
-                isGrade && styles.iconeContainerGrade,
+                styles.productIconContainer,
+                isGrade && styles.productIconContainerGrid,
               ]}
             >
               <Ionicons
-                name="cube"
+                name="cube-outline"
                 size={isGrade ? 24 : 20}
                 color={theme.colors.primary}
               />
             </View>
           )}
 
-          <View style={isGrade && styles.textosGrade}>
-            <Text style={styles.produtoNome} numberOfLines={1}>
+          <View style={isGrade ? styles.textsGrid : styles.productTexts}>
+            <Text
+              style={[styles.productName, isGrade && styles.productNameGrid]}
+              numberOfLines={1}
+            >
               {item.nome}
             </Text>
-            <Text style={styles.produtoDetalhes}>
+
+            <Text
+              style={[
+                styles.productDetails,
+                isGrade && styles.productDetailsGrid,
+              ]}
+              numberOfLines={1}
+            >
               {item.quantidade} {item.unidade} • R${" "}
               {item.preco.toFixed(2).replace(".", ",")}
             </Text>
@@ -107,7 +136,7 @@ export default function ListaProdutos() {
           <Ionicons
             name="chevron-forward"
             size={18}
-            color={theme.colors.textLight}
+            color={theme.colors.textTertiary}
           />
         )}
       </TouchableOpacity>
@@ -124,80 +153,96 @@ export default function ListaProdutos() {
   const emptyComponent = (
     <View style={styles.emptyContainer}>
       <View style={styles.emptyIconWrapper}>
-        <Ionicons name="search" size={40} color="#9ca3af" />
+        <Ionicons
+          name="search-outline"
+          size={36}
+          color={theme.colors.primary}
+        />
       </View>
+
       <Text style={styles.emptyTitle}>Nenhum produto</Text>
+
       <Text style={styles.emptyText}>
-        Não encontramos resultados para a sua busca.
+        Não encontramos resultados para a busca ou categoria selecionada.
       </Text>
     </View>
   );
 
   const headerProdutos = (
     <View style={styles.header}>
-      <View style={styles.tituloRow}>
-        <Text style={styles.titulo}>Produtos</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>Produtos</Text>
 
         <View style={styles.toggleContainer}>
-          <TouchableOpacity
-            onPress={() => setViewMode("lista")}
-            style={[
-              styles.toggleBtn,
-              viewMode === "lista" && styles.toggleBtnAtivo,
-            ]}
-          >
-            <Ionicons
-              name="list"
-              size={18}
-              color={viewMode === "lista" ? "#fff" : theme.colors.textLight}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setViewMode("grade")}
-            style={[
-              styles.toggleBtn,
-              viewMode === "grade" && styles.toggleBtnAtivo,
-            ]}
-          >
-            <Ionicons
-              name="grid"
-              size={18}
-              color={viewMode === "grade" ? "#fff" : theme.colors.textLight}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setViewMode("agrupado")}
-            style={[
-              styles.toggleBtn,
-              viewMode === "agrupado" && styles.toggleBtnAtivo,
-            ]}
-          >
-            <Ionicons
-              name="albums"
-              size={18}
-              color={viewMode === "agrupado" ? "#fff" : theme.colors.textLight}
-            />
-          </TouchableOpacity>
+          {VIEW_MODES.map((mode) => {
+            const isActive = viewMode === mode.value;
+
+            return (
+              <TouchableOpacity
+                key={mode.value}
+                onPress={() => setViewMode(mode.value)}
+                activeOpacity={0.72}
+                accessibilityRole="button"
+                accessibilityLabel={`Visualização em ${mode.label}`}
+                accessibilityState={{ selected: isActive }}
+                style={[
+                  styles.toggleButton,
+                  isActive && styles.toggleButtonActive,
+                ]}
+              >
+                <Ionicons
+                  name={mode.icon}
+                  size={18}
+                  color={
+                    isActive
+                      ? theme.colors.primaryContrast
+                      : theme.colors.textSecondary
+                  }
+                />
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
       <View style={styles.searchBar}>
-        <Ionicons name="search" size={22} color="#9ca3af" />
+        <Ionicons
+          name="search-outline"
+          size={22}
+          color={theme.colors.textSecondary}
+        />
+
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar produto..."
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={theme.colors.placeholder}
           value={busca}
           onChangeText={setBusca}
           autoCapitalize="none"
           autoCorrect={false}
+          selectionColor={theme.colors.primary}
+          cursorColor={theme.colors.primary}
+          accessibilityLabel="Buscar produto"
         />
+
         {busca.length > 0 && (
           <TouchableOpacity
             onPress={() => setBusca("")}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            hitSlop={{
+              top: theme.hitSlop.md,
+              bottom: theme.hitSlop.md,
+              left: theme.hitSlop.md,
+              right: theme.hitSlop.md,
+            }}
+            activeOpacity={0.72}
+            accessibilityRole="button"
+            accessibilityLabel="Limpar busca"
           >
-            <Ionicons name="close-circle" size={20} color="#9ca3af" />
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={theme.colors.textSecondary}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -209,33 +254,39 @@ export default function ListaProdutos() {
         contentContainerStyle={styles.categoriesContent}
       >
         <TouchableOpacity
-          style={[styles.chip, !categoriaAtiva && styles.chipAtivo]}
+          style={[styles.chip, !categoriaAtiva && styles.chipActive]}
           onPress={() => setCategoriaAtiva(null)}
-          activeOpacity={0.7}
+          activeOpacity={0.72}
+          accessibilityRole="button"
+          accessibilityState={{ selected: !categoriaAtiva }}
         >
           <Text
-            style={[styles.chipText, !categoriaAtiva && styles.chipTextAtivo]}
+            style={[styles.chipText, !categoriaAtiva && styles.chipTextActive]}
           >
             Todos
           </Text>
         </TouchableOpacity>
-        {CATEGORIAS_MOCK.map((cat) => (
-          <TouchableOpacity
-            key={cat.id}
-            style={[styles.chip, categoriaAtiva === cat.id && styles.chipAtivo]}
-            onPress={() => setCategoriaAtiva(cat.id)}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[
-                styles.chipText,
-                categoriaAtiva === cat.id && styles.chipTextAtivo,
-              ]}
+
+        {CATEGORIAS_MOCK.map((categoria) => {
+          const isActive = categoriaAtiva === categoria.id;
+
+          return (
+            <TouchableOpacity
+              key={categoria.id}
+              style={[styles.chip, isActive && styles.chipActive]}
+              onPress={() => setCategoriaAtiva(categoria.id)}
+              activeOpacity={0.72}
+              accessibilityRole="button"
+              accessibilityState={{ selected: isActive }}
             >
-              {cat.nome}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[styles.chipText, isActive && styles.chipTextActive]}
+              >
+                {categoria.nome}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -251,8 +302,9 @@ export default function ListaProdutos() {
           renderItem={renderProduto}
           renderSectionHeader={renderSectionHeader}
           contentContainerStyle={styles.listContent}
-          stickySectionHeadersEnabled={true}
+          stickySectionHeadersEnabled
           ListEmptyComponent={emptyComponent}
+          showsVerticalScrollIndicator={false}
         />
       ) : (
         <FlatList
@@ -266,235 +318,291 @@ export default function ListaProdutos() {
           }
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={emptyComponent}
+          showsVerticalScrollIndicator={false}
         />
       )}
-
-      <TouchableOpacity
-        style={styles.fab}
-        activeOpacity={0.8}
-        onPress={() => router.push("/(tabs)/produtos/novo")}
-      >
-        <Ionicons name="add" size={32} color="#fff" />
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
+const createStyles = (theme: ThemeType) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
 
-  header: {
-    paddingTop: 16,
-    backgroundColor: theme.colors.background,
-  },
+    header: {
+      paddingTop: theme.spacing.md,
+      backgroundColor: theme.colors.background,
+    },
 
-  tituloRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-    paddingHorizontal: 24,
-  },
-  titulo: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: theme.colors.text,
-    letterSpacing: -0.5,
-  },
-  toggleContainer: {
-    flexDirection: "row",
-    backgroundColor: "#e5e7eb",
-    borderRadius: 12,
-    padding: 4,
-  },
-  toggleBtn: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
-  toggleBtnAtivo: {
-    backgroundColor: theme.colors.primary,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+    titleRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: theme.spacing.md + theme.spacing.xs,
+      paddingHorizontal: theme.spacing.lg,
+    },
 
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 56,
-    marginBottom: 20,
-    marginHorizontal: 24,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
-    color: theme.colors.text,
-  },
+    title: {
+      fontSize: theme.typography.largeTitle.fontSize,
+      lineHeight: theme.typography.largeTitle.lineHeight,
+      fontWeight: theme.typography.largeTitle.fontWeight,
+      color: theme.colors.text,
+      letterSpacing: -0.7,
+    },
 
-  categoriesScroll: { marginBottom: 16 },
-  categoriesContent: { gap: 10, paddingHorizontal: 24 },
-  chip: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  chipAtivo: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  chipText: {
-    fontSize: 14,
-    color: theme.colors.textLight,
-    fontWeight: "600",
-  },
-  chipTextAtivo: { color: "#ffffff", fontWeight: "700" },
+    toggleContainer: {
+      flexDirection: "row",
+      backgroundColor: theme.colors.surfaceSecondary,
+      borderRadius: theme.borderRadius.sm,
+      padding: theme.spacing.xs,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+    },
 
-  listContent: { paddingBottom: 120, paddingTop: 8 },
+    toggleButton: {
+      minWidth: 36,
+      minHeight: 32,
+      paddingVertical: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.sm,
+      borderRadius: theme.borderRadius.xs,
+      alignItems: "center",
+      justifyContent: "center",
+    },
 
-  produtoCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    marginHorizontal: 24,
-    marginBottom: 12,
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  produtoCardGrade: {
-    flex: 1,
-    marginHorizontal: 12,
-    marginBottom: 16,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: "#ffffff",
-    alignItems: "flex-start",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  rowWrapper: { paddingHorizontal: 12 },
+    toggleButtonActive: {
+      backgroundColor: theme.colors.primary,
+      shadowColor: theme.shadow.sm.shadowColor,
+      shadowOffset: theme.shadow.sm.shadowOffset,
+      shadowOpacity: theme.shadow.sm.shadowOpacity,
+      shadowRadius: theme.shadow.sm.shadowRadius,
+      elevation: theme.shadow.sm.elevation,
+    },
 
-  produtoInfo: { flexDirection: "row", alignItems: "center", gap: 16, flex: 1 },
-  produtoInfoGrade: { alignItems: "center", width: "100%", gap: 12 },
+    searchBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      minHeight: 56,
+      backgroundColor: theme.colors.inputBackground,
+      borderRadius: theme.borderRadius.md,
+      paddingHorizontal: theme.spacing.md,
+      marginBottom: theme.spacing.md + theme.spacing.xs,
+      marginHorizontal: theme.spacing.lg,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.inputBorder,
+    },
 
-  iconeContainer: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
-    backgroundColor: "#f5f3ff",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  iconeContainerGrade: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-  },
-  thumbnail: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
-    backgroundColor: theme.colors.background,
-  },
-  thumbnailGrade: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
+    searchInput: {
+      flex: 1,
+      marginLeft: theme.spacing.sm + theme.spacing.xs,
+      fontSize: theme.typography.callout.fontSize,
+      lineHeight: theme.typography.callout.lineHeight,
+      color: theme.colors.text,
+      paddingVertical: 0,
+    },
 
-  textosGrade: { alignItems: "center", marginTop: 4 },
-  produtoNome: { fontSize: 16, fontWeight: "700", color: theme.colors.text },
-  produtoDetalhes: {
-    fontSize: 13,
-    color: theme.colors.textLight,
-    marginTop: 4,
-    fontWeight: "500",
-  },
+    categoriesScroll: {
+      marginBottom: theme.spacing.md,
+    },
 
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "800",
-    color: theme.colors.primary,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  sectionCount: {
-    fontSize: 12,
-    color: theme.colors.textLight,
-    fontWeight: "700",
-  },
+    categoriesContent: {
+      gap: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.lg,
+    },
 
-  emptyContainer: {
-    alignItems: "center",
-    marginTop: 60,
-    paddingHorizontal: 32,
-  },
-  emptyIconWrapper: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#e5e7eb",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: theme.colors.text,
-    marginBottom: 8,
-  },
-  emptyText: {
-    color: theme.colors.textLight,
-    fontSize: 15,
-    textAlign: "center",
-    lineHeight: 22,
-  },
+    chip: {
+      paddingHorizontal: theme.spacing.md + theme.spacing.xs,
+      paddingVertical: theme.spacing.sm + theme.spacing.xxs,
+      borderRadius: theme.borderRadius.pill,
+      backgroundColor: theme.colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+    },
 
-  fab: {
-    position: "absolute",
-    bottom: 24,
-    right: 24,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-});
+    chipActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+
+    chipText: {
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      color: theme.colors.textSecondary,
+      fontWeight: "600",
+    },
+
+    chipTextActive: {
+      color: theme.colors.primaryContrast,
+      fontWeight: "700",
+    },
+
+    listContent: {
+      paddingTop: theme.spacing.sm,
+      paddingBottom: 148,
+    },
+
+    rowWrapper: {
+      paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+    },
+
+    productCard: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.md,
+      marginHorizontal: theme.spacing.lg,
+      marginBottom: theme.spacing.sm + theme.spacing.xs,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+      shadowColor: theme.shadow.sm.shadowColor,
+      shadowOffset: theme.shadow.sm.shadowOffset,
+      shadowOpacity: theme.shadow.sm.shadowOpacity,
+      shadowRadius: theme.shadow.sm.shadowRadius,
+      elevation: theme.shadow.sm.elevation,
+    },
+
+    productCardGrid: {
+      flex: 1,
+      marginHorizontal: theme.spacing.sm + theme.spacing.xs,
+      marginBottom: theme.spacing.md,
+      padding: theme.spacing.md,
+      alignItems: "center",
+    },
+
+    productInfo: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing.md,
+    },
+
+    productInfoGrid: {
+      width: "100%",
+      alignItems: "center",
+      gap: theme.spacing.sm + theme.spacing.xs,
+    },
+
+    productIconContainer: {
+      width: 52,
+      height: 52,
+      borderRadius: theme.borderRadius.sm,
+      backgroundColor: theme.colors.primarySubtle,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    productIconContainerGrid: {
+      width: 64,
+      height: 64,
+      borderRadius: theme.borderRadius.pill,
+    },
+
+    thumbnail: {
+      width: 52,
+      height: 52,
+      borderRadius: theme.borderRadius.sm,
+      backgroundColor: theme.colors.backgroundSecondary,
+    },
+
+    thumbnailGrid: {
+      width: 80,
+      height: 80,
+      borderRadius: theme.borderRadius.pill,
+    },
+
+    productTexts: {
+      flex: 1,
+    },
+
+    textsGrid: {
+      width: "100%",
+      alignItems: "center",
+      marginTop: theme.spacing.xs,
+    },
+
+    productName: {
+      fontSize: theme.typography.callout.fontSize,
+      lineHeight: theme.typography.callout.lineHeight,
+      fontWeight: "700",
+      color: theme.colors.text,
+    },
+
+    productNameGrid: {
+      textAlign: "center",
+    },
+
+    productDetails: {
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      color: theme.colors.textSecondary,
+      marginTop: theme.spacing.xs,
+      fontWeight: "500",
+    },
+
+    productDetailsGrid: {
+      textAlign: "center",
+    },
+
+    sectionHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: theme.colors.background,
+      paddingHorizontal: theme.spacing.lg,
+      paddingVertical: theme.spacing.sm + theme.spacing.xs,
+      marginBottom: theme.spacing.sm,
+    },
+
+    sectionTitle: {
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "800",
+      color: theme.colors.primary,
+      textTransform: "uppercase",
+      letterSpacing: 0.6,
+    },
+
+    sectionCount: {
+      fontSize: theme.typography.caption1.fontSize,
+      lineHeight: theme.typography.caption1.lineHeight,
+      color: theme.colors.textSecondary,
+      fontWeight: "700",
+    },
+
+    emptyContainer: {
+      alignItems: "center",
+      marginTop: theme.spacing["3xl"],
+      paddingHorizontal: theme.spacing.xl,
+    },
+
+    emptyIconWrapper: {
+      width: 80,
+      height: 80,
+      borderRadius: theme.borderRadius.pill,
+      backgroundColor: theme.colors.primarySubtle,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: theme.spacing.md,
+    },
+
+    emptyTitle: {
+      fontSize: theme.typography.headline.fontSize,
+      lineHeight: theme.typography.headline.lineHeight,
+      fontWeight: theme.typography.headline.fontWeight,
+      color: theme.colors.text,
+      marginBottom: theme.spacing.sm,
+      textAlign: "center",
+    },
+
+    emptyText: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.subheadline.fontSize,
+      lineHeight: theme.typography.subheadline.lineHeight,
+      textAlign: "center",
+    },
+  });

@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Animated, Dimensions, StyleSheet, Text, View } from "react-native";
-import { theme } from "../constants/theme";
+
+import type { ThemeType } from "../constants/theme";
+import { useAppTheme } from "../contexts/ThemeContext";
 import { LogoProEstoque } from "./LogoProEstoque";
 
 const { width } = Dimensions.get("window");
@@ -10,6 +12,9 @@ type SplashScreenProps = {
 };
 
 export function SplashScreen({ onComplete }: SplashScreenProps) {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const progress = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -26,11 +31,9 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         useNativeDriver: false,
       }),
     ]).start(() => {
-      if (onComplete) {
-        onComplete();
-      }
+      onComplete?.();
     });
-  }, [progress, opacity, onComplete]);
+  }, [opacity, progress, onComplete]);
 
   const progressWidth = progress.interpolate({
     inputRange: [0, 1],
@@ -57,47 +60,58 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9fafb",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  content: {
-    alignItems: "center",
-    transform: [{ translateY: -30 }],
-  },
-  tagline: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#6b7280",
-    marginTop: 12,
-    letterSpacing: 0.3,
-  },
-  bottomContainer: {
-    position: "absolute",
-    bottom: 60,
-    width: width * 0.6,
-    alignItems: "center",
-  },
-  progressBarContainer: {
-    width: "100%",
-    height: 8,
-    backgroundColor: "#e5e7eb",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  progressBar: {
-    height: "100%",
-    backgroundColor: theme.colors.primary,
-    borderRadius: 4,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: "#9ca3af",
-    fontWeight: "600",
-    letterSpacing: 0.5,
-  },
-});
+const createStyles = (theme: ThemeType) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    content: {
+      alignItems: "center",
+      transform: [{ translateY: -30 }],
+    },
+
+    tagline: {
+      marginTop: theme.spacing.sm + theme.spacing.xs,
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.subheadline.fontSize,
+      lineHeight: theme.typography.subheadline.lineHeight,
+      fontWeight: "500",
+      letterSpacing: 0.2,
+      textAlign: "center",
+    },
+
+    bottomContainer: {
+      position: "absolute",
+      bottom: 60,
+      width: width * 0.6,
+      alignItems: "center",
+    },
+
+    progressBarContainer: {
+      width: "100%",
+      height: 8,
+      backgroundColor: theme.colors.surfaceSecondary,
+      borderRadius: theme.borderRadius.pill,
+      overflow: "hidden",
+    },
+
+    progressBar: {
+      height: "100%",
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.borderRadius.pill,
+    },
+
+    loadingText: {
+      marginTop: theme.spacing.sm + theme.spacing.xs,
+      color: theme.colors.textTertiary,
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "600",
+      letterSpacing: 0.2,
+      textAlign: "center",
+    },
+  });

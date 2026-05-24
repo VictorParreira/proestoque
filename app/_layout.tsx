@@ -1,30 +1,42 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
 import { SplashScreen } from "../src/components/SplashScreen";
+import type { ThemeType } from "../src/constants/theme";
 import { AuthProvider, useAuth } from "../src/contexts/AuthContext";
 import { ProductsProvider } from "../src/contexts/ProductsContext";
+import { ThemeProvider, useAppTheme } from "../src/contexts/ThemeContext";
 
 function NavigationGuard({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const [isSplashAnimationDone, setIsSplashAnimationDone] = useState(false);
 
   useEffect(() => {
     if (isLoading || !isSplashAnimationDone) return;
 
-    setTimeout(() => {
+    const redirectTimeout = setTimeout(() => {
       const inAuthGroup = segments[0] === "(auth)";
 
       if (!isAuthenticated && !inAuthGroup) {
         router.replace("/(auth)/login");
-      } else if (isAuthenticated && inAuthGroup) {
+        return;
+      }
+
+      if (isAuthenticated && inAuthGroup) {
         router.replace("/(tabs)");
       }
     }, 1);
+
+    return () => clearTimeout(redirectTimeout);
   }, [isLoading, isAuthenticated, segments, router, isSplashAnimationDone]);
 
   const isAppReady = !isLoading && isSplashAnimationDone;
@@ -32,6 +44,7 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
   return (
     <View style={styles.container}>
       {children}
+
       {!isAppReady && (
         <View style={styles.splashOverlay}>
           <SplashScreen onComplete={() => setIsSplashAnimationDone(true)} />
@@ -41,28 +54,65 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AppNavigator() {
+  const { isDark, theme } = useAppTheme();
+
+  return (
+    <>
+      <StatusBar
+        animated
+        style={isDark ? "light" : "dark"}
+        backgroundColor={theme.colors.background}
+      />
+
+      <NavigationGuard>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: {
+              backgroundColor: theme.colors.background,
+            },
+          }}
+        >
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="index" />
+        </Stack>
+      </NavigationGuard>
+    </>
+  );
+}
+
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <ProductsProvider>
-        <StatusBar style="auto" />
-        <NavigationGuard>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="index" />
-          </Stack>
-        </NavigationGuard>
-      </ProductsProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <ThemeProvider>
+        <AuthProvider>
+          <ProductsProvider>
+            <AppNavigator />
+          </ProductsProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9fafb" },
-  splashOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 999,
-    elevation: 999,
+  root: {
+    flex: 1,
   },
 });
+
+const createStyles = (theme: ThemeType) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+
+    splashOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      zIndex: 999,
+      elevation: 999,
+    },
+  });

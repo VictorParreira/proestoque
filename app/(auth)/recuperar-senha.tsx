@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,16 +11,21 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Button } from "../../src/components/Button";
 import { Input } from "../../src/components/Input";
 import { LogoProEstoque } from "../../src/components/LogoProEstoque";
-import { theme } from "../../src/constants/theme";
+import type { ThemeType } from "../../src/constants/theme";
+import { useAppTheme } from "../../src/contexts/ThemeContext";
 
 export default function RecuperarSenha() {
   const router = useRouter();
+  const { theme } = useAppTheme();
+
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const [email, setEmail] = useState("");
   const [enviado, setEnviado] = useState(false);
-
   const [errorEmail, setErrorEmail] = useState<string | undefined>(undefined);
 
   const handleEnviar = () => {
@@ -35,7 +40,7 @@ export default function RecuperarSenha() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -43,10 +48,16 @@ export default function RecuperarSenha() {
         <View style={styles.topBar}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
-            activeOpacity={0.7}
+            onPress={() => router.replace("/(auth)/login")}
+            activeOpacity={0.72}
+            accessibilityRole="button"
+            accessibilityLabel="Voltar"
           >
-            <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={theme.colors.primary}
+            />
           </TouchableOpacity>
         </View>
 
@@ -57,7 +68,9 @@ export default function RecuperarSenha() {
         >
           <View style={styles.header}>
             <LogoProEstoque size="md" />
+
             <Text style={styles.title}>Recuperar senha</Text>
+
             <Text style={styles.description}>
               Informe seu e-mail e enviaremos um link seguro para redefinir sua
               senha.
@@ -68,17 +81,21 @@ export default function RecuperarSenha() {
             {!enviado ? (
               <View style={styles.form}>
                 <Text style={styles.label}>E-mail de recuperação</Text>
+
                 <Input
-                  icon="mail"
+                  icon="mail-outline"
                   placeholder="Digite seu e-mail cadastrado"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  autoCorrect={false}
                   value={email}
                   onChangeText={setEmail}
                   error={errorEmail}
+                  accessibilityLabel="E-mail de recuperação"
                 />
+
                 <Button
-                  title="Enviar Link"
+                  title="Enviar link"
                   fullWidth
                   onPress={handleEnviar}
                   style={styles.actionButton}
@@ -88,21 +105,24 @@ export default function RecuperarSenha() {
               <View style={styles.successContainer}>
                 <View style={styles.successIconWrapper}>
                   <Ionicons
-                    name="checkmark-circle"
+                    name="checkmark-circle-outline"
                     size={56}
                     color={theme.colors.success}
                   />
                 </View>
-                <Text style={styles.successTitle}>E-mail enviado!</Text>
+
+                <Text style={styles.successTitle}>E-mail enviado</Text>
+
                 <Text style={styles.successText}>
                   Enviamos as instruções de recuperação para sua caixa de
                   entrada.
                 </Text>
+
                 <Button
-                  title="Voltar ao Login"
+                  title="Voltar ao login"
                   variant="outline"
                   fullWidth
-                  onPress={() => router.push("/(auth)/login")}
+                  onPress={() => router.replace("/(auth)/login")}
                   style={styles.actionButton}
                 />
               </View>
@@ -114,112 +134,126 @@ export default function RecuperarSenha() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  keyboardView: {
-    flex: 1,
-  },
+const createStyles = (theme: ThemeType) =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
 
-  topBar: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#ffffff",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
-  },
+    keyboardView: {
+      flex: 1,
+    },
 
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 40,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: theme.colors.text,
-    marginTop: 20,
-    letterSpacing: -0.5,
-  },
-  description: {
-    fontSize: 15,
-    color: theme.colors.textLight,
-    textAlign: "center",
-    marginTop: 8,
-    lineHeight: 22,
-    paddingHorizontal: 10,
-  },
+    topBar: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.md,
+      paddingBottom: theme.spacing.sm,
+    },
 
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 24,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.04,
-    shadowRadius: 24,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
-  },
-  form: {
-    width: "100%",
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#4b5563",
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  actionButton: {
-    marginTop: 16,
-  },
+    backButton: {
+      width: 44,
+      height: 44,
+      borderRadius: theme.borderRadius.pill,
+      backgroundColor: theme.colors.primarySubtle,
+      justifyContent: "center",
+      alignItems: "center",
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+    },
 
-  successContainer: {
-    alignItems: "center",
-    paddingVertical: 10,
-  },
-  successIconWrapper: {
-    marginBottom: 16,
-    backgroundColor: "#ecfdf5",
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  successTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: theme.colors.text,
-    marginBottom: 8,
-  },
-  successText: {
-    color: theme.colors.textLight,
-    fontSize: 15,
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 22,
-  },
-});
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.md,
+      paddingBottom: theme.spacing["2xl"],
+    },
+
+    header: {
+      alignItems: "center",
+      marginBottom: theme.spacing.xl,
+    },
+
+    title: {
+      marginTop: theme.spacing.lg,
+      color: theme.colors.text,
+      fontSize: theme.typography.title1.fontSize,
+      lineHeight: theme.typography.title1.lineHeight,
+      fontWeight: theme.typography.title1.fontWeight,
+      letterSpacing: -0.5,
+      textAlign: "center",
+    },
+
+    description: {
+      maxWidth: 320,
+      marginTop: theme.spacing.sm,
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.subheadline.fontSize,
+      lineHeight: theme.typography.subheadline.lineHeight,
+      fontWeight: "500",
+      textAlign: "center",
+    },
+
+    card: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.borderRadius.lg,
+      padding: theme.spacing.lg,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+      shadowColor: theme.shadow.md.shadowColor,
+      shadowOffset: theme.shadow.md.shadowOffset,
+      shadowOpacity: theme.shadow.md.shadowOpacity,
+      shadowRadius: theme.shadow.md.shadowRadius,
+      elevation: theme.shadow.md.elevation,
+    },
+
+    form: {
+      width: "100%",
+    },
+
+    label: {
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "700",
+      color: theme.colors.textSecondary,
+      marginBottom: theme.spacing.sm,
+      marginLeft: theme.spacing.xs,
+    },
+
+    actionButton: {
+      marginTop: theme.spacing.md,
+    },
+
+    successContainer: {
+      alignItems: "center",
+      paddingVertical: theme.spacing.sm,
+    },
+
+    successIconWrapper: {
+      width: 80,
+      height: 80,
+      borderRadius: theme.borderRadius.pill,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: theme.spacing.md,
+      backgroundColor: theme.colors.successSoft,
+    },
+
+    successTitle: {
+      color: theme.colors.text,
+      fontSize: theme.typography.title2.fontSize,
+      lineHeight: theme.typography.title2.lineHeight,
+      fontWeight: theme.typography.title2.fontWeight,
+      textAlign: "center",
+      marginBottom: theme.spacing.sm,
+    },
+
+    successText: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.subheadline.fontSize,
+      lineHeight: theme.typography.subheadline.lineHeight,
+      fontWeight: "500",
+      textAlign: "center",
+      marginBottom: theme.spacing.lg,
+    },
+  });

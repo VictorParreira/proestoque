@@ -11,99 +11,135 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { theme } from "../../src/constants/theme";
+
+import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useProducts } from "../../src/contexts/ProductsContext";
-
+import { useAppTheme } from "../../src/contexts/ThemeContext";
 import {
   CATEGORIAS_MOCK,
   formatarPreco,
-  Produto,
+  type Produto,
 } from "../../src/data/mockData";
+
+type SummaryCard = {
+  id: string;
+  title: string;
+  value: string | number;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconBackgroundColor: string;
+  iconColor: string;
+};
 
 export default function HomeScreen() {
   const { user } = useAuth();
   const { products } = useProducts();
-  const [refreshing, setRefreshing] = useState(false);
+  const { theme } = useAppTheme();
 
+  const [refreshing, setRefreshing] = useState(false);
   const [expandido, setExpandido] = useState(false);
 
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const alertas = useMemo(() => {
-    return products.filter((p) => p.quantidade < p.quantidadeMinima);
+    return products.filter(
+      (product) => product.quantidade < product.quantidadeMinima,
+    );
   }, [products]);
 
   const valorTotal = useMemo(() => {
-    return products.reduce((total, p) => total + p.quantidade * p.preco, 0);
+    return products.reduce(
+      (total, product) => total + product.quantidade * product.preco,
+      0,
+    );
   }, [products]);
 
-  const cardResumo = [
-    {
-      id: "total",
-      titulo: "Produtos",
-      valor: products.length,
-      icone: "cube-outline" as const,
-      corFundo: "#f5f3ff",
-      corIcone: theme.colors.primary,
-    },
-    {
-      id: "alertas",
-      titulo: "Alertas",
-      valor: alertas.length,
-      icone: "alert-circle-outline" as const,
-      corFundo: "#fef2f2",
-      corIcone: theme.colors.error,
-    },
-    {
-      id: "categorias",
-      titulo: "Categorias",
-      valor: CATEGORIAS_MOCK.length,
-      icone: "grid-outline" as const,
-      corFundo: "#eff6ff",
-      corIcone: "#2563eb",
-    },
-    {
-      id: "valor",
-      titulo: "Em Estoque",
-      valor: formatarPreco(valorTotal),
-      icone: "cash-outline" as const,
-      corFundo: "#ecfdf5",
-      corIcone: theme.colors.success,
-    },
-  ];
+  const cardResumo = useMemo<SummaryCard[]>(
+    () => [
+      {
+        id: "total",
+        title: "Produtos",
+        value: products.length,
+        icon: "cube-outline",
+        iconBackgroundColor: theme.colors.primarySubtle,
+        iconColor: theme.colors.primary,
+      },
+      {
+        id: "alertas",
+        title: "Alertas",
+        value: alertas.length,
+        icon: "alert-circle-outline",
+        iconBackgroundColor: theme.colors.errorSoft,
+        iconColor: theme.colors.error,
+      },
+      {
+        id: "categorias",
+        title: "Categorias",
+        value: CATEGORIAS_MOCK.length,
+        icon: "grid-outline",
+        iconBackgroundColor: theme.colors.infoSoft,
+        iconColor: theme.colors.info,
+      },
+      {
+        id: "valor",
+        title: "Em Estoque",
+        value: formatarPreco(valorTotal),
+        icon: "cash-outline",
+        iconBackgroundColor: theme.colors.successSoft,
+        iconColor: theme.colors.success,
+      },
+    ],
+    [alertas.length, products.length, theme, valorTotal],
+  );
 
   const saudacao = useMemo(() => {
     const hora = new Date().getHours();
+
     if (hora >= 5 && hora < 12) return "Bom dia";
     if (hora >= 12 && hora < 18) return "Boa tarde";
+
     return "Boa noite";
   }, []);
 
-  const inicialUsuario = user?.name ? user.name.charAt(0).toUpperCase() : "?";
+  const dataHoje = useMemo(() => {
+    const formattedDate = new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "full",
+    }).format(new Date());
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1500);
+    return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
   }, []);
 
-  const dataHoje = new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "full",
-  }).format(new Date());
+  const inicialUsuario = user?.name ? user.name.charAt(0).toUpperCase() : "?";
 
   const alertasExibidos = useMemo(() => {
     return expandido ? alertas : alertas.slice(0, 5);
   }, [alertas, expandido]);
 
+  const recentProducts = useMemo(() => {
+    return products.slice(-5).reverse();
+  }, [products]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+
+    const refreshTimeout = setTimeout(() => {
+      setRefreshing(false);
+    }, 900);
+
+    return () => clearTimeout(refreshTimeout);
+  }, []);
+
   const DashboardHeader = () => (
     <View style={styles.headerContainer}>
-      <View style={styles.saudacaoContainer}>
-        <View style={styles.saudacaoTextContainer}>
-          <Text style={styles.saudacaoTitulo} numberOfLines={2}>
+      <View style={styles.greetingContainer}>
+        <View style={styles.greetingTextContainer}>
+          <Text style={styles.greetingTitle} numberOfLines={2}>
             {saudacao}, {user?.name || "Visitante"}
           </Text>
-          <Text style={styles.saudacaoSub}>
-            {dataHoje.charAt(0).toUpperCase() + dataHoje.slice(1)}
-          </Text>
+
+          <Text style={styles.greetingSubtitle}>{dataHoje}</Text>
         </View>
+
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{inicialUsuario}</Text>
         </View>
@@ -111,25 +147,31 @@ export default function HomeScreen() {
 
       <View style={styles.cardsGrid}>
         {cardResumo.map((card) => (
-          <View key={card.id} style={styles.card}>
+          <View
+            key={card.id}
+            style={styles.card}
+            accessibilityRole="summary"
+            accessibilityLabel={`${card.title}: ${card.value}`}
+          >
             <View style={styles.cardHeader}>
-              <Text style={styles.cardTitulo}>{card.titulo}</Text>
+              <Text style={styles.cardTitle}>{card.title}</Text>
+
               <View
                 style={[
                   styles.iconContainer,
-                  { backgroundColor: card.corFundo },
+                  { backgroundColor: card.iconBackgroundColor },
                 ]}
               >
-                <Ionicons name={card.icone} size={18} color={card.corIcone} />
+                <Ionicons name={card.icon} size={18} color={card.iconColor} />
               </View>
             </View>
 
             <Text
-              style={styles.cardValor}
+              style={styles.cardValue}
               numberOfLines={1}
-              adjustsFontSizeToFit={true}
+              adjustsFontSizeToFit
             >
-              {card.valor}
+              {card.value}
             </Text>
           </View>
         ))}
@@ -138,12 +180,16 @@ export default function HomeScreen() {
       {alertas.length > 0 && (
         <View style={styles.alertCard}>
           <View style={styles.alertHeader}>
-            <Ionicons
-              name="alert-circle"
-              size={20}
-              color={theme.colors.error}
-            />
+            <View style={styles.alertIconContainer}>
+              <Ionicons
+                name="alert-circle-outline"
+                size={20}
+                color={theme.colors.error}
+              />
+            </View>
+
             <Text style={styles.alertTitle}>Estoque Crítico</Text>
+
             <View style={styles.alertBadge}>
               <Text style={styles.alertBadgeText}>{alertas.length}</Text>
             </View>
@@ -151,11 +197,12 @@ export default function HomeScreen() {
 
           <View style={styles.alertList}>
             {alertasExibidos.map((item) => (
-              <View key={item.id} style={styles.alertaRow}>
-                <Text style={styles.alertaTexto} numberOfLines={1}>
+              <View key={item.id} style={styles.alertRow}>
+                <Text style={styles.alertText} numberOfLines={1}>
                   {item.nome}
                 </Text>
-                <Text style={styles.alertaQuantidade}>
+
+                <Text style={styles.alertQuantity}>
                   {item.quantidade} / {item.quantidadeMinima}
                 </Text>
               </View>
@@ -164,15 +211,22 @@ export default function HomeScreen() {
 
           {alertas.length > 5 && (
             <TouchableOpacity
-              style={styles.alertToggleBtn}
-              activeOpacity={0.7}
-              onPress={() => setExpandido(!expandido)}
+              style={styles.alertToggleButton}
+              activeOpacity={0.72}
+              onPress={() => setExpandido((current) => !current)}
+              accessibilityRole="button"
+              accessibilityLabel={
+                expandido
+                  ? "Recolher lista de estoque crítico"
+                  : `Visualizar todos os ${alertas.length} itens com estoque crítico`
+              }
             >
               <Text style={styles.alertToggleText}>
                 {expandido
                   ? "Recolher lista"
                   : `Visualizar todos os ${alertas.length} itens`}
               </Text>
+
               <Ionicons
                 name={expandido ? "chevron-up" : "chevron-down"}
                 size={16}
@@ -187,49 +241,72 @@ export default function HomeScreen() {
     </View>
   );
 
+  const EmptyProducts = () => (
+    <View style={styles.emptyCard}>
+      <View style={styles.emptyIconContainer}>
+        <Ionicons name="cube-outline" size={24} color={theme.colors.primary} />
+      </View>
+
+      <Text style={styles.emptyTitle}>Nenhum produto cadastrado</Text>
+
+      <Text style={styles.emptyDescription}>
+        Cadastre seu primeiro produto para visualizar indicadores e alertas de
+        estoque.
+      </Text>
+    </View>
+  );
+
   const renderProduto = ({ item }: { item: Produto }) => {
-    let statusCor = theme.colors.success;
-    let statusBg = "#d1fae5";
-    let statusTexto = "Normal";
+    let statusColor: string = theme.colors.success;
+    let statusBackgroundColor: string = theme.colors.successSoft;
+    let statusText = "Normal";
 
     if (item.quantidade === 0) {
-      statusCor = theme.colors.error;
-      statusBg = "#fee2e2";
-      statusTexto = "Vazio";
+      statusColor = theme.colors.error;
+      statusBackgroundColor = theme.colors.errorSoft;
+      statusText = "Vazio";
     } else if (item.quantidade < item.quantidadeMinima) {
-      statusCor = theme.colors.warning;
-      statusBg = "#fef3c7";
-      statusTexto = "Baixo";
+      statusColor = theme.colors.warning;
+      statusBackgroundColor = theme.colors.warningSoft;
+      statusText = "Baixo";
     }
 
     return (
-      <View style={styles.produtoCard}>
-        <View style={styles.produtoInfo}>
+      <View style={styles.productCard}>
+        <View style={styles.productInfo}>
           {item.foto ? (
             <Image
               source={{ uri: item.foto }}
-              style={styles.produtoThumbnail}
+              style={styles.productThumbnail}
+              accessibilityIgnoresInvertColors
             />
           ) : (
-            <View style={styles.produtoIcone}>
-              <Ionicons name="cube" size={22} color={theme.colors.primary} />
+            <View style={styles.productIcon}>
+              <Ionicons
+                name="cube-outline"
+                size={22}
+                color={theme.colors.primary}
+              />
             </View>
           )}
 
-          <View style={styles.produtoTextos}>
-            <Text style={styles.produtoNome} numberOfLines={1}>
+          <View style={styles.productTexts}>
+            <Text style={styles.productName} numberOfLines={1}>
               {item.nome}
             </Text>
-            <Text style={styles.produtoQtd}>
+
+            <Text style={styles.productMeta}>
               {item.quantidade} {item.unidade} • R${" "}
               {item.preco.toFixed(2).replace(".", ",")}
             </Text>
           </View>
         </View>
 
-        <View style={[styles.badge, { backgroundColor: statusBg }]}>
-          <Text style={[styles.badgeText, { color: statusCor }]}>
-            {statusTexto}
+        <View
+          style={[styles.badge, { backgroundColor: statusBackgroundColor }]}
+        >
+          <Text style={[styles.badgeText, { color: statusColor }]}>
+            {statusText}
           </Text>
         </View>
       </View>
@@ -239,10 +316,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <FlatList
-        data={products.slice(-5).reverse()}
+        data={recentProducts}
         keyExtractor={(item) => item.id}
         renderItem={renderProduto}
         ListHeaderComponent={DashboardHeader}
+        ListEmptyComponent={EmptyProducts}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -250,6 +328,8 @@ export default function HomeScreen() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
+            progressBackgroundColor={theme.colors.surface}
           />
         }
       />
@@ -257,234 +337,351 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  listContent: { paddingBottom: 24 },
+const createStyles = (theme: ThemeType) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
 
-  headerContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
+    listContent: {
+      paddingBottom: 148,
+    },
 
-  saudacaoContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  saudacaoTextContainer: {
-    flex: 1,
-    marginRight: 16,
-  },
-  saudacaoTitulo: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: theme.colors.text,
-    letterSpacing: -0.5,
-  },
-  saudacaoSub: {
-    fontSize: 15,
-    color: theme.colors.textLight,
-    marginTop: 4,
-    textTransform: "capitalize",
-    fontWeight: "500",
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: theme.colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  avatarText: { color: "#ffffff", fontSize: 20, fontWeight: "bold" },
+    headerContainer: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.md,
+      paddingBottom: theme.spacing.sm,
+    },
 
-  cardsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginBottom: 32,
-  },
-  card: {
-    width: "48%",
-    marginBottom: 16,
-    padding: 16,
-    borderRadius: 20,
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.03)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  cardTitulo: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: theme.colors.textLight,
-    flex: 1,
-    marginTop: 4,
-  },
-  iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 8,
-  },
-  cardValor: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: theme.colors.text,
-    letterSpacing: -0.5,
-  },
+    greetingContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: theme.spacing.xl,
+    },
 
-  alertCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 32,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.04)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  alertHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  alertTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: theme.colors.text,
-    marginLeft: 8,
-    flex: 1,
-  },
-  alertBadge: {
-    backgroundColor: "#fee2e2",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  alertBadgeText: {
-    color: theme.colors.error,
-    fontWeight: "bold",
-    fontSize: 12,
-  },
-  alertList: { gap: 8 },
-  alertaRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: theme.colors.background,
-    padding: 12,
-    borderRadius: 12,
-  },
-  alertaTexto: {
-    color: theme.colors.text,
-    fontSize: 14,
-    fontWeight: "500",
-    flex: 1,
-    marginRight: 10,
-  },
-  alertaQuantidade: {
-    color: theme.colors.error,
-    fontWeight: "700",
-    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-    fontSize: 13,
-  },
+    greetingTextContainer: {
+      flex: 1,
+      marginRight: theme.spacing.md,
+    },
 
-  alertToggleBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingTop: 16,
-    marginTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.04)",
-    gap: 4,
-  },
-  alertToggleText: {
-    color: theme.colors.primary,
-    fontSize: 13,
-    fontWeight: "700",
-  },
+    greetingTitle: {
+      fontSize: theme.typography.largeTitle.fontSize,
+      lineHeight: theme.typography.largeTitle.lineHeight,
+      fontWeight: theme.typography.largeTitle.fontWeight,
+      color: theme.colors.text,
+      letterSpacing: -0.7,
+    },
 
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: theme.colors.textLight,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 12,
-    marginLeft: 4,
-  },
+    greetingSubtitle: {
+      fontSize: theme.typography.subheadline.fontSize,
+      lineHeight: theme.typography.subheadline.lineHeight,
+      color: theme.colors.textSecondary,
+      marginTop: theme.spacing.xs,
+      textTransform: "capitalize",
+      fontWeight: "500",
+    },
 
-  produtoCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginHorizontal: 24,
-    marginBottom: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.02)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  produtoInfo: { flexDirection: "row", alignItems: "center", flex: 1 },
-  produtoThumbnail: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    marginRight: 12,
-    backgroundColor: theme.colors.background,
-  },
-  produtoIcone: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: "#f5f3ff",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  produtoTextos: { flex: 1, paddingRight: 10 },
-  produtoNome: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: theme.colors.text,
-    marginBottom: 2,
-  },
-  produtoQtd: {
-    fontSize: 13,
-    color: theme.colors.textLight,
-    fontWeight: "500",
-  },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  badgeText: { fontSize: 11, fontWeight: "800" },
-});
+    avatar: {
+      width: 52,
+      height: 52,
+      borderRadius: theme.borderRadius.pill,
+      backgroundColor: theme.colors.primary,
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: theme.shadow.sm.shadowColor,
+      shadowOffset: theme.shadow.sm.shadowOffset,
+      shadowOpacity: theme.shadow.sm.shadowOpacity,
+      shadowRadius: theme.shadow.sm.shadowRadius,
+      elevation: theme.shadow.sm.elevation,
+    },
+
+    avatarText: {
+      color: theme.colors.primaryContrast,
+      fontSize: theme.typography.title3.fontSize,
+      lineHeight: theme.typography.title3.lineHeight,
+      fontWeight: "700",
+    },
+
+    cardsGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+      marginBottom: theme.spacing.xl,
+    },
+
+    card: {
+      width: "48%",
+      marginBottom: theme.spacing.md,
+      padding: theme.spacing.md,
+      borderRadius: theme.borderRadius.lg,
+      backgroundColor: theme.colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+      shadowColor: theme.shadow.sm.shadowColor,
+      shadowOffset: theme.shadow.sm.shadowOffset,
+      shadowOpacity: theme.shadow.sm.shadowOpacity,
+      shadowRadius: theme.shadow.sm.shadowRadius,
+      elevation: theme.shadow.sm.elevation,
+    },
+
+    cardHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: theme.spacing.md,
+    },
+
+    cardTitle: {
+      flex: 1,
+      marginTop: theme.spacing.xs,
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "600",
+    },
+
+    iconContainer: {
+      width: 36,
+      height: 36,
+      borderRadius: theme.borderRadius.pill,
+      justifyContent: "center",
+      alignItems: "center",
+      marginLeft: theme.spacing.sm,
+    },
+
+    cardValue: {
+      color: theme.colors.text,
+      fontSize: 26,
+      lineHeight: 32,
+      fontWeight: "800",
+      letterSpacing: -0.5,
+    },
+
+    alertCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.borderRadius.lg,
+      padding: theme.spacing.md,
+      marginBottom: theme.spacing.xl,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+      shadowColor: theme.shadow.sm.shadowColor,
+      shadowOffset: theme.shadow.sm.shadowOffset,
+      shadowOpacity: theme.shadow.sm.shadowOpacity,
+      shadowRadius: theme.shadow.sm.shadowRadius,
+      elevation: theme.shadow.sm.elevation,
+    },
+
+    alertHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: theme.spacing.md,
+    },
+
+    alertIconContainer: {
+      width: 32,
+      height: 32,
+      borderRadius: theme.borderRadius.pill,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: theme.colors.errorSoft,
+    },
+
+    alertTitle: {
+      flex: 1,
+      marginLeft: theme.spacing.sm,
+      color: theme.colors.text,
+      fontSize: theme.typography.callout.fontSize,
+      lineHeight: theme.typography.callout.lineHeight,
+      fontWeight: "700",
+    },
+
+    alertBadge: {
+      backgroundColor: theme.colors.errorSoft,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xxs,
+      borderRadius: theme.borderRadius.sm,
+    },
+
+    alertBadgeText: {
+      color: theme.colors.error,
+      fontWeight: "800",
+      fontSize: theme.typography.caption1.fontSize,
+      lineHeight: theme.typography.caption1.lineHeight,
+    },
+
+    alertList: {
+      gap: theme.spacing.sm,
+    },
+
+    alertRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: theme.colors.backgroundSecondary,
+      padding: theme.spacing.sm + theme.spacing.xs,
+      borderRadius: theme.borderRadius.sm,
+    },
+
+    alertText: {
+      flex: 1,
+      marginRight: theme.spacing.sm + theme.spacing.xs,
+      color: theme.colors.text,
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "600",
+    },
+
+    alertQuantity: {
+      color: theme.colors.error,
+      fontWeight: "700",
+      fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+    },
+
+    alertToggleButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingTop: theme.spacing.md,
+      marginTop: theme.spacing.sm,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: theme.colors.separator,
+      gap: theme.spacing.xs,
+    },
+
+    alertToggleText: {
+      color: theme.colors.primary,
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "700",
+    },
+
+    sectionTitle: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "700",
+      textTransform: "uppercase",
+      letterSpacing: 0.6,
+      marginBottom: theme.spacing.sm + theme.spacing.xs,
+      marginLeft: theme.spacing.xs,
+    },
+
+    productCard: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: theme.colors.surface,
+      paddingVertical: theme.spacing.sm + theme.spacing.xs,
+      paddingHorizontal: theme.spacing.md,
+      marginHorizontal: theme.spacing.lg,
+      marginBottom: theme.spacing.sm + theme.spacing.xs,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+      shadowColor: theme.shadow.sm.shadowColor,
+      shadowOffset: theme.shadow.sm.shadowOffset,
+      shadowOpacity: theme.shadow.sm.shadowOpacity,
+      shadowRadius: theme.shadow.sm.shadowRadius,
+      elevation: theme.shadow.sm.elevation,
+    },
+
+    productInfo: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+    },
+
+    productThumbnail: {
+      width: 48,
+      height: 48,
+      borderRadius: theme.borderRadius.sm,
+      marginRight: theme.spacing.sm + theme.spacing.xs,
+      backgroundColor: theme.colors.backgroundSecondary,
+    },
+
+    productIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: theme.borderRadius.sm,
+      backgroundColor: theme.colors.primarySubtle,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: theme.spacing.sm + theme.spacing.xs,
+    },
+
+    productTexts: {
+      flex: 1,
+      paddingRight: theme.spacing.sm,
+    },
+
+    productName: {
+      color: theme.colors.text,
+      fontSize: theme.typography.subheadline.fontSize,
+      lineHeight: theme.typography.subheadline.lineHeight,
+      fontWeight: "700",
+      marginBottom: 2,
+    },
+
+    productMeta: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "500",
+    },
+
+    badge: {
+      paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.borderRadius.pill,
+    },
+
+    badgeText: {
+      fontSize: theme.typography.caption2.fontSize,
+      lineHeight: theme.typography.caption2.lineHeight,
+      fontWeight: "800",
+      textTransform: "uppercase",
+      letterSpacing: 0.2,
+    },
+
+    emptyCard: {
+      marginHorizontal: theme.spacing.lg,
+      marginTop: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.lg,
+      paddingVertical: theme.spacing.xl,
+      alignItems: "center",
+      borderRadius: theme.borderRadius.lg,
+      backgroundColor: theme.colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+    },
+
+    emptyIconContainer: {
+      width: 52,
+      height: 52,
+      borderRadius: theme.borderRadius.pill,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: theme.spacing.md,
+      backgroundColor: theme.colors.primarySubtle,
+    },
+
+    emptyTitle: {
+      color: theme.colors.text,
+      fontSize: theme.typography.headline.fontSize,
+      lineHeight: theme.typography.headline.lineHeight,
+      fontWeight: theme.typography.headline.fontWeight,
+      textAlign: "center",
+      marginBottom: theme.spacing.xs,
+    },
+
+    emptyDescription: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      textAlign: "center",
+    },
+  });
