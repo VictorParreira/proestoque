@@ -16,73 +16,118 @@ interface InputProps extends TextInputProps {
   isPassword?: boolean;
 }
 
-export function Input({ icon, error, isPassword, ...rest }: InputProps) {
+export function Input({
+  icon,
+  error,
+  isPassword,
+  onFocus,
+  onBlur,
+  ...rest
+}: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   return (
     <View style={styles.container}>
-      <View style={[styles.inputContainer, error && styles.inputError]}>
+      <View
+        style={[
+          styles.inputContainer,
+          isFocused && styles.inputFocused,
+          error && styles.inputError,
+        ]}
+      >
         {icon && (
           <Ionicons
             name={icon}
-            size={20}
-            color={theme.colors.textLight}
+            size={22}
+            color={
+              error ? "#ef4444" : isFocused ? theme.colors.primary : "#9ca3af"
+            }
             style={styles.icon}
           />
         )}
 
         <TextInput
           style={styles.input}
-          placeholderTextColor={theme.colors.textLight}
+          placeholderTextColor="#9ca3af"
           secureTextEntry={isPassword && !isPasswordVisible}
+          onFocus={(e) => {
+            setIsFocused(true);
+            onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setIsFocused(false);
+            onBlur?.(e);
+          }}
           {...rest}
         />
 
         {isPassword && (
           <TouchableOpacity
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            activeOpacity={0.7}
           >
             <Ionicons
-              name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
-              size={20}
-              color={theme.colors.textLight}
+              name={isPasswordVisible ? "eye-off" : "eye"}
+              size={22}
+              color="#9ca3af"
             />
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text style={styles.errorText}>{error}</Text>}
+
+      {error && (
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle" size={14} color="#dc2626" />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: theme.spacing.md,
+    marginBottom: 20,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.md,
-    paddingHorizontal: theme.spacing.md,
-    height: 50,
-    backgroundColor: theme.colors.background,
+    borderColor: "#e5e7eb",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 56,
+    backgroundColor: "#ffffff",
+  },
+  inputFocused: {
+    borderColor: theme.colors.primary,
+    backgroundColor: "#f5f3ff",
   },
   inputError: {
-    borderColor: theme.colors.error,
+    borderColor: "#ef4444",
+    backgroundColor: "#fef2f2",
   },
   icon: {
-    marginRight: theme.spacing.sm,
+    marginRight: 12,
   },
   input: {
     flex: 1,
-    color: theme.colors.text,
+    color: "#1f2937",
+    fontSize: 16,
+    height: "100%",
+  },
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+    marginLeft: 4,
   },
   errorText: {
-    color: theme.colors.error,
-    fontSize: 12,
-    marginTop: 4,
+    color: "#dc2626",
+    fontSize: 13,
+    fontWeight: "500",
     marginLeft: 4,
   },
 });

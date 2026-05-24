@@ -59,7 +59,7 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: "#f9fafb" },
   splashOverlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 999,

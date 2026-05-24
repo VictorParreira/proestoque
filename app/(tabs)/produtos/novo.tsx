@@ -2,7 +2,6 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { ProductForm } from "../../../src/components/ProductForm";
-import { theme } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
 import { ProdutoFormData } from "../../../src/schemas/produtoSchema";
 
@@ -28,6 +27,6 @@ export default function NovoProduto() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: "#f9fafb",
   },
 });

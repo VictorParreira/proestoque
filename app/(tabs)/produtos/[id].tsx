@@ -47,7 +47,11 @@ export default function EditarProduto() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <TouchableOpacity onPress={confirmDelete} style={styles.deleteBtn}>
+            <TouchableOpacity
+              onPress={confirmDelete}
+              style={styles.deleteBtn}
+              activeOpacity={0.7}
+            >
               <Ionicons name="trash-outline" size={24} color="#dc2626" />
             </TouchableOpacity>
           ),
@@ -66,9 +70,10 @@ export default function EditarProduto() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: "#f9fafb",
   },
   deleteBtn: {
     padding: theme.spacing.xs,
+    marginRight: 4,
   },
 });

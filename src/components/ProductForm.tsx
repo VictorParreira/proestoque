@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { theme } from "../constants/theme";
 import { ProdutoFormData, produtoSchema } from "../schemas/produtoSchema";
 import { Button } from "./Button";
 import { ImagePickerField } from "./ImagePickerField";
@@ -39,6 +38,7 @@ export function ProductForm({
     <ScrollView
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <View style={styles.formGroup}>
         <Text style={styles.label}>Foto do Produto</Text>
@@ -62,7 +62,7 @@ export function ProductForm({
           name="nome"
           render={({ field: { onChange, value } }) => (
             <Input
-              icon="cube-outline"
+              icon="cube"
               placeholder="Ex: Teclado Mecânico"
               value={value}
               onChangeText={onChange}
@@ -79,7 +79,7 @@ export function ProductForm({
           name="categoriaId"
           render={({ field: { onChange, value } }) => (
             <Input
-              icon="grid-outline"
+              icon="grid"
               placeholder="Ex: cat_1"
               value={value}
               onChangeText={onChange}
@@ -90,14 +90,14 @@ export function ProductForm({
       </View>
 
       <View style={styles.row}>
-        <View style={[styles.formGroup, { flex: 1, marginRight: 10 }]}>
+        <View style={styles.rowItem}>
           <Text style={styles.label}>Quantidade</Text>
           <Controller
             control={control}
             name="quantidade"
             render={({ field: { onChange, value } }) => (
               <Input
-                icon="layers-outline"
+                icon="layers"
                 placeholder="0"
                 keyboardType="numeric"
                 value={value === 0 ? "" : String(value)}
@@ -111,14 +111,14 @@ export function ProductForm({
           />
         </View>
 
-        <View style={[styles.formGroup, { flex: 1 }]}>
+        <View style={styles.rowItem}>
           <Text style={styles.label}>Qtd. Mínima</Text>
           <Controller
             control={control}
             name="quantidadeMinima"
             render={({ field: { onChange, value } }) => (
               <Input
-                icon="alert-circle-outline"
+                icon="alert-circle"
                 placeholder="0"
                 keyboardType="numeric"
                 value={value === 0 ? "" : String(value)}
@@ -134,14 +134,14 @@ export function ProductForm({
       </View>
 
       <View style={styles.row}>
-        <View style={[styles.formGroup, { flex: 1, marginRight: 10 }]}>
+        <View style={styles.rowItem}>
           <Text style={styles.label}>Preço</Text>
           <Controller
             control={control}
             name="preco"
             render={({ field: { onChange, value } }) => (
               <Input
-                icon="cash-outline"
+                icon="cash"
                 placeholder="0.00"
                 keyboardType="decimal-pad"
                 value={value === 0 ? "" : String(value)}
@@ -156,14 +156,14 @@ export function ProductForm({
           />
         </View>
 
-        <View style={[styles.formGroup, { flex: 1 }]}>
+        <View style={styles.rowItem}>
           <Text style={styles.label}>Unidade</Text>
           <Controller
             control={control}
             name="unidade"
             render={({ field: { onChange, value } }) => (
               <Input
-                icon="scale-outline"
+                icon="scale"
                 placeholder="Ex: un, kg, cx"
                 value={value}
                 onChangeText={onChange}
@@ -186,14 +186,31 @@ export function ProductForm({
 }
 
 const styles = StyleSheet.create({
-  container: { padding: theme.spacing.lg, paddingBottom: 40 },
-  formGroup: { marginBottom: theme.spacing.sm },
+  container: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 60,
+  },
+  formGroup: {
+    marginBottom: 0,
+  },
   label: {
     fontSize: 14,
-    fontWeight: "600",
-    color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
+    fontWeight: "700",
+    color: "#4b5563",
+    marginBottom: 8,
+    marginLeft: 4,
   },
-  row: { flexDirection: "row", justifyContent: "space-between" },
-  submitBtn: { marginTop: theme.spacing.lg },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 16,
+  },
+  rowItem: {
+    flex: 1,
+  },
+  submitBtn: {
+    marginTop: 12,
+    marginBottom: 40,
+  },
 });

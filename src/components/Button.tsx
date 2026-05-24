@@ -27,6 +27,7 @@ export function Button({
 
   return (
     <TouchableOpacity
+      activeOpacity={0.8}
       style={[
         styles.button,
         isOutline ? styles.buttonOutline : styles.buttonSolid,
@@ -38,7 +39,7 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={isOutline ? theme.colors.primary : theme.colors.background}
+          color={isOutline ? theme.colors.primary : "#ffffff"}
         />
       ) : (
         <Text
@@ -56,18 +57,24 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    height: 50,
-    borderRadius: theme.borderRadius.md,
+    height: 56,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: 24,
+    flexDirection: "row",
   },
   buttonSolid: {
     backgroundColor: theme.colors.primary,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   buttonOutline: {
     backgroundColor: "transparent",
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: theme.colors.primary,
   },
   fullWidth: {
@@ -75,10 +82,11 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
   textSolid: {
-    color: theme.colors.background,
+    color: "#ffffff",
   },
   textOutline: {
     color: theme.colors.primary,

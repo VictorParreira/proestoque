@@ -9,27 +9,30 @@ interface LogoProps {
 
 export function LogoProEstoque({ size = "md" }: LogoProps) {
   const dimensions = {
-    sm: { icon: 24, text: 16 },
-    md: { icon: 40, text: 24 },
-    lg: { icon: 56, text: 32 },
+    sm: { icon: 20, container: 40, text: 20, radius: 12 },
+    md: { icon: 32, container: 64, text: 32, radius: 20 },
+    lg: { icon: 48, container: 96, text: 42, radius: 28 },
   };
+
+  const dim = dimensions[size];
 
   return (
     <View style={styles.container}>
       <View
         style={[
           styles.iconContainer,
-          { borderRadius: dimensions[size].icon / 2.5 },
+          {
+            width: dim.container,
+            height: dim.container,
+            borderRadius: dim.radius,
+          },
         ]}
       >
-        <Ionicons
-          name="cube-outline"
-          size={dimensions[size].icon}
-          color={theme.colors.background}
-        />
+        <Ionicons name="cube" size={dim.icon} color="#ffffff" />
       </View>
-      <Text style={[styles.text, { fontSize: dimensions[size].text }]}>
-        ProEstoque
+
+      <Text style={[styles.text, { fontSize: dim.text }]}>
+        Pro<Text style={styles.textHighlight}>Estoque</Text>
       </Text>
     </View>
   );
@@ -39,14 +42,25 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     justifyContent: "center",
-    gap: theme.spacing.sm,
   },
   iconContainer: {
     backgroundColor: theme.colors.primary,
-    padding: theme.spacing.sm,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
   },
   text: {
-    fontWeight: "bold",
-    color: theme.colors.text,
+    fontWeight: "800",
+    color: theme.colors.primary,
+    letterSpacing: -0.5,
+  },
+  textHighlight: {
+    color: "#111827",
   },
 });

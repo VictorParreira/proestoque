@@ -27,7 +27,6 @@ type SecaoProduto = {
 
 export default function ListaProdutos() {
   const router = useRouter();
-
   const { products } = useProducts();
 
   const [busca, setBusca] = useState("");
@@ -86,7 +85,7 @@ export default function ListaProdutos() {
               ]}
             >
               <Ionicons
-                name="cube-outline"
+                name="cube"
                 size={isGrade ? 24 : 20}
                 color={theme.colors.primary}
               />
@@ -98,7 +97,8 @@ export default function ListaProdutos() {
               {item.nome}
             </Text>
             <Text style={styles.produtoDetalhes}>
-              {item.quantidade} {item.unidade} • R$ {item.preco.toFixed(2)}
+              {item.quantidade} {item.unidade} • R${" "}
+              {item.preco.toFixed(2).replace(".", ",")}
             </Text>
           </View>
         </View>
@@ -123,8 +123,13 @@ export default function ListaProdutos() {
 
   const emptyComponent = (
     <View style={styles.emptyContainer}>
-      <Ionicons name="search-outline" size={50} color={theme.colors.border} />
-      <Text style={styles.emptyText}>Nenhum produto encontrado</Text>
+      <View style={styles.emptyIconWrapper}>
+        <Ionicons name="search" size={40} color="#9ca3af" />
+      </View>
+      <Text style={styles.emptyTitle}>Nenhum produto</Text>
+      <Text style={styles.emptyText}>
+        Não encontramos resultados para a sua busca.
+      </Text>
     </View>
   );
 
@@ -143,8 +148,8 @@ export default function ListaProdutos() {
           >
             <Ionicons
               name="list"
-              size={16}
-              color={viewMode === "lista" ? "#fff" : theme.colors.primary}
+              size={18}
+              color={viewMode === "lista" ? "#fff" : theme.colors.textLight}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -156,8 +161,8 @@ export default function ListaProdutos() {
           >
             <Ionicons
               name="grid"
-              size={16}
-              color={viewMode === "grade" ? "#fff" : theme.colors.primary}
+              size={18}
+              color={viewMode === "grade" ? "#fff" : theme.colors.textLight}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -169,30 +174,30 @@ export default function ListaProdutos() {
           >
             <Ionicons
               name="albums"
-              size={16}
-              color={viewMode === "agrupado" ? "#fff" : theme.colors.primary}
+              size={18}
+              color={viewMode === "agrupado" ? "#fff" : theme.colors.textLight}
             />
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.searchBar}>
-        <Ionicons name="search" size={20} color={theme.colors.textLight} />
+        <Ionicons name="search" size={22} color="#9ca3af" />
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar produto..."
+          placeholderTextColor="#9ca3af"
           value={busca}
           onChangeText={setBusca}
           autoCapitalize="none"
           autoCorrect={false}
         />
         {busca.length > 0 && (
-          <TouchableOpacity onPress={() => setBusca("")}>
-            <Ionicons
-              name="close-circle"
-              size={18}
-              color={theme.colors.textLight}
-            />
+          <TouchableOpacity
+            onPress={() => setBusca("")}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="close-circle" size={20} color="#9ca3af" />
           </TouchableOpacity>
         )}
       </View>
@@ -206,6 +211,7 @@ export default function ListaProdutos() {
         <TouchableOpacity
           style={[styles.chip, !categoriaAtiva && styles.chipAtivo]}
           onPress={() => setCategoriaAtiva(null)}
+          activeOpacity={0.7}
         >
           <Text
             style={[styles.chipText, !categoriaAtiva && styles.chipTextAtivo]}
@@ -218,6 +224,7 @@ export default function ListaProdutos() {
             key={cat.id}
             style={[styles.chip, categoriaAtiva === cat.id && styles.chipAtivo]}
             onPress={() => setCategoriaAtiva(cat.id)}
+            activeOpacity={0.7}
           >
             <Text
               style={[
@@ -235,13 +242,14 @@ export default function ListaProdutos() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+      {headerProdutos}
+
       {viewMode === "agrupado" ? (
         <SectionList
           sections={secoesFiltradas}
           keyExtractor={(item) => item.id}
           renderItem={renderProduto}
           renderSectionHeader={renderSectionHeader}
-          ListHeaderComponent={headerProdutos}
           contentContainerStyle={styles.listContent}
           stickySectionHeadersEnabled={true}
           ListEmptyComponent={emptyComponent}
@@ -256,7 +264,6 @@ export default function ListaProdutos() {
           columnWrapperStyle={
             viewMode === "grade" ? styles.rowWrapper : undefined
           }
-          ListHeaderComponent={headerProdutos}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={emptyComponent}
         />
@@ -267,54 +274,75 @@ export default function ListaProdutos() {
         activeOpacity={0.8}
         onPress={() => router.push("/(tabs)/produtos/novo")}
       >
-        <Ionicons name="add" size={30} color="#fff" />
+        <Ionicons name="add" size={32} color="#fff" />
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  header: { paddingTop: 10 },
+  container: { flex: 1, backgroundColor: theme.colors.background },
+
+  header: {
+    paddingTop: 16,
+    backgroundColor: theme.colors.background,
+  },
+
   tituloRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
-    paddingHorizontal: 20,
+    marginBottom: 20,
+    paddingHorizontal: 24,
   },
-  titulo: { fontSize: 28, fontWeight: "bold", color: theme.colors.text },
+  titulo: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: theme.colors.text,
+    letterSpacing: -0.5,
+  },
   toggleContainer: {
     flexDirection: "row",
-    backgroundColor: "#f3f4f6",
-    borderRadius: 8,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 12,
     padding: 4,
   },
-  toggleBtn: { padding: 6, borderRadius: 6 },
-  toggleBtnAtivo: { backgroundColor: theme.colors.primary },
+  toggleBtn: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
+  toggleBtnAtivo: {
+    backgroundColor: theme.colors.primary,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f3f4f6",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 45,
-    marginBottom: 15,
-    marginHorizontal: 20,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 56,
+    marginBottom: 20,
+    marginHorizontal: 24,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
   },
   searchInput: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 12,
     fontSize: 16,
     color: theme.colors.text,
   },
-  categoriesScroll: { marginBottom: 15 },
-  categoriesContent: { gap: 8, paddingHorizontal: 20 },
+
+  categoriesScroll: { marginBottom: 16 },
+  categoriesContent: { gap: 10, paddingHorizontal: 24 },
   chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#e5e7eb",
   },
@@ -324,56 +352,70 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 14,
-    color: theme.colors.text,
-    fontWeight: "500",
+    color: theme.colors.textLight,
+    fontWeight: "600",
   },
-  chipTextAtivo: { color: "#fff" },
+  chipTextAtivo: { color: "#ffffff", fontWeight: "700" },
 
-  listContent: { paddingBottom: 100 },
+  listContent: { paddingBottom: 120, paddingTop: 8 },
 
   produtoCard: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 15,
-    marginHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    marginHorizontal: 24,
+    marginBottom: 12,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.02)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 2,
   },
   produtoCardGrade: {
     flex: 1,
-    margin: 10,
-    padding: 15,
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
+    marginHorizontal: 12,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: "#ffffff",
     alignItems: "flex-start",
-    borderBottomWidth: 1,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.02)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  rowWrapper: { paddingHorizontal: 0 },
+  rowWrapper: { paddingHorizontal: 12 },
 
-  produtoInfo: { flexDirection: "row", alignItems: "center", gap: 15, flex: 1 },
-  produtoInfoGrade: { alignItems: "center", width: "100%", gap: 10 },
+  produtoInfo: { flexDirection: "row", alignItems: "center", gap: 16, flex: 1 },
+  produtoInfoGrade: { alignItems: "center", width: "100%", gap: 12 },
 
   iconeContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 10,
+    width: 52,
+    height: 52,
+    borderRadius: 12,
     backgroundColor: "#f5f3ff",
     justifyContent: "center",
     alignItems: "center",
   },
   iconeContainerGrade: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
   },
   thumbnail: {
-    width: 50,
-    height: 50,
-    borderRadius: 10,
-    backgroundColor: "#f3f4f6",
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: theme.colors.background,
   },
   thumbnailGrade: {
     width: 80,
@@ -381,63 +423,78 @@ const styles = StyleSheet.create({
     borderRadius: 40,
   },
 
-  textosGrade: { alignItems: "center" },
-  produtoNome: { fontSize: 16, fontWeight: "600", color: theme.colors.text },
+  textosGrade: { alignItems: "center", marginTop: 4 },
+  produtoNome: { fontSize: 16, fontWeight: "700", color: theme.colors.text },
   produtoDetalhes: {
     fontSize: 13,
-    color: theme.colors.text,
-    marginTop: 2,
+    color: theme.colors.textLight,
+    marginTop: 4,
+    fontWeight: "500",
   },
 
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#f9fafb",
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-    marginHorizontal: 20,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: "800",
     color: theme.colors.primary,
     textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   sectionCount: {
     fontSize: 12,
     color: theme.colors.textLight,
-    fontWeight: "bold",
+    fontWeight: "700",
   },
 
   emptyContainer: {
     alignItems: "center",
-    marginTop: 50,
-    paddingHorizontal: 20,
+    marginTop: 60,
+    paddingHorizontal: 32,
+  },
+  emptyIconWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#e5e7eb",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: theme.colors.text,
+    marginBottom: 8,
   },
   emptyText: {
-    marginTop: 10,
     color: theme.colors.textLight,
-    fontSize: 16,
+    fontSize: 15,
     textAlign: "center",
+    lineHeight: 22,
   },
 
   fab: {
     position: "absolute",
-    bottom: 20,
-    right: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    bottom: 24,
+    right: 24,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: theme.colors.primary,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 6,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
 });

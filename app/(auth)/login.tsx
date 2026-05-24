@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -17,7 +18,6 @@ import { useAuth } from "../../src/contexts/AuthContext";
 
 export default function Login() {
   const router = useRouter();
-
   const { login, isLoading } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -47,71 +47,81 @@ export default function Login() {
     if (isError) return;
 
     const nameSimulado = email.split("@")[0] || "Usuário";
-
     await login(nameSimulado, email);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={styles.header}>
-          <LogoProEstoque size="md" />
-          <Text style={styles.subtitle}>Bem-vindo de volta</Text>
-        </View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.header}>
+            <LogoProEstoque size="lg" />
+            <Text style={styles.subtitle}>Bem-vindo de volta!</Text>
+          </View>
 
-        <View style={styles.form}>
-          <Text style={styles.label}>E-mail</Text>
-          <Input
-            icon="mail-outline"
-            placeholder="E-mail"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-            error={errorEmail}
-            editable={!isLoading}
-          />
+          <View style={styles.card}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>E-mail</Text>
+              <Input
+                icon="mail"
+                placeholder="Digite seu e-mail"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+                error={errorEmail}
+                editable={!isLoading}
+              />
+            </View>
 
-          <Text style={styles.label}>Senha</Text>
-          <Input
-            icon="lock-closed-outline"
-            placeholder="Senha"
-            isPassword
-            value={password}
-            onChangeText={setPassword}
-            error={errorPassword}
-            editable={!isLoading}
-          />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Senha</Text>
+              <Input
+                icon="lock-closed"
+                placeholder="Digite sua senha"
+                isPassword
+                value={password}
+                onChangeText={setPassword}
+                error={errorPassword}
+                editable={!isLoading}
+              />
+            </View>
 
-          <TouchableOpacity
-            onPress={() => router.push("/(auth)/recuperar-senha")}
-            disabled={isLoading}
-          >
-            <Text style={styles.forgotPassword}>Esqueci minha senha</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.forgotPasswordBtn}
+              onPress={() => router.push("/(auth)/recuperar-senha")}
+              disabled={isLoading}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.forgotPasswordText}>Esqueceu a senha?</Text>
+            </TouchableOpacity>
 
-          <Button
-            title="Entrar"
-            fullWidth
-            onPress={handleLogin}
-            style={styles.loginButton}
-            loading={isLoading}
-            disabled={isLoading}
-          />
+            <Button
+              title="Entrar no sistema"
+              fullWidth
+              onPress={handleLogin}
+              loading={isLoading}
+            />
+          </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Não tem conta? </Text>
+            <Text style={styles.footerText}>Ainda não tem uma conta? </Text>
             <TouchableOpacity
               onPress={() => router.push("/(auth)/cadastro")}
               disabled={isLoading}
+              activeOpacity={0.7}
             >
-              <Text style={styles.linkText}>Cadastrar</Text>
+              <Text style={styles.linkText}>Cadastre-se</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -122,48 +132,76 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  container: {
+  keyboardView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: "center",
-    padding: theme.spacing.lg,
+    padding: 24,
   },
   header: {
     alignItems: "center",
-    marginBottom: theme.spacing.xl * 1.5,
+    marginBottom: 40,
+    marginTop: 20,
   },
   subtitle: {
-    marginTop: theme.spacing.sm,
+    marginTop: 16,
     color: theme.colors.textLight,
     fontSize: 16,
+    fontWeight: "500",
+    letterSpacing: 0.2,
   },
-  form: {
-    width: "100%",
+
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.04,
+    shadowRadius: 24,
+    elevation: 4, // Sombra suave
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.02)",
+  },
+
+  inputGroup: {
+    marginBottom: 0,
   },
   label: {
     fontSize: 14,
-    fontWeight: "600",
-    color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
+    fontWeight: "700",
+    color: "#4b5563",
+    marginBottom: 8,
+    marginLeft: 4,
   },
-  forgotPassword: {
+  forgotPasswordBtn: {
+    alignSelf: "flex-end",
+    marginTop: -4,
+    marginBottom: 24,
+    paddingVertical: 4,
+  },
+  forgotPasswordText: {
     color: theme.colors.primary,
-    textAlign: "center",
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xl,
+    fontWeight: "700",
+    fontSize: 14,
   },
-  loginButton: {
-    marginBottom: theme.spacing.lg,
-  },
+
   footer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 32,
+    marginBottom: 20,
   },
   footerText: {
     color: theme.colors.textLight,
+    fontSize: 15,
   },
   linkText: {
     color: theme.colors.primary,
-    fontWeight: "bold",
+    fontWeight: "800",
+    fontSize: 15,
   },
 });

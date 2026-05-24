@@ -11,18 +11,26 @@ type SplashScreenProps = {
 
 export function SplashScreen({ onComplete }: SplashScreenProps) {
   const progress = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(progress, {
-      toValue: 1,
-      duration: 1500,
-      useNativeDriver: false,
-    }).start(() => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(progress, {
+        toValue: 1,
+        duration: 1500,
+        useNativeDriver: false,
+      }),
+    ]).start(() => {
       if (onComplete) {
         onComplete();
       }
     });
-  }, [progress, onComplete]);
+  }, [progress, opacity, onComplete]);
 
   const progressWidth = progress.interpolate({
     inputRange: [0, 1],
@@ -31,12 +39,12 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.content}>
+      <Animated.View style={[styles.content, { opacity }]}>
         <LogoProEstoque size="lg" />
         <Text style={styles.tagline}>Gestão de estoque inteligente</Text>
-      </View>
+      </Animated.View>
 
-      <View style={styles.bottomContainer}>
+      <Animated.View style={[styles.bottomContainer, { opacity }]}>
         <View style={styles.progressBarContainer}>
           <Animated.View
             style={[styles.progressBar, { width: progressWidth }]}
@@ -44,7 +52,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         </View>
 
         <Text style={styles.loadingText}>Verificando sessão...</Text>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -52,25 +60,20 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: "#f9fafb",
     justifyContent: "center",
     alignItems: "center",
   },
   content: {
     alignItems: "center",
-    transform: [{ translateY: -20 }],
-  },
-  appName: {
-    marginTop: theme.spacing.lg,
-    fontSize: 32,
-    fontWeight: "bold",
-    color: theme.colors.primary,
-    letterSpacing: 1,
+    transform: [{ translateY: -30 }],
   },
   tagline: {
     fontSize: 16,
-    color: theme.colors.textLight,
-    marginTop: theme.spacing.xs,
+    fontWeight: "500",
+    color: "#6b7280",
+    marginTop: 12,
+    letterSpacing: 0.3,
   },
   bottomContainer: {
     position: "absolute",
@@ -80,20 +83,21 @@ const styles = StyleSheet.create({
   },
   progressBarContainer: {
     width: "100%",
-    height: 6,
-    backgroundColor: "rgba(0,0,0,0.05)",
-    borderRadius: 3,
+    height: 8,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 4,
     overflow: "hidden",
   },
   progressBar: {
     height: "100%",
     backgroundColor: theme.colors.primary,
-    borderRadius: 3,
+    borderRadius: 4,
   },
   loadingText: {
-    marginTop: theme.spacing.sm,
+    marginTop: 12,
     fontSize: 14,
-    color: theme.colors.textLight,
-    fontWeight: "500",
+    color: "#9ca3af",
+    fontWeight: "600",
+    letterSpacing: 0.5,
   },
 });

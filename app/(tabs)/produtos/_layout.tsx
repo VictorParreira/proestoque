@@ -5,9 +5,10 @@ export default function ProdutosLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: theme.colors.background },
+        headerStyle: { backgroundColor: "#f9fafb" },
         headerTintColor: theme.colors.primary,
-        headerTitleStyle: { fontWeight: "bold" },
+        headerTitleStyle: { fontWeight: "700", fontSize: 18 },
+        headerShadowVisible: false,
       }}
     >
       <Stack.Screen
