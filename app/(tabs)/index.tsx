@@ -19,6 +19,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBadge } from "../../src/components/StatusBadge";
 
+import {
+  SummaryCard,
+  type SummaryCardVariant,
+} from "../../src/components/SummaryCard";
+
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useProducts } from "../../src/contexts/ProductsContext";
@@ -29,13 +34,12 @@ import {
   type Produto,
 } from "../../src/data/mockData";
 
-type SummaryCard = {
+type DashboardSummaryCard = {
   id: string;
   title: string;
   value: string | number;
   icon: keyof typeof Ionicons.glyphMap;
-  iconBackgroundColor: string;
-  iconColor: string;
+  variant: SummaryCardVariant;
 };
 
 function getProductStockStatus(product: Produto) {
@@ -92,42 +96,38 @@ export default function HomeScreen() {
     );
   }, [products]);
 
-  const cardResumo = useMemo<SummaryCard[]>(
+  const cardResumo = useMemo<DashboardSummaryCard[]>(
     () => [
       {
         id: "total",
         title: "Produtos",
         value: products.length,
         icon: "cube-outline",
-        iconBackgroundColor: theme.colors.primarySubtle,
-        iconColor: theme.colors.primary,
+        variant: "primary",
       },
       {
         id: "alertas",
         title: "Alertas",
         value: alertas.length,
         icon: "alert-circle-outline",
-        iconBackgroundColor: theme.colors.errorSoft,
-        iconColor: theme.colors.error,
+        variant: "error",
       },
       {
         id: "categorias",
         title: "Categorias",
         value: CATEGORIAS_MOCK.length,
         icon: "grid-outline",
-        iconBackgroundColor: theme.colors.infoSoft,
-        iconColor: theme.colors.info,
+        variant: "info",
       },
       {
         id: "valor",
         title: "Em Estoque",
         value: formatarPreco(valorTotal),
         icon: "cash-outline",
-        iconBackgroundColor: theme.colors.successSoft,
-        iconColor: theme.colors.success,
+        variant: "success",
       },
     ],
-    [alertas.length, products.length, theme, valorTotal],
+    [alertas.length, products.length, valorTotal],
   );
 
   const saudacao = useMemo(() => {
@@ -188,33 +188,14 @@ export default function HomeScreen() {
 
       <View style={styles.cardsGrid}>
         {cardResumo.map((card) => (
-          <View
+          <SummaryCard
             key={card.id}
-            style={styles.card}
-            accessibilityRole="summary"
-            accessibilityLabel={`${card.title}: ${card.value}`}
-          >
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>{card.title}</Text>
-
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: card.iconBackgroundColor },
-                ]}
-              >
-                <Ionicons name={card.icon} size={18} color={card.iconColor} />
-              </View>
-            </View>
-
-            <Text
-              style={styles.cardValue}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-            >
-              {card.value}
-            </Text>
-          </View>
+            title={card.title}
+            value={card.value}
+            icon={card.icon}
+            variant={card.variant}
+            style={styles.summaryCard}
+          />
         ))}
       </View>
 
@@ -433,52 +414,9 @@ const createStyles = (theme: ThemeType) =>
       marginBottom: theme.spacing.xl,
     },
 
-    card: {
+    summaryCard: {
       width: "48%",
       marginBottom: theme.spacing.md,
-      padding: theme.spacing.md,
-      borderRadius: theme.borderRadius.lg,
-      backgroundColor: theme.colors.surface,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
-    },
-
-    cardHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      marginBottom: theme.spacing.md,
-    },
-
-    cardTitle: {
-      flex: 1,
-      marginTop: theme.spacing.xs,
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "600",
-    },
-
-    iconContainer: {
-      width: 36,
-      height: 36,
-      borderRadius: theme.borderRadius.pill,
-      justifyContent: "center",
-      alignItems: "center",
-      marginLeft: theme.spacing.sm,
-    },
-
-    cardValue: {
-      color: theme.colors.text,
-      fontSize: 26,
-      lineHeight: 32,
-      fontWeight: "800",
-      letterSpacing: -0.5,
     },
 
     alertCard: {
