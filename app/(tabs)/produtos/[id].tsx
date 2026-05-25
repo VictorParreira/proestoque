@@ -10,8 +10,17 @@ import { useProducts } from "../../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../../src/contexts/ThemeContext";
 import type { ProdutoFormData } from "../../../src/schemas/produtoSchema";
 
+type ViewMode = "lista" | "grade" | "agrupado";
+
+const isViewMode = (value: unknown): value is ViewMode => {
+  return value === "lista" || value === "grade" || value === "agrupado";
+};
+
 export default function EditarProduto() {
-  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    id?: string | string[];
+    viewMode?: string | string[];
+  }>();
   const router = useRouter();
   const { products, updateProduct, deleteProduct } = useProducts();
   const { theme } = useAppTheme();
@@ -21,6 +30,23 @@ export default function EditarProduto() {
   const productId = useMemo(() => {
     return Array.isArray(params.id) ? params.id[0] : params.id;
   }, [params.id]);
+
+  const returnViewMode = useMemo<ViewMode>(() => {
+    const paramViewMode = Array.isArray(params.viewMode)
+      ? params.viewMode[0]
+      : params.viewMode;
+
+    return isViewMode(paramViewMode) ? paramViewMode : "lista";
+  }, [params.viewMode]);
+
+  const goBackToProducts = () => {
+    router.replace({
+      pathname: "/(tabs)/produtos",
+      params: {
+        viewMode: returnViewMode,
+      },
+    });
+  };
 
   const product = useMemo(() => {
     if (!productId) return undefined;
@@ -32,7 +58,7 @@ export default function EditarProduto() {
     if (!productId) return;
 
     await updateProduct(productId, data);
-    router.replace("/(tabs)/produtos");
+    goBackToProducts();
   };
 
   const confirmDelete = () => {
@@ -48,7 +74,7 @@ export default function EditarProduto() {
           style: "destructive",
           onPress: async () => {
             await deleteProduct(productId);
-            router.replace("/(tabs)/produtos");
+            goBackToProducts();
           },
         },
       ],
@@ -64,7 +90,7 @@ export default function EditarProduto() {
             activeOpacity={0.72}
             accessibilityRole="button"
             accessibilityLabel="Voltar para produtos"
-            onPress={() => router.replace("/(tabs)/produtos")}
+            onPress={goBackToProducts}
           >
             <Ionicons
               name="chevron-back"
@@ -108,7 +134,7 @@ export default function EditarProduto() {
           activeOpacity={0.72}
           accessibilityRole="button"
           accessibilityLabel="Voltar para produtos"
-          onPress={() => router.replace("/(tabs)/produtos")}
+          onPress={goBackToProducts}
         >
           <Ionicons
             name="chevron-back"

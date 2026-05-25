@@ -1,13 +1,17 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
+  Image,
   ScrollView,
   SectionList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
+
+import { Ionicons } from "@expo/vector-icons";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CategoryChip } from "../../../src/components/CategoryChip";
@@ -22,9 +26,17 @@ import {
 import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../../src/contexts/ThemeContext";
-import { CATEGORIAS_MOCK, type Produto } from "../../../src/data/mockData";
+import {
+  CATEGORIAS_MOCK,
+  formatarPreco,
+  type Produto,
+} from "../../../src/data/mockData";
 
 type ViewMode = "lista" | "grade" | "agrupado";
+
+const isViewMode = (value: unknown): value is ViewMode => {
+  return value === "lista" || value === "grade" || value === "agrupado";
+};
 
 type SecaoProduto = {
   title: string;
@@ -39,12 +51,22 @@ const VIEW_MODES: ViewModeSelectorOption<ViewMode>[] = [
 
 export default function ListaProdutos() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ viewMode?: string | string[] }>();
+
+  const initialViewMode = useMemo<ViewMode>(() => {
+    const paramViewMode = Array.isArray(params.viewMode)
+      ? params.viewMode[0]
+      : params.viewMode;
+
+    return isViewMode(paramViewMode) ? paramViewMode : "lista";
+  }, [params.viewMode]);
+
   const { products } = useProducts();
   const { theme } = useAppTheme();
 
   const [busca, setBusca] = useState("");
   const [categoriaAtiva, setCategoriaAtiva] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("lista");
+  const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -77,7 +99,10 @@ export default function ListaProdutos() {
   const handleOpenProduct = (productId: string) => {
     router.push({
       pathname: "/(tabs)/produtos/[id]",
-      params: { id: productId },
+      params: {
+        id: productId,
+        viewMode,
+      },
     });
   };
 
@@ -97,11 +122,41 @@ export default function ListaProdutos() {
     }
 
     return (
-      <CategoryChip
-        label="Todos"
-        selected={!categoriaAtiva}
-        onPress={() => setCategoriaAtiva(null)}
-      />
+      <TouchableOpacity
+        activeOpacity={0.72}
+        accessibilityRole="button"
+        accessibilityLabel={`Abrir produto ${item.nome}`}
+        onPress={() => handleOpenProduct(item.id)}
+        style={styles.productGridCard}
+      >
+        <View style={styles.productInfoGrid}>
+          {item.foto ? (
+            <Image
+              source={{ uri: item.foto }}
+              style={styles.thumbnailGrid}
+              accessibilityIgnoresInvertColors
+            />
+          ) : (
+            <View style={styles.productIconContainerGrid}>
+              <Ionicons
+                name="cube-outline"
+                size={24}
+                color={theme.colors.primary}
+              />
+            </View>
+          )}
+
+          <View style={styles.textsGrid}>
+            <Text style={styles.productNameGrid} numberOfLines={1}>
+              {item.nome}
+            </Text>
+
+            <Text style={styles.productDetailsGrid} numberOfLines={1}>
+              {item.quantidade} {item.unidade} • {formatarPreco(item.preco)}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
     );
   };
 
