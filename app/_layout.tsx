@@ -2,7 +2,6 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { SplashScreen } from "../src/components/SplashScreen";
 import type { ThemeType } from "../src/constants/theme";
@@ -85,23 +84,15 @@ function AppNavigator() {
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <ThemeProvider>
-        <AuthProvider>
-          <ProductsProvider>
-            <AppNavigator />
-          </ProductsProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <AuthProvider>
+        <ProductsProvider>
+          <AppNavigator />
+        </ProductsProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-});
 
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
