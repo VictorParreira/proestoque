@@ -1,5 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   FlatList,
   Image,
@@ -31,6 +37,30 @@ type SummaryCard = {
   iconColor: string;
 };
 
+function getProductStockStatus(product: Produto, theme: ThemeType) {
+  if (product.quantidade === 0) {
+    return {
+      color: theme.colors.error,
+      backgroundColor: theme.colors.errorSoft,
+      text: "Vazio",
+    };
+  }
+
+  if (product.quantidade < product.quantidadeMinima) {
+    return {
+      color: theme.colors.warning,
+      backgroundColor: theme.colors.warningSoft,
+      text: "Baixo",
+    };
+  }
+
+  return {
+    color: theme.colors.success,
+    backgroundColor: theme.colors.successSoft,
+    text: "Normal",
+  };
+}
+
 export default function HomeScreen() {
   const { user } = useAuth();
   const { products } = useProducts();
@@ -38,6 +68,16 @@ export default function HomeScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [expandido, setExpandido] = useState(false);
+
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -122,11 +162,14 @@ export default function HomeScreen() {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
 
-    const refreshTimeout = setTimeout(() => {
-      setRefreshing(false);
-    }, 900);
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
 
-    return () => clearTimeout(refreshTimeout);
+    refreshTimeoutRef.current = setTimeout(() => {
+      setRefreshing(false);
+      refreshTimeoutRef.current = null;
+    }, 900);
   }, []);
 
   const DashboardHeader = () => (
@@ -257,19 +300,7 @@ export default function HomeScreen() {
   );
 
   const renderProduto = ({ item }: { item: Produto }) => {
-    let statusColor: string = theme.colors.success;
-    let statusBackgroundColor: string = theme.colors.successSoft;
-    let statusText = "Normal";
-
-    if (item.quantidade === 0) {
-      statusColor = theme.colors.error;
-      statusBackgroundColor = theme.colors.errorSoft;
-      statusText = "Vazio";
-    } else if (item.quantidade < item.quantidadeMinima) {
-      statusColor = theme.colors.warning;
-      statusBackgroundColor = theme.colors.warningSoft;
-      statusText = "Baixo";
-    }
+    const status = getProductStockStatus(item, theme);
 
     return (
       <View style={styles.productCard}>
@@ -296,17 +327,16 @@ export default function HomeScreen() {
             </Text>
 
             <Text style={styles.productMeta}>
-              {item.quantidade} {item.unidade} • R${" "}
-              {item.preco.toFixed(2).replace(".", ",")}
+              {item.quantidade} {item.unidade} • {formatarPreco(item.preco)}
             </Text>
           </View>
         </View>
 
         <View
-          style={[styles.badge, { backgroundColor: statusBackgroundColor }]}
+          style={[styles.badge, { backgroundColor: status.backgroundColor }]}
         >
-          <Text style={[styles.badgeText, { color: statusColor }]}>
-            {statusText}
+          <Text style={[styles.badgeText, { color: status.color }]}>
+            {status.text}
           </Text>
         </View>
       </View>
