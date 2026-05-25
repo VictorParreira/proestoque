@@ -6,15 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  FlatList,
-  Platform,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ProductListItem } from "../../src/components/ProductListItem";
 
@@ -22,6 +14,8 @@ import {
   SummaryCard,
   type SummaryCardVariant,
 } from "../../src/components/SummaryCard";
+
+import { CriticalStockAlert } from "../../src/components/CriticalStockAlert";
 
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
@@ -47,7 +41,6 @@ export default function HomeScreen() {
   const { theme } = useAppTheme();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [expandido, setExpandido] = useState(false);
 
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -127,10 +120,6 @@ export default function HomeScreen() {
 
   const inicialUsuario = user?.name ? user.name.charAt(0).toUpperCase() : "?";
 
-  const alertasExibidos = useMemo(() => {
-    return expandido ? alertas : alertas.slice(0, 5);
-  }, [alertas, expandido]);
-
   const recentProducts = useMemo(() => {
     return products.slice(-5).reverse();
   }, [products]);
@@ -177,65 +166,7 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      {alertas.length > 0 && (
-        <View style={styles.alertCard}>
-          <View style={styles.alertHeader}>
-            <View style={styles.alertIconContainer}>
-              <Ionicons
-                name="alert-circle-outline"
-                size={20}
-                color={theme.colors.error}
-              />
-            </View>
-
-            <Text style={styles.alertTitle}>Estoque Crítico</Text>
-
-            <View style={styles.alertBadge}>
-              <Text style={styles.alertBadgeText}>{alertas.length}</Text>
-            </View>
-          </View>
-
-          <View style={styles.alertList}>
-            {alertasExibidos.map((item) => (
-              <View key={item.id} style={styles.alertRow}>
-                <Text style={styles.alertText} numberOfLines={1}>
-                  {item.nome}
-                </Text>
-
-                <Text style={styles.alertQuantity}>
-                  {item.quantidade} / {item.quantidadeMinima}
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          {alertas.length > 5 && (
-            <TouchableOpacity
-              style={styles.alertToggleButton}
-              activeOpacity={0.72}
-              onPress={() => setExpandido((current) => !current)}
-              accessibilityRole="button"
-              accessibilityLabel={
-                expandido
-                  ? "Recolher lista de estoque crítico"
-                  : `Visualizar todos os ${alertas.length} itens com estoque crítico`
-              }
-            >
-              <Text style={styles.alertToggleText}>
-                {expandido
-                  ? "Recolher lista"
-                  : `Visualizar todos os ${alertas.length} itens`}
-              </Text>
-
-              <Ionicons
-                name={expandido ? "chevron-up" : "chevron-down"}
-                size={16}
-                color={theme.colors.primary}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
+      <CriticalStockAlert items={alertas} style={styles.criticalStockAlert} />
 
       <Text style={styles.sectionTitle}>Produtos recentes</Text>
     </View>
@@ -369,104 +300,8 @@ const createStyles = (theme: ThemeType) =>
       marginBottom: theme.spacing.md,
     },
 
-    alertCard: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.lg,
-      padding: theme.spacing.md,
+    criticalStockAlert: {
       marginBottom: theme.spacing.xl,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
-    },
-
-    alertHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: theme.spacing.md,
-    },
-
-    alertIconContainer: {
-      width: 32,
-      height: 32,
-      borderRadius: theme.borderRadius.pill,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: theme.colors.errorSoft,
-    },
-
-    alertTitle: {
-      flex: 1,
-      marginLeft: theme.spacing.sm,
-      color: theme.colors.text,
-      fontSize: theme.typography.callout.fontSize,
-      lineHeight: theme.typography.callout.lineHeight,
-      fontWeight: "700",
-    },
-
-    alertBadge: {
-      backgroundColor: theme.colors.errorSoft,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xxs,
-      borderRadius: theme.borderRadius.sm,
-    },
-
-    alertBadgeText: {
-      color: theme.colors.error,
-      fontWeight: "800",
-      fontSize: theme.typography.caption1.fontSize,
-      lineHeight: theme.typography.caption1.lineHeight,
-    },
-
-    alertList: {
-      gap: theme.spacing.sm,
-    },
-
-    alertRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      backgroundColor: theme.colors.backgroundSecondary,
-      padding: theme.spacing.sm + theme.spacing.xs,
-      borderRadius: theme.borderRadius.sm,
-    },
-
-    alertText: {
-      flex: 1,
-      marginRight: theme.spacing.sm + theme.spacing.xs,
-      color: theme.colors.text,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "600",
-    },
-
-    alertQuantity: {
-      color: theme.colors.error,
-      fontWeight: "700",
-      fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-    },
-
-    alertToggleButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      paddingTop: theme.spacing.md,
-      marginTop: theme.spacing.sm,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: theme.colors.separator,
-      gap: theme.spacing.xs,
-    },
-
-    alertToggleText: {
-      color: theme.colors.primary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "700",
     },
 
     sectionTitle: {
