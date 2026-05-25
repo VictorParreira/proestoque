@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
@@ -7,11 +6,12 @@ import {
   SectionList,
   StyleSheet,
   Text,
-  View
+  View,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CategoryChip } from "../../../src/components/CategoryChip";
+import { EmptyState } from "../../../src/components/EmptyState";
 import { ProductListItem } from "../../../src/components/ProductListItem";
 import { SearchField } from "../../../src/components/SearchField";
 import {
@@ -113,21 +113,12 @@ export default function ListaProdutos() {
   );
 
   const emptyComponent = (
-    <View style={styles.emptyContainer}>
-      <View style={styles.emptyIconWrapper}>
-        <Ionicons
-          name="search-outline"
-          size={36}
-          color={theme.colors.primary}
-        />
-      </View>
-
-      <Text style={styles.emptyTitle}>Nenhum produto</Text>
-
-      <Text style={styles.emptyText}>
-        Não encontramos resultados para a busca ou categoria selecionada.
-      </Text>
-    </View>
+    <EmptyState
+      icon="search-outline"
+      title="Nenhum produto"
+      description="Não encontramos resultados para a busca ou categoria selecionada."
+      style={styles.emptyState}
+    />
   );
 
   const headerProdutos = (
@@ -357,35 +348,7 @@ const createStyles = (theme: ThemeType) =>
       fontWeight: "700",
     },
 
-    emptyContainer: {
-      alignItems: "center",
+    emptyState: {
       marginTop: theme.spacing["3xl"],
-      paddingHorizontal: theme.spacing.xl,
-    },
-
-    emptyIconWrapper: {
-      width: 80,
-      height: 80,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.primarySubtle,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: theme.spacing.md,
-    },
-
-    emptyTitle: {
-      fontSize: theme.typography.headline.fontSize,
-      lineHeight: theme.typography.headline.lineHeight,
-      fontWeight: theme.typography.headline.fontWeight,
-      color: theme.colors.text,
-      marginBottom: theme.spacing.sm,
-      textAlign: "center",
-    },
-
-    emptyText: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-      textAlign: "center",
     },
   });
