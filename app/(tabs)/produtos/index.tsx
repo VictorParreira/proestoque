@@ -13,11 +13,16 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ProductListItem } from "../../../src/components/ProductListItem";
 
 import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../../src/contexts/ThemeContext";
-import { CATEGORIAS_MOCK, type Produto } from "../../../src/data/mockData";
+import {
+  CATEGORIAS_MOCK,
+  formatarPreco,
+  type Produto,
+} from "../../../src/data/mockData";
 
 type ViewMode = "lista" | "grade" | "agrupado";
 
@@ -73,72 +78,63 @@ export default function ListaProdutos() {
     }).filter((secao) => secao.data.length > 0);
   }, [produtosFiltrados]);
 
+  const handleOpenProduct = (productId: string) => {
+    router.push({
+      pathname: "/(tabs)/produtos/[id]",
+      params: { id: productId },
+    });
+  };
+
   const renderProduto = ({ item }: { item: Produto }) => {
     const isGrade = viewMode === "grade";
+
+    if (!isGrade) {
+      return (
+        <ProductListItem
+          product={item}
+          showStatus={false}
+          showChevron
+          onPress={() => handleOpenProduct(item.id)}
+          style={styles.productListItem}
+        />
+      );
+    }
 
     return (
       <TouchableOpacity
         activeOpacity={0.72}
         accessibilityRole="button"
         accessibilityLabel={`Abrir produto ${item.nome}`}
-        onPress={() =>
-          router.push({
-            pathname: "/(tabs)/produtos/[id]",
-            params: { id: item.id },
-          })
-        }
-        style={[styles.productCard, isGrade && styles.productCardGrid]}
+        onPress={() => handleOpenProduct(item.id)}
+        style={styles.productGridCard}
       >
-        <View style={isGrade ? styles.productInfoGrid : styles.productInfo}>
+        <View style={styles.productInfoGrid}>
           {item.foto ? (
             <Image
               source={{ uri: item.foto }}
-              style={[styles.thumbnail, isGrade && styles.thumbnailGrid]}
+              style={styles.thumbnailGrid}
               accessibilityIgnoresInvertColors
             />
           ) : (
-            <View
-              style={[
-                styles.productIconContainer,
-                isGrade && styles.productIconContainerGrid,
-              ]}
-            >
+            <View style={styles.productIconContainerGrid}>
               <Ionicons
                 name="cube-outline"
-                size={isGrade ? 24 : 20}
+                size={24}
                 color={theme.colors.primary}
               />
             </View>
           )}
 
-          <View style={isGrade ? styles.textsGrid : styles.productTexts}>
-            <Text
-              style={[styles.productName, isGrade && styles.productNameGrid]}
-              numberOfLines={1}
-            >
+          <View style={styles.textsGrid}>
+            <Text style={styles.productNameGrid} numberOfLines={1}>
               {item.nome}
             </Text>
 
-            <Text
-              style={[
-                styles.productDetails,
-                isGrade && styles.productDetailsGrid,
-              ]}
-              numberOfLines={1}
-            >
-              {item.quantidade} {item.unidade} • R${" "}
-              {item.preco.toFixed(2).replace(".", ",")}
+            <Text style={styles.productDetailsGrid} numberOfLines={1}>
+              {item.quantidade} {item.unidade} • {formatarPreco(item.preco)}
             </Text>
           </View>
         </View>
-
-        {!isGrade && (
-          <Ionicons
-            name="chevron-forward"
-            size={18}
-            color={theme.colors.textTertiary}
-          />
-        )}
       </TouchableOpacity>
     );
   };
@@ -447,14 +443,17 @@ const createStyles = (theme: ThemeType) =>
       paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
     },
 
-    productCard: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingVertical: theme.spacing.md,
-      paddingHorizontal: theme.spacing.md,
+    productListItem: {
       marginHorizontal: theme.spacing.lg,
       marginBottom: theme.spacing.sm + theme.spacing.xs,
+    },
+
+    productGridCard: {
+      flex: 1,
+      marginHorizontal: theme.spacing.sm + theme.spacing.xs,
+      marginBottom: theme.spacing.md,
+      padding: theme.spacing.md,
+      alignItems: "center",
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.md,
       borderWidth: StyleSheet.hairlineWidth,
@@ -466,57 +465,26 @@ const createStyles = (theme: ThemeType) =>
       elevation: theme.shadow.sm.elevation,
     },
 
-    productCardGrid: {
-      flex: 1,
-      marginHorizontal: theme.spacing.sm + theme.spacing.xs,
-      marginBottom: theme.spacing.md,
-      padding: theme.spacing.md,
-      alignItems: "center",
-    },
-
-    productInfo: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: theme.spacing.md,
-    },
-
     productInfoGrid: {
       width: "100%",
       alignItems: "center",
       gap: theme.spacing.sm + theme.spacing.xs,
     },
 
-    productIconContainer: {
-      width: 52,
-      height: 52,
-      borderRadius: theme.borderRadius.sm,
-      backgroundColor: theme.colors.primarySubtle,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-
     productIconContainerGrid: {
       width: 64,
       height: 64,
       borderRadius: theme.borderRadius.pill,
-    },
-
-    thumbnail: {
-      width: 52,
-      height: 52,
-      borderRadius: theme.borderRadius.sm,
-      backgroundColor: theme.colors.backgroundSecondary,
+      backgroundColor: theme.colors.primarySubtle,
+      justifyContent: "center",
+      alignItems: "center",
     },
 
     thumbnailGrid: {
       width: 80,
       height: 80,
       borderRadius: theme.borderRadius.pill,
-    },
-
-    productTexts: {
-      flex: 1,
+      backgroundColor: theme.colors.backgroundSecondary,
     },
 
     textsGrid: {
@@ -525,26 +493,20 @@ const createStyles = (theme: ThemeType) =>
       marginTop: theme.spacing.xs,
     },
 
-    productName: {
+    productNameGrid: {
       fontSize: theme.typography.callout.fontSize,
       lineHeight: theme.typography.callout.lineHeight,
       fontWeight: "700",
       color: theme.colors.text,
-    },
-
-    productNameGrid: {
       textAlign: "center",
     },
 
-    productDetails: {
+    productDetailsGrid: {
       fontSize: theme.typography.footnote.fontSize,
       lineHeight: theme.typography.footnote.lineHeight,
       color: theme.colors.textSecondary,
       marginTop: theme.spacing.xs,
       fontWeight: "500",
-    },
-
-    productDetailsGrid: {
       textAlign: "center",
     },
 
