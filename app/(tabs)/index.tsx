@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import {
   FlatList,
-  Image,
   Platform,
   RefreshControl,
   StyleSheet,
@@ -17,7 +16,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBadge } from "../../src/components/StatusBadge";
+import { ProductListItem } from "../../src/components/ProductListItem";
 
 import {
   SummaryCard,
@@ -41,27 +40,6 @@ type DashboardSummaryCard = {
   icon: keyof typeof Ionicons.glyphMap;
   variant: SummaryCardVariant;
 };
-
-function getProductStockStatus(product: Produto) {
-  if (product.quantidade === 0) {
-    return {
-      variant: "error" as const,
-      text: "Vazio",
-    };
-  }
-
-  if (product.quantidade < product.quantidadeMinima) {
-    return {
-      variant: "warning" as const,
-      text: "Baixo",
-    };
-  }
-
-  return {
-    variant: "success" as const,
-    text: "Normal",
-  };
-}
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -279,40 +257,12 @@ export default function HomeScreen() {
   );
 
   const renderProduto = ({ item }: { item: Produto }) => {
-    const status = getProductStockStatus(item);
-
     return (
-      <View style={styles.productCard}>
-        <View style={styles.productInfo}>
-          {item.foto ? (
-            <Image
-              source={{ uri: item.foto }}
-              style={styles.productThumbnail}
-              accessibilityIgnoresInvertColors
-            />
-          ) : (
-            <View style={styles.productIcon}>
-              <Ionicons
-                name="cube-outline"
-                size={22}
-                color={theme.colors.primary}
-              />
-            </View>
-          )}
-
-          <View style={styles.productTexts}>
-            <Text style={styles.productName} numberOfLines={1}>
-              {item.nome}
-            </Text>
-
-            <Text style={styles.productMeta}>
-              {item.quantidade} {item.unidade} • {formatarPreco(item.preco)}
-            </Text>
-          </View>
-        </View>
-
-        <StatusBadge label={status.text} variant={status.variant} />
-      </View>
+      <ProductListItem
+        product={item}
+        showStatus
+        style={styles.productListItem}
+      />
     );
   };
 
@@ -530,67 +480,9 @@ const createStyles = (theme: ThemeType) =>
       marginLeft: theme.spacing.xs,
     },
 
-    productCard: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      backgroundColor: theme.colors.surface,
-      paddingVertical: theme.spacing.sm + theme.spacing.xs,
-      paddingHorizontal: theme.spacing.md,
+    productListItem: {
       marginHorizontal: theme.spacing.lg,
       marginBottom: theme.spacing.sm + theme.spacing.xs,
-      borderRadius: theme.borderRadius.md,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
-    },
-
-    productInfo: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-    },
-
-    productThumbnail: {
-      width: 48,
-      height: 48,
-      borderRadius: theme.borderRadius.sm,
-      marginRight: theme.spacing.sm + theme.spacing.xs,
-      backgroundColor: theme.colors.backgroundSecondary,
-    },
-
-    productIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: theme.borderRadius.sm,
-      backgroundColor: theme.colors.primarySubtle,
-      justifyContent: "center",
-      alignItems: "center",
-      marginRight: theme.spacing.sm + theme.spacing.xs,
-    },
-
-    productTexts: {
-      flex: 1,
-      paddingRight: theme.spacing.sm,
-    },
-
-    productName: {
-      color: theme.colors.text,
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-      fontWeight: "700",
-      marginBottom: 2,
-    },
-
-    productMeta: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "500",
     },
 
     emptyCard: {
