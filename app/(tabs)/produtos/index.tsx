@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
-  Image,
   ScrollView,
   SectionList,
   StyleSheet,
@@ -12,17 +11,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { CategoryChip } from "../../../src/components/CategoryChip";
 import { ProductListItem } from "../../../src/components/ProductListItem";
 import { SearchField } from "../../../src/components/SearchField";
 
 import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../../src/contexts/ThemeContext";
-import {
-  CATEGORIAS_MOCK,
-  formatarPreco,
-  type Produto,
-} from "../../../src/data/mockData";
+import { CATEGORIAS_MOCK, type Produto } from "../../../src/data/mockData";
 
 type ViewMode = "lista" | "grade" | "agrupado";
 
@@ -101,41 +97,11 @@ export default function ListaProdutos() {
     }
 
     return (
-      <TouchableOpacity
-        activeOpacity={0.72}
-        accessibilityRole="button"
-        accessibilityLabel={`Abrir produto ${item.nome}`}
-        onPress={() => handleOpenProduct(item.id)}
-        style={styles.productGridCard}
-      >
-        <View style={styles.productInfoGrid}>
-          {item.foto ? (
-            <Image
-              source={{ uri: item.foto }}
-              style={styles.thumbnailGrid}
-              accessibilityIgnoresInvertColors
-            />
-          ) : (
-            <View style={styles.productIconContainerGrid}>
-              <Ionicons
-                name="cube-outline"
-                size={24}
-                color={theme.colors.primary}
-              />
-            </View>
-          )}
-
-          <View style={styles.textsGrid}>
-            <Text style={styles.productNameGrid} numberOfLines={1}>
-              {item.nome}
-            </Text>
-
-            <Text style={styles.productDetailsGrid} numberOfLines={1}>
-              {item.quantidade} {item.unidade} • {formatarPreco(item.preco)}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+      <CategoryChip
+        label="Todos"
+        selected={!categoriaAtiva}
+        onPress={() => setCategoriaAtiva(null)}
+      />
     );
   };
 
@@ -216,38 +182,22 @@ export default function ListaProdutos() {
         style={styles.categoriesScroll}
         contentContainerStyle={styles.categoriesContent}
       >
-        <TouchableOpacity
-          style={[styles.chip, !categoriaAtiva && styles.chipActive]}
+        <CategoryChip
+          label="Todos"
+          selected={!categoriaAtiva}
           onPress={() => setCategoriaAtiva(null)}
-          activeOpacity={0.72}
-          accessibilityRole="button"
-          accessibilityState={{ selected: !categoriaAtiva }}
-        >
-          <Text
-            style={[styles.chipText, !categoriaAtiva && styles.chipTextActive]}
-          >
-            Todos
-          </Text>
-        </TouchableOpacity>
+        />
 
         {CATEGORIAS_MOCK.map((categoria) => {
           const isActive = categoriaAtiva === categoria.id;
 
           return (
-            <TouchableOpacity
+            <CategoryChip
               key={categoria.id}
-              style={[styles.chip, isActive && styles.chipActive]}
+              label={categoria.nome}
+              selected={isActive}
               onPress={() => setCategoriaAtiva(categoria.id)}
-              activeOpacity={0.72}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isActive }}
-            >
-              <Text
-                style={[styles.chipText, isActive && styles.chipTextActive]}
-              >
-                {categoria.nome}
-              </Text>
-            </TouchableOpacity>
+            />
           );
         })}
       </ScrollView>
@@ -356,32 +306,6 @@ const createStyles = (theme: ThemeType) =>
     categoriesContent: {
       gap: theme.spacing.sm,
       paddingHorizontal: theme.spacing.lg,
-    },
-
-    chip: {
-      paddingHorizontal: theme.spacing.md + theme.spacing.xs,
-      paddingVertical: theme.spacing.sm + theme.spacing.xxs,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.surface,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-    },
-
-    chipActive: {
-      backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.primary,
-    },
-
-    chipText: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      color: theme.colors.textSecondary,
-      fontWeight: "600",
-    },
-
-    chipTextActive: {
-      color: theme.colors.primaryContrast,
-      fontWeight: "700",
     },
 
     listContent: {
