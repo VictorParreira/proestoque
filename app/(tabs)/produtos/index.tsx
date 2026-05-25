@@ -26,11 +26,11 @@ type SecaoProduto = {
   data: Produto[];
 };
 
-const VIEW_MODES: Array<{
+const VIEW_MODES: {
   value: ViewMode;
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
-}> = [
+}[] = [
   { value: "lista", icon: "list-outline", label: "Lista" },
   { value: "grade", icon: "grid-outline", label: "Grade" },
   { value: "agrupado", icon: "albums-outline", label: "Agrupado" },

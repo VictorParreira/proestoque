@@ -18,11 +18,11 @@ import {
   type ThemePreference,
 } from "../../src/contexts/ThemeContext";
 
-const THEME_OPTIONS: Array<{
+const THEME_OPTIONS: {
   label: string;
   value: ThemePreference;
   icon: keyof typeof Ionicons.glyphMap;
-}> = [
+}[] = [
   { label: "Sistema", value: "system", icon: "phone-portrait-outline" },
   { label: "Claro", value: "light", icon: "sunny-outline" },
   { label: "Escuro", value: "dark", icon: "moon-outline" },
