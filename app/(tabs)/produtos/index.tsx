@@ -7,13 +7,17 @@ import {
   SectionList,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  View,
+  View
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CategoryChip } from "../../../src/components/CategoryChip";
 import { ProductListItem } from "../../../src/components/ProductListItem";
 import { SearchField } from "../../../src/components/SearchField";
+import {
+  ViewModeSelector,
+  type ViewModeSelectorOption,
+} from "../../../src/components/ViewModeSelector";
 
 import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
@@ -27,11 +31,7 @@ type SecaoProduto = {
   data: Produto[];
 };
 
-const VIEW_MODES: {
-  value: ViewMode;
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-}[] = [
+const VIEW_MODES: ViewModeSelectorOption<ViewMode>[] = [
   { value: "lista", icon: "list-outline", label: "Lista" },
   { value: "grade", icon: "grid-outline", label: "Grade" },
   { value: "agrupado", icon: "albums-outline", label: "Agrupado" },
@@ -135,36 +135,11 @@ export default function ListaProdutos() {
       <View style={styles.titleRow}>
         <Text style={styles.title}>Produtos</Text>
 
-        <View style={styles.toggleContainer}>
-          {VIEW_MODES.map((mode) => {
-            const isActive = viewMode === mode.value;
-
-            return (
-              <TouchableOpacity
-                key={mode.value}
-                onPress={() => setViewMode(mode.value)}
-                activeOpacity={0.72}
-                accessibilityRole="button"
-                accessibilityLabel={`Visualização em ${mode.label}`}
-                accessibilityState={{ selected: isActive }}
-                style={[
-                  styles.toggleButton,
-                  isActive && styles.toggleButtonActive,
-                ]}
-              >
-                <Ionicons
-                  name={mode.icon}
-                  size={18}
-                  color={
-                    isActive
-                      ? theme.colors.primaryContrast
-                      : theme.colors.textSecondary
-                  }
-                />
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <ViewModeSelector
+          value={viewMode}
+          options={VIEW_MODES}
+          onChange={setViewMode}
+        />
       </View>
 
       <SearchField
@@ -264,34 +239,6 @@ const createStyles = (theme: ThemeType) =>
       fontWeight: theme.typography.largeTitle.fontWeight,
       color: theme.colors.text,
       letterSpacing: -0.7,
-    },
-
-    toggleContainer: {
-      flexDirection: "row",
-      backgroundColor: theme.colors.surfaceSecondary,
-      borderRadius: theme.borderRadius.sm,
-      padding: theme.spacing.xs,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-    },
-
-    toggleButton: {
-      minWidth: 36,
-      minHeight: 32,
-      paddingVertical: theme.spacing.xs,
-      paddingHorizontal: theme.spacing.sm,
-      borderRadius: theme.borderRadius.xs,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-
-    toggleButtonActive: {
-      backgroundColor: theme.colors.primary,
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
     },
 
     searchField: {
