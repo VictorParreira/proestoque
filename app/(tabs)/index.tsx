@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { EmptyState } from "../../src/components/EmptyState";
 import { ProductListItem } from "../../src/components/ProductListItem";
 
 import {
@@ -173,18 +174,12 @@ export default function HomeScreen() {
   );
 
   const EmptyProducts = () => (
-    <View style={styles.emptyCard}>
-      <View style={styles.emptyIconContainer}>
-        <Ionicons name="cube-outline" size={24} color={theme.colors.primary} />
-      </View>
-
-      <Text style={styles.emptyTitle}>Nenhum produto cadastrado</Text>
-
-      <Text style={styles.emptyDescription}>
-        Cadastre seu primeiro produto para visualizar indicadores e alertas de
-        estoque.
-      </Text>
-    </View>
+    <EmptyState
+      icon="cube-outline"
+      title="Nenhum produto cadastrado"
+      description="Cadastre seu primeiro produto para visualizar indicadores e alertas de estoque."
+      style={styles.emptyState}
+    />
   );
 
   const renderProduto = ({ item }: { item: Produto }) => {
@@ -320,41 +315,13 @@ const createStyles = (theme: ThemeType) =>
       marginBottom: theme.spacing.sm + theme.spacing.xs,
     },
 
-    emptyCard: {
+    emptyState: {
       marginHorizontal: theme.spacing.lg,
       marginTop: theme.spacing.xs,
-      paddingHorizontal: theme.spacing.lg,
       paddingVertical: theme.spacing.xl,
-      alignItems: "center",
       borderRadius: theme.borderRadius.lg,
       backgroundColor: theme.colors.surface,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.separator,
-    },
-
-    emptyIconContainer: {
-      width: 52,
-      height: 52,
-      borderRadius: theme.borderRadius.pill,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: theme.spacing.md,
-      backgroundColor: theme.colors.primarySubtle,
-    },
-
-    emptyTitle: {
-      color: theme.colors.text,
-      fontSize: theme.typography.headline.fontSize,
-      lineHeight: theme.typography.headline.lineHeight,
-      fontWeight: theme.typography.headline.fontWeight,
-      textAlign: "center",
-      marginBottom: theme.spacing.xs,
-    },
-
-    emptyDescription: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      textAlign: "center",
     },
   });
