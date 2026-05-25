@@ -8,12 +8,12 @@ import {
   SectionList,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ProductListItem } from "../../../src/components/ProductListItem";
+import { SearchField } from "../../../src/components/SearchField";
 
 import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
@@ -201,47 +201,14 @@ export default function ListaProdutos() {
         </View>
       </View>
 
-      <View style={styles.searchBar}>
-        <Ionicons
-          name="search-outline"
-          size={22}
-          color={theme.colors.textSecondary}
-        />
-
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar produto..."
-          placeholderTextColor={theme.colors.placeholder}
-          value={busca}
-          onChangeText={setBusca}
-          autoCapitalize="none"
-          autoCorrect={false}
-          selectionColor={theme.colors.primary}
-          cursorColor={theme.colors.primary}
-          accessibilityLabel="Buscar produto"
-        />
-
-        {busca.length > 0 && (
-          <TouchableOpacity
-            onPress={() => setBusca("")}
-            hitSlop={{
-              top: theme.hitSlop.md,
-              bottom: theme.hitSlop.md,
-              left: theme.hitSlop.md,
-              right: theme.hitSlop.md,
-            }}
-            activeOpacity={0.72}
-            accessibilityRole="button"
-            accessibilityLabel="Limpar busca"
-          >
-            <Ionicons
-              name="close-circle"
-              size={20}
-              color={theme.colors.textSecondary}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
+      <SearchField
+        value={busca}
+        onChangeText={setBusca}
+        onClear={() => setBusca("")}
+        placeholder="Buscar produto..."
+        accessibilityLabel="Buscar produto"
+        style={styles.searchField}
+      />
 
       <ScrollView
         horizontal
@@ -377,26 +344,9 @@ const createStyles = (theme: ThemeType) =>
       elevation: theme.shadow.sm.elevation,
     },
 
-    searchBar: {
-      flexDirection: "row",
-      alignItems: "center",
-      minHeight: 56,
-      backgroundColor: theme.colors.inputBackground,
-      borderRadius: theme.borderRadius.md,
-      paddingHorizontal: theme.spacing.md,
+    searchField: {
       marginBottom: theme.spacing.md + theme.spacing.xs,
       marginHorizontal: theme.spacing.lg,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.inputBorder,
-    },
-
-    searchInput: {
-      flex: 1,
-      marginLeft: theme.spacing.sm + theme.spacing.xs,
-      fontSize: theme.typography.callout.fontSize,
-      lineHeight: theme.typography.callout.lineHeight,
-      color: theme.colors.text,
-      paddingVertical: 0,
     },
 
     categoriesScroll: {
