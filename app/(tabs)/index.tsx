@@ -17,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBadge } from "../../src/components/StatusBadge";
 
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
@@ -37,26 +38,23 @@ type SummaryCard = {
   iconColor: string;
 };
 
-function getProductStockStatus(product: Produto, theme: ThemeType) {
+function getProductStockStatus(product: Produto) {
   if (product.quantidade === 0) {
     return {
-      color: theme.colors.error,
-      backgroundColor: theme.colors.errorSoft,
+      variant: "error" as const,
       text: "Vazio",
     };
   }
 
   if (product.quantidade < product.quantidadeMinima) {
     return {
-      color: theme.colors.warning,
-      backgroundColor: theme.colors.warningSoft,
+      variant: "warning" as const,
       text: "Baixo",
     };
   }
 
   return {
-    color: theme.colors.success,
-    backgroundColor: theme.colors.successSoft,
+    variant: "success" as const,
     text: "Normal",
   };
 }
@@ -300,7 +298,7 @@ export default function HomeScreen() {
   );
 
   const renderProduto = ({ item }: { item: Produto }) => {
-    const status = getProductStockStatus(item, theme);
+    const status = getProductStockStatus(item);
 
     return (
       <View style={styles.productCard}>
@@ -332,13 +330,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View
-          style={[styles.badge, { backgroundColor: status.backgroundColor }]}
-        >
-          <Text style={[styles.badgeText, { color: status.color }]}>
-            {status.text}
-          </Text>
-        </View>
+        <StatusBadge label={status.text} variant={status.variant} />
       </View>
     );
   };
@@ -661,20 +653,6 @@ const createStyles = (theme: ThemeType) =>
       fontSize: theme.typography.footnote.fontSize,
       lineHeight: theme.typography.footnote.lineHeight,
       fontWeight: "500",
-    },
-
-    badge: {
-      paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
-      paddingVertical: theme.spacing.xs,
-      borderRadius: theme.borderRadius.pill,
-    },
-
-    badgeText: {
-      fontSize: theme.typography.caption2.fontSize,
-      lineHeight: theme.typography.caption2.lineHeight,
-      fontWeight: "800",
-      textTransform: "uppercase",
-      letterSpacing: 0.2,
     },
 
     emptyCard: {
