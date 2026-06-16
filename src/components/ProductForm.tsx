@@ -24,8 +24,17 @@ import { UnitSelector } from "./UnitSelector";
 
 type ProductFormProps = {
   initialValues?: ProdutoFormData;
-  onSubmit: (data: ProdutoFormData) => void;
+  onSubmit: (data: ProdutoFormData) => void | Promise<void>;
   submitButtonText: string;
+};
+
+const PRODUCT_FORM_DEFAULT_VALUES: ProdutoFormData = {
+  nome: "",
+  categoriaId: "cat_1",
+  quantidade: 0,
+  quantidadeMinima: 0,
+  preco: 0,
+  unidade: "un",
 };
 
 export function ProductForm({
@@ -42,14 +51,7 @@ export function ProductForm({
     formState: { errors, isSubmitting },
   } = useForm<ProdutoFormData>({
     resolver: zodResolver(produtoSchema),
-    defaultValues: initialValues || {
-      nome: "",
-      categoriaId: "cat_1",
-      quantidade: 0,
-      quantidadeMinima: 0,
-      preco: 0,
-      unidade: "un",
-    },
+    defaultValues: initialValues ?? PRODUCT_FORM_DEFAULT_VALUES,
   });
 
   return (
@@ -174,41 +176,39 @@ export function ProductForm({
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Comercial</Text>
 
-          <View style={styles.row}>
-            <View style={styles.rowItem}>
-              <Text style={styles.label}>Preço</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Preço</Text>
 
-              <Controller
-                control={control}
-                name="preco"
-                render={({ field: { onChange, value } }) => (
-                  <CurrencyInput
-                    icon="cash-outline"
-                    value={value}
-                    onChangeValue={onChange}
-                    error={errors.preco?.message}
-                    returnKeyType="next"
-                    accessibilityLabel="Preço do produto"
-                  />
-                )}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="preco"
+              render={({ field: { onChange, value } }) => (
+                <CurrencyInput
+                  icon="cash-outline"
+                  value={value}
+                  onChangeValue={onChange}
+                  error={errors.preco?.message}
+                  returnKeyType="next"
+                  accessibilityLabel="Preço do produto"
+                />
+              )}
+            />
+          </View>
 
-            <View style={styles.rowItem}>
-              <Text style={styles.label}>Unidade</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Unidade</Text>
 
-              <Controller
-                control={control}
-                name="unidade"
-                render={({ field: { onChange, value } }) => (
-                  <UnitSelector
-                    value={value}
-                    onChange={onChange}
-                    error={errors.unidade?.message}
-                  />
-                )}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="unidade"
+              render={({ field: { onChange, value } }) => (
+                <UnitSelector
+                  value={value}
+                  onChange={onChange}
+                  error={errors.unidade?.message}
+                />
+              )}
+            />
           </View>
         </View>
 
