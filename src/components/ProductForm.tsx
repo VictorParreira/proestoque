@@ -54,6 +54,13 @@ export function ProductForm({
     defaultValues: initialValues ?? PRODUCT_FORM_DEFAULT_VALUES,
   });
 
+  const handleFormSubmit = (data: ProdutoFormData) => {
+    return onSubmit({
+      ...data,
+      foto: data.foto?.trim() ? data.foto : undefined,
+    });
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.keyboardWrapper}
@@ -214,7 +221,7 @@ export function ProductForm({
 
         <Button
           title={submitButtonText}
-          onPress={handleSubmit(onSubmit)}
+          onPress={handleSubmit(handleFormSubmit)}
           fullWidth
           loading={isSubmitting}
           style={styles.submitButton}

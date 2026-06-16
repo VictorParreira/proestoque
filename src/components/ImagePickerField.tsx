@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Image,
@@ -26,30 +26,60 @@ export function ImagePickerField({
 }: ImagePickerFieldProps) {
   const { theme } = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const [isPicking, setIsPicking] = useState(false);
+
+  const [previewUri, setPreviewUri] = useState<string | undefined>(value);
+
+  useEffect(() => {
+    setPreviewUri(value || undefined);
+  }, [value]);
 
   const hasError = Boolean(error);
+  const hasImage = Boolean(previewUri);
 
   const pickImage = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (isPicking) return;
 
-    if (!permission.granted) {
+    try {
+      setIsPicking(true);
+
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        Alert.alert(
+          "Permissão necessária",
+          "Permita o acesso à galeria para adicionar uma foto ao produto.",
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.72,
+      });
+
+      if (!result.canceled && result.assets[0]?.uri) {
+        const selectedUri = result.assets[0].uri;
+
+        setPreviewUri(selectedUri);
+        onChange(selectedUri);
+      }
+    } catch {
       Alert.alert(
-        "Permissão necessária",
-        "Permita o acesso à galeria para adicionar uma foto ao produto.",
+        "Não foi possível abrir a galeria",
+        "Tente novamente ou verifique as permissões do aplicativo.",
       );
-      return;
+    } finally {
+      setIsPicking(false);
     }
+  };
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.72,
-    });
-
-    if (!result.canceled && result.assets[0]?.uri) {
-      onChange(result.assets[0].uri);
-    }
+  const removeImage = () => {
+    setPreviewUri(undefined);
+    onChange("");
   };
 
   return (
@@ -57,14 +87,16 @@ export function ImagePickerField({
       <TouchableOpacity
         style={[
           styles.pickerButton,
-          value ? styles.pickerButtonFilled : styles.pickerButtonEmpty,
+          hasImage ? styles.pickerButtonFilled : styles.pickerButtonEmpty,
           hasError && styles.pickerError,
+          isPicking && styles.pickerButtonDisabled,
         ]}
         onPress={pickImage}
+        disabled={isPicking}
         activeOpacity={0.72}
         accessibilityRole="button"
         accessibilityLabel={
-          value ? "Alterar foto do produto" : "Adicionar foto do produto"
+          hasImage ? "Alterar foto do produto" : "Adicionar foto do produto"
         }
         accessibilityHint={
           hasError
@@ -72,13 +104,14 @@ export function ImagePickerField({
             : "Abre a galeria para selecionar uma imagem."
         }
         accessibilityState={{
-          selected: Boolean(value),
+          selected: hasImage,
+          disabled: isPicking,
         }}
       >
-        {value ? (
+        {hasImage ? (
           <>
             <Image
-              source={{ uri: value }}
+              source={{ uri: previewUri }}
               style={styles.image}
               resizeMode="cover"
               accessibilityIgnoresInvertColors
@@ -91,25 +124,44 @@ export function ImagePickerField({
                 color={theme.colors.primaryContrast}
               />
 
-              <Text style={styles.editOverlayText}>Alterar</Text>
+              <Text style={styles.editOverlayText}>
+                {isPicking ? "Abrindo..." : "Alterar"}
+              </Text>
             </View>
+
+            <TouchableOpacity
+              style={styles.removeButton}
+              activeOpacity={0.72}
+              accessibilityRole="button"
+              accessibilityLabel="Remover foto do produto"
+              onPress={(event) => {
+                event.stopPropagation();
+                removeImage();
+              }}
+            >
+              <Ionicons
+                name="close"
+                size={16}
+                color={theme.colors.primaryContrast}
+              />
+            </TouchableOpacity>
           </>
         ) : (
           <View style={styles.placeholder}>
             <View style={styles.iconWrapper}>
               <Ionicons
-                name="camera-outline"
+                name={isPicking ? "hourglass-outline" : "camera-outline"}
                 size={28}
                 color={theme.colors.primary}
               />
             </View>
 
             <Text style={styles.placeholderText}>
-              Adicionar foto do produto
+              {isPicking ? "Abrindo galeria..." : "Adicionar foto do produto"}
             </Text>
 
             <Text style={styles.placeholderSubtext}>
-              Toque para abrir a galeria
+              {isPicking ? "Aguarde um instante" : "Toque para abrir a galeria"}
             </Text>
           </View>
         )}
@@ -134,6 +186,22 @@ const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     container: {
       marginBottom: theme.spacing.md + theme.spacing.xs,
+    },
+
+    pickerButtonDisabled: {
+      opacity: theme.opacity.disabled,
+    },
+
+    removeButton: {
+      position: "absolute",
+      top: theme.spacing.sm + theme.spacing.xs,
+      right: theme.spacing.sm + theme.spacing.xs,
+      width: 32,
+      height: 32,
+      borderRadius: theme.borderRadius.pill,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: theme.colors.scrim,
     },
 
     pickerButton: {
