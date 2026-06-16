@@ -15,6 +15,7 @@ import { useAppTheme } from "../contexts/ThemeContext";
 import type { ProdutoFormData } from "../schemas/produtoSchema";
 import { produtoSchema } from "../schemas/produtoSchema";
 import { Button } from "./Button";
+import { CategorySelector } from "./CategorySelector";
 import { ImagePickerField } from "./ImagePickerField";
 import { Input } from "./Input";
 
@@ -105,22 +106,16 @@ export function ProductForm({
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>ID da Categoria</Text>
+            <Text style={styles.label}>Categoria</Text>
 
             <Controller
               control={control}
               name="categoriaId"
               render={({ field: { onChange, value } }) => (
-                <Input
-                  icon="grid-outline"
-                  placeholder="Ex: cat_1"
+                <CategorySelector
                   value={value}
-                  onChangeText={onChange}
+                  onChange={onChange}
                   error={errors.categoriaId?.message}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  returnKeyType="next"
-                  accessibilityLabel="ID da categoria"
                 />
               )}
             />
