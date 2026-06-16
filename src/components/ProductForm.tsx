@@ -16,6 +16,7 @@ import type { ProdutoFormData } from "../schemas/produtoSchema";
 import { produtoSchema } from "../schemas/produtoSchema";
 import { Button } from "./Button";
 import { CategorySelector } from "./CategorySelector";
+import { CurrencyInput } from "./CurrencyInput";
 import { ImagePickerField } from "./ImagePickerField";
 import { Input } from "./Input";
 
@@ -187,16 +188,10 @@ export function ProductForm({
                 control={control}
                 name="preco"
                 render={({ field: { onChange, value } }) => (
-                  <Input
+                  <CurrencyInput
                     icon="cash-outline"
-                    placeholder="0.00"
-                    keyboardType="decimal-pad"
-                    value={value === 0 ? "" : String(value)}
-                    onChangeText={(val) => {
-                      const normalizedValue = val.replace(/,/g, ".");
-                      const num = parseFloat(normalizedValue);
-                      onChange(Number.isNaN(num) ? 0 : num);
-                    }}
+                    value={value}
+                    onChangeValue={onChange}
                     error={errors.preco?.message}
                     returnKeyType="next"
                     accessibilityLabel="Preço do produto"
