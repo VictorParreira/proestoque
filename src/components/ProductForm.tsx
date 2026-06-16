@@ -19,6 +19,7 @@ import { CategorySelector } from "./CategorySelector";
 import { CurrencyInput } from "./CurrencyInput";
 import { ImagePickerField } from "./ImagePickerField";
 import { Input } from "./Input";
+import { IntegerInput } from "./IntegerInput";
 
 type ProductFormProps = {
   initialValues?: ProdutoFormData;
@@ -134,15 +135,11 @@ export function ProductForm({
                 control={control}
                 name="quantidade"
                 render={({ field: { onChange, value } }) => (
-                  <Input
+                  <IntegerInput
                     icon="layers-outline"
                     placeholder="0"
-                    keyboardType="numeric"
-                    value={value === 0 ? "" : String(value)}
-                    onChangeText={(val) => {
-                      const num = parseInt(val.replace(/[^0-9]/g, ""), 10);
-                      onChange(Number.isNaN(num) ? 0 : num);
-                    }}
+                    value={value}
+                    onChangeValue={onChange}
                     error={errors.quantidade?.message}
                     returnKeyType="next"
                     accessibilityLabel="Quantidade em estoque"
@@ -158,15 +155,11 @@ export function ProductForm({
                 control={control}
                 name="quantidadeMinima"
                 render={({ field: { onChange, value } }) => (
-                  <Input
+                  <IntegerInput
                     icon="alert-circle-outline"
                     placeholder="0"
-                    keyboardType="numeric"
-                    value={value === 0 ? "" : String(value)}
-                    onChangeText={(val) => {
-                      const num = parseInt(val.replace(/[^0-9]/g, ""), 10);
-                      onChange(Number.isNaN(num) ? 0 : num);
-                    }}
+                    value={value}
+                    onChangeValue={onChange}
                     error={errors.quantidadeMinima?.message}
                     returnKeyType="next"
                     accessibilityLabel="Quantidade mínima"
