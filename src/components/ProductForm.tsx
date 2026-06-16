@@ -20,6 +20,7 @@ import { CurrencyInput } from "./CurrencyInput";
 import { ImagePickerField } from "./ImagePickerField";
 import { Input } from "./Input";
 import { IntegerInput } from "./IntegerInput";
+import { UnitSelector } from "./UnitSelector";
 
 type ProductFormProps = {
   initialValues?: ProdutoFormData;
@@ -200,16 +201,10 @@ export function ProductForm({
                 control={control}
                 name="unidade"
                 render={({ field: { onChange, value } }) => (
-                  <Input
-                    icon="scale-outline"
-                    placeholder="Ex: un, kg, cx"
+                  <UnitSelector
                     value={value}
-                    onChangeText={onChange}
+                    onChange={onChange}
                     error={errors.unidade?.message}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    returnKeyType="done"
-                    accessibilityLabel="Unidade do produto"
                   />
                 )}
               />
