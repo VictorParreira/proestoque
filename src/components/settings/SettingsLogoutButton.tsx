@@ -7,17 +7,22 @@ import { useAppTheme } from "../../contexts/ThemeContext";
 
 type SettingsLogoutButtonProps = {
   onPress: () => void;
+  disabled?: boolean;
 };
 
-export function SettingsLogoutButton({ onPress }: SettingsLogoutButtonProps) {
+export function SettingsLogoutButton({
+  onPress,
+  disabled = false,
+}: SettingsLogoutButtonProps) {
   const { theme } = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <TouchableOpacity
-      style={styles.button}
-      activeOpacity={0.72}
+      style={[styles.button, disabled && styles.disabled]}
       onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.72}
       accessibilityRole="button"
       accessibilityLabel="Sair da conta"
     >
@@ -45,5 +50,9 @@ const createStyles = (theme: ThemeType) =>
       lineHeight: theme.typography.callout.lineHeight,
       fontWeight: "700",
       color: theme.colors.error,
+    },
+
+    disabled: {
+      opacity: theme.opacity.disabled,
     },
   });

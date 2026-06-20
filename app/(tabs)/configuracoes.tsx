@@ -21,7 +21,7 @@ import { useAuth } from "../../src/contexts/AuthContext";
 import { useAppTheme } from "../../src/contexts/ThemeContext";
 
 export default function ConfiguracoesScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, isSubmitting } = useAuth();
   const { preference, setThemePreference, theme } = useAppTheme();
 
   const [notificacoes, setNotificacoes] = useState(true);
@@ -50,6 +50,8 @@ export default function ConfiguracoesScreen() {
   };
 
   const handleLogout = () => {
+    if (isSubmitting) return;
+
     Alert.alert(
       "Sair do aplicativo",
       "Tem certeza que deseja desconectar sua conta?",
@@ -58,7 +60,9 @@ export default function ConfiguracoesScreen() {
         {
           text: "Sair",
           style: "destructive",
-          onPress: logout,
+          onPress: () => {
+            void logout();
+          },
         },
       ],
     );
@@ -131,7 +135,10 @@ export default function ConfiguracoesScreen() {
         </SettingsGroup>
 
         <SettingsGroup style={styles.dangerGroup}>
-          <SettingsLogoutButton onPress={handleLogout} />
+          <SettingsLogoutButton
+            onPress={handleLogout}
+            disabled={isSubmitting}
+          />
         </SettingsGroup>
 
         <Text style={styles.versionText}>ProEstoque v1.0.0</Text>
