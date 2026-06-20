@@ -10,6 +10,8 @@ export type AuthContextType = {
   user: User | null;
   token: string | null;
   isLoading: boolean;
+  isRestoringSession: boolean;
+  isSubmitting: boolean;
   isAuthenticated: boolean;
   login: (name: string, email: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -65,7 +67,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRestoringSession, setIsRestoringSession] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isLoading = isRestoringSession || isSubmitting;
 
   useEffect(() => {
     async function loadStorageData() {
@@ -90,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error("Erro ao restaurar a sessão:", error);
       } finally {
-        setIsLoading(false);
+        setIsRestoringSession(false);
       }
     }
 
@@ -98,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (name: string, email: string) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       await wait(AUTH_FAKE_DELAY_MS);
@@ -116,12 +121,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Erro no login:", error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const logout = async () => {
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       await clearStoredSession();
@@ -131,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Erro no logout:", error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -141,6 +146,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         token,
         isLoading,
+        isRestoringSession,
+        isSubmitting,
         isAuthenticated: !!user && !!token,
         login,
         logout,
