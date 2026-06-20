@@ -1,9 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { EmptyState } from "../../../src/components/EmptyState";
 import { ProductForm } from "../../../src/components/ProductForm";
 import { ProductFormHeader } from "../../../src/components/ProductFormHeader";
 import type { ThemeType } from "../../../src/constants/theme";
@@ -92,21 +92,12 @@ export default function EditarProduto() {
           onBack={goBackToProducts}
         />
 
-        <View style={styles.emptyState}>
-          <View style={styles.emptyIconContainer}>
-            <Ionicons
-              name="cube-outline"
-              size={28}
-              color={theme.colors.primary}
-            />
-          </View>
-
-          <Text style={styles.emptyTitle}>Nada para editar</Text>
-
-          <Text style={styles.emptyDescription}>
-            Volte para a lista de produtos e selecione outro item.
-          </Text>
-        </View>
+        <EmptyState
+          icon="cube-outline"
+          title="Nada para editar"
+          description="Volte para a lista de produtos e selecione outro item."
+          style={styles.emptyState}
+        />
       </SafeAreaView>
     );
   }
@@ -150,35 +141,7 @@ const createStyles = (theme: ThemeType) =>
 
     emptyState: {
       flex: 1,
-      alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: theme.spacing.xl,
       paddingBottom: theme.spacing["3xl"],
-    },
-
-    emptyIconContainer: {
-      width: 64,
-      height: 64,
-      borderRadius: theme.borderRadius.pill,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: theme.spacing.md,
-      backgroundColor: theme.colors.primarySubtle,
-    },
-
-    emptyTitle: {
-      color: theme.colors.text,
-      fontSize: theme.typography.headline.fontSize,
-      lineHeight: theme.typography.headline.lineHeight,
-      fontWeight: theme.typography.headline.fontWeight,
-      textAlign: "center",
-      marginBottom: theme.spacing.xs,
-    },
-
-    emptyDescription: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-      textAlign: "center",
     },
   });
