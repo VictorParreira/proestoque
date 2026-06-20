@@ -6,13 +6,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthCard } from "../../src/components/auth/AuthCard";
 import { AuthHeader } from "../../src/components/auth/AuthHeader";
 import { AuthLinkFooter } from "../../src/components/auth/AuthLinkFooter";
+import { AuthTextButton } from "../../src/components/auth/AuthTextButton";
 import { Button } from "../../src/components/Button";
 import { Input } from "../../src/components/Input";
 import type { ThemeType } from "../../src/constants/theme";
@@ -105,19 +105,12 @@ export default function Login() {
               />
             </View>
 
-            <TouchableOpacity
-              style={[
-                styles.forgotPasswordButton,
-                isLoading && styles.disabledAction,
-              ]}
-              onPress={() => router.replace("/(auth)/recuperar-senha")}
-              disabled={isLoading}
-              activeOpacity={0.72}
-              accessibilityRole="button"
+            <AuthTextButton
+              title="Esqueceu a senha?"
               accessibilityLabel="Recuperar senha"
-            >
-              <Text style={styles.forgotPasswordText}>Esqueceu a senha?</Text>
-            </TouchableOpacity>
+              disabled={isLoading}
+              onPress={() => router.replace("/(auth)/recuperar-senha")}
+            />
 
             <Button
               title="Entrar no sistema"
@@ -169,24 +162,5 @@ const createStyles = (theme: ThemeType) =>
       color: theme.colors.textSecondary,
       marginBottom: theme.spacing.sm,
       marginLeft: theme.spacing.xs,
-    },
-
-    forgotPasswordButton: {
-      alignSelf: "flex-end",
-      marginTop: -theme.spacing.xs,
-      marginBottom: theme.spacing.lg,
-      paddingVertical: theme.spacing.xs,
-      paddingHorizontal: theme.spacing.xs,
-    },
-
-    forgotPasswordText: {
-      color: theme.colors.primary,
-      fontWeight: "700",
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-    },
-
-    disabledAction: {
-      opacity: theme.opacity.disabled,
     },
   });
