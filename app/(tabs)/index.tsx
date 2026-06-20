@@ -19,6 +19,7 @@ import { useAuth } from "../../src/contexts/AuthContext";
 import { useProducts } from "../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../src/contexts/ThemeContext";
 import type { Produto } from "../../src/data/mockData";
+import { useDashboardGreeting } from "../../src/hooks/useDashboardGreeting";
 import { useDashboardMetrics } from "../../src/hooks/useDashboardMetrics";
 
 export default function HomeScreen() {
@@ -42,24 +43,8 @@ export default function HomeScreen() {
 
   const { alertas, cardResumo, recentProducts } = useDashboardMetrics(products);
 
-  const saudacao = useMemo(() => {
-    const hora = new Date().getHours();
-
-    if (hora >= 5 && hora < 12) return "Bom dia";
-    if (hora >= 12 && hora < 18) return "Boa tarde";
-
-    return "Boa noite";
-  }, []);
-
-  const dataHoje = useMemo(() => {
-    const formattedDate = new Intl.DateTimeFormat("pt-BR", {
-      dateStyle: "full",
-    }).format(new Date());
-
-    return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-  }, []);
-
-  const inicialUsuario = user?.name ? user.name.charAt(0).toUpperCase() : "?";
+  const { greeting, formattedDate, displayName, userInitial } =
+    useDashboardGreeting(user?.name);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -79,14 +64,14 @@ export default function HomeScreen() {
       <View style={styles.greetingContainer}>
         <View style={styles.greetingTextContainer}>
           <Text style={styles.greetingTitle} numberOfLines={2}>
-            {saudacao}, {user?.name || "Visitante"}
+            {greeting}, {displayName}
           </Text>
 
-          <Text style={styles.greetingSubtitle}>{dataHoje}</Text>
+          <Text style={styles.greetingSubtitle}>{formattedDate}</Text>
         </View>
 
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{inicialUsuario}</Text>
+          <Text style={styles.avatarText}>{userInitial}</Text>
         </View>
       </View>
 
