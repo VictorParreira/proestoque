@@ -10,6 +10,7 @@ type SettingsRowProps = {
   label: string;
   description?: string;
   rightContent?: ReactNode;
+  showChevron?: boolean;
   onPress?: () => void;
   accessibilityLabel?: string;
 };
@@ -19,10 +20,22 @@ export function SettingsRow({
   label,
   description,
   rightContent,
+  showChevron = false,
   onPress,
   accessibilityLabel,
 }: SettingsRowProps) {
   const { theme } = useAppTheme();
+
+  const trailingContent =
+    rightContent ??
+    (showChevron ? (
+      <Ionicons
+        name="chevron-forward"
+        size={20}
+        color={theme.colors.textTertiary}
+      />
+    ) : null);
+
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const content = (
@@ -39,8 +52,8 @@ export function SettingsRow({
         ) : null}
       </View>
 
-      {rightContent ? (
-        <View style={styles.rightContent}>{rightContent}</View>
+      {trailingContent ? (
+        <View style={styles.rightContent}>{trailingContent}</View>
       ) : null}
     </>
   );

@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import {
   Alert,
@@ -100,19 +99,13 @@ export default function ConfiguracoesScreen() {
             icon="cloud-download-outline"
             label="Exportar Relatório (CSV)"
             accessibilityLabel="Exportar relatório em CSV"
+            showChevron
             onPress={() => {
               Alert.alert(
                 "Exportar relatório",
                 "A exportação em CSV será implementada em uma próxima etapa.",
               );
             }}
-            rightContent={
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={theme.colors.textTertiary}
-              />
-            }
           />
 
           <SettingsDivider />
@@ -121,19 +114,13 @@ export default function ConfiguracoesScreen() {
             icon="help-buoy-outline"
             label="Central de Ajuda"
             accessibilityLabel="Abrir central de ajuda"
+            showChevron
             onPress={() => {
               Alert.alert(
                 "Central de Ajuda",
                 "A central de ajuda será implementada em uma próxima etapa.",
               );
             }}
-            rightContent={
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={theme.colors.textTertiary}
-              />
-            }
           />
         </SettingsGroup>
 
