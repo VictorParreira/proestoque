@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { SettingsGroup } from "../../src/components/settings/SettingsGroup";
+import { SettingsSectionTitle } from "../../src/components/settings/SettingsSectionTitle";
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
 import {
@@ -89,9 +91,9 @@ export default function ConfiguracoesScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionTitle}>Preferências</Text>
+        <SettingsSectionTitle>Preferências</SettingsSectionTitle>
 
-        <View style={styles.settingsGroup}>
+        <SettingsGroup>
           <View style={styles.settingsRow}>
             <View style={styles.settingsIconBg}>
               <Ionicons
@@ -175,11 +177,11 @@ export default function ConfiguracoesScreen() {
               })}
             </View>
           </View>
-        </View>
+        </SettingsGroup>
 
-        <Text style={styles.sectionTitle}>Dados e Suporte</Text>
+        <SettingsSectionTitle>Dados e Suporte</SettingsSectionTitle>
 
-        <View style={styles.settingsGroup}>
+        <SettingsGroup>
           <TouchableOpacity
             style={styles.settingsRow}
             activeOpacity={0.72}
@@ -225,9 +227,9 @@ export default function ConfiguracoesScreen() {
               color={theme.colors.textTertiary}
             />
           </TouchableOpacity>
-        </View>
+        </SettingsGroup>
 
-        <View style={styles.dangerGroup}>
+        <SettingsGroup style={styles.dangerGroup}>
           <TouchableOpacity
             style={styles.logoutButton}
             activeOpacity={0.72}
@@ -243,7 +245,7 @@ export default function ConfiguracoesScreen() {
 
             <Text style={styles.logoutText}>Sair da Conta</Text>
           </TouchableOpacity>
-        </View>
+        </SettingsGroup>
 
         <Text style={styles.versionText}>ProEstoque v1.0.0</Text>
       </ScrollView>
@@ -343,31 +345,6 @@ const createStyles = (theme: ThemeType) =>
       alignItems: "center",
     },
 
-    sectionTitle: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "700",
-      color: theme.colors.textSecondary,
-      textTransform: "uppercase",
-      letterSpacing: 0.6,
-      marginBottom: theme.spacing.sm + theme.spacing.xs,
-      marginLeft: theme.spacing.xs,
-    },
-
-    settingsGroup: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.lg,
-      marginBottom: theme.spacing.lg + theme.spacing.xs,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      overflow: "hidden",
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
-    },
-
     settingsRow: {
       minHeight: 64,
       flexDirection: "row",
@@ -457,16 +434,6 @@ const createStyles = (theme: ThemeType) =>
 
     dangerGroup: {
       marginTop: theme.spacing.sm,
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.lg,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      overflow: "hidden",
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
     },
 
     logoutButton: {
