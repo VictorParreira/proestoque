@@ -1,32 +1,20 @@
 import React, { useMemo } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    type ViewProps,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  type ViewProps,
 } from "react-native";
 
+import { PRODUCT_UNITS, type ProductUnit } from "../constants/productOptions";
 import type { ThemeType } from "../constants/theme";
 import { useAppTheme } from "../contexts/ThemeContext";
 
-const UNIT_OPTIONS = [
-  { value: "un", label: "Unidade" },
-  { value: "cx", label: "Caixa" },
-  { value: "kg", label: "Quilo" },
-  { value: "g", label: "Grama" },
-  { value: "lt", label: "Litro" },
-  { value: "ml", label: "Mililitro" },
-  { value: "pct", label: "Pacote" },
-  { value: "m", label: "Metro" },
-] as const;
-
-type UnitValue = (typeof UNIT_OPTIONS)[number]["value"];
-
 type UnitSelectorProps = ViewProps & {
   value: string;
-  onChange: (value: UnitValue) => void;
+  onChange: (value: ProductUnit) => void;
   error?: string;
 };
 
@@ -48,7 +36,7 @@ export function UnitSelector({
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
       >
-        {UNIT_OPTIONS.map((option) => {
+        {PRODUCT_UNITS.map((option) => {
           const isSelected = value === option.value;
 
           return (
