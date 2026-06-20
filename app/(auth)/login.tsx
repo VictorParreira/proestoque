@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthCard } from "../../src/components/auth/AuthCard";
 import { AuthHeader } from "../../src/components/auth/AuthHeader";
+import { AuthLinkFooter } from "../../src/components/auth/AuthLinkFooter";
 import { Button } from "../../src/components/Button";
 import { Input } from "../../src/components/Input";
 import type { ThemeType } from "../../src/constants/theme";
@@ -126,21 +127,13 @@ export default function Login() {
             />
           </AuthCard>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Ainda não tem uma conta? </Text>
-
-            <TouchableOpacity
-              onPress={() => router.replace("/(auth)/cadastro")}
-              disabled={isLoading}
-              activeOpacity={0.72}
-              accessibilityRole="button"
-              accessibilityLabel="Criar conta"
-            >
-              <Text style={[styles.linkText, isLoading && styles.disabledText]}>
-                Cadastre-se
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <AuthLinkFooter
+            text="Ainda não tem uma conta?"
+            linkText="Cadastre-se"
+            accessibilityLabel="Criar conta"
+            disabled={isLoading}
+            onPress={() => router.replace("/(auth)/cadastro")}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -194,32 +187,6 @@ const createStyles = (theme: ThemeType) =>
     },
 
     disabledAction: {
-      opacity: theme.opacity.disabled,
-    },
-
-    footer: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-      marginTop: theme.spacing.xl,
-      marginBottom: theme.spacing.md,
-    },
-
-    footerText: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-      fontWeight: "500",
-    },
-
-    linkText: {
-      color: theme.colors.primary,
-      fontWeight: "800",
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-    },
-
-    disabledText: {
       opacity: theme.opacity.disabled,
     },
   });
