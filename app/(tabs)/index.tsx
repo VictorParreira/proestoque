@@ -25,6 +25,8 @@ import { useAppTheme } from "../../src/contexts/ThemeContext";
 import {
   CATEGORIAS_MOCK,
   formatarPreco,
+  getProdutosComEstoqueBaixo,
+  getValorTotalEstoque,
   type Produto,
 } from "../../src/data/mockData";
 
@@ -56,16 +58,11 @@ export default function HomeScreen() {
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const alertas = useMemo(() => {
-    return products.filter(
-      (product) => product.quantidade < product.quantidadeMinima,
-    );
+    return getProdutosComEstoqueBaixo(products);
   }, [products]);
 
   const valorTotal = useMemo(() => {
-    return products.reduce(
-      (total, product) => total + product.quantidade * product.preco,
-      0,
-    );
+    return getValorTotalEstoque(products);
   }, [products]);
 
   const cardResumo = useMemo<DashboardSummaryCard[]>(
