@@ -1,9 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
-  ReactNode,
+  type ReactNode,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useReducer,
 } from "react";
 import { Produto, PRODUTOS_MOCK } from "../data/mockData";
@@ -120,11 +122,7 @@ function productsReducer(state: State, action: Action): State {
 export function ProductsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(productsReducer, initialState);
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem(PRODUCTS_STORAGE_KEY);
 
@@ -150,53 +148,69 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 
       dispatch({ type: "LOAD_PRODUCTS", payload: PRODUTOS_MOCK });
     }
-  };
+  }, []);
 
-  const addProduct = async (data: ProdutoFormData) => {
-    const newProduct: Produto = {
-      ...data,
-      id: createProductId(),
-      ultimaMovimentacao: getCurrentTimestamp(),
-    };
+  useEffect(() => {
+    void loadProducts();
+  }, [loadProducts]);
 
-    const newProductsList = [...state.products, newProduct];
-    dispatch({ type: "ADD_PRODUCT", payload: newProduct });
-    await persistProducts(newProductsList);
-  };
+  const addProduct = useCallback(
+    async (data: ProdutoFormData) => {
+      const newProduct: Produto = {
+        ...data,
+        id: createProductId(),
+        ultimaMovimentacao: getCurrentTimestamp(),
+      };
 
-  const updateProduct = async (id: string, data: ProdutoFormData) => {
-    const existingProduct = state.products.find((p) => p.id === id);
-    if (!existingProduct) return;
+      const newProductsList = [...state.products, newProduct];
+      dispatch({ type: "ADD_PRODUCT", payload: newProduct });
+      await persistProducts(newProductsList);
+    },
+    [state.products],
+  );
 
-    const updatedProduct: Produto = {
-      ...existingProduct,
-      ...data,
-      ultimaMovimentacao: getCurrentTimestamp(),
-    };
+  const updateProduct = useCallback(
+    async (id: string, data: ProdutoFormData) => {
+      const existingProduct = state.products.find((p) => p.id === id);
+      if (!existingProduct) return;
 
-    const newProductsList = state.products.map((p) =>
-      p.id === id ? updatedProduct : p,
-    );
-    dispatch({ type: "UPDATE_PRODUCT", payload: updatedProduct });
-    await persistProducts(newProductsList);
-  };
+      const updatedProduct: Produto = {
+        ...existingProduct,
+        ...data,
+        ultimaMovimentacao: getCurrentTimestamp(),
+      };
 
-  const deleteProduct = async (id: string) => {
-    const newProductsList = state.products.filter((p) => p.id !== id);
-    dispatch({ type: "DELETE_PRODUCT", payload: id });
-    await persistProducts(newProductsList);
-  };
+      const newProductsList = state.products.map((p) =>
+        p.id === id ? updatedProduct : p,
+      );
+      dispatch({ type: "UPDATE_PRODUCT", payload: updatedProduct });
+      await persistProducts(newProductsList);
+    },
+    [state.products],
+  );
+
+  const deleteProduct = useCallback(
+    async (id: string) => {
+      const newProductsList = state.products.filter((p) => p.id !== id);
+      dispatch({ type: "DELETE_PRODUCT", payload: id });
+      await persistProducts(newProductsList);
+    },
+    [state.products],
+  );
+
+  const value = useMemo<ProductsContextData>(
+    () => ({
+      products: state.products,
+      isLoading: state.isLoading,
+      addProduct,
+      updateProduct,
+      deleteProduct,
+    }),
+    [state.products, state.isLoading, addProduct, updateProduct, deleteProduct],
+  );
 
   return (
-    <ProductsContext.Provider
-      value={{
-        products: state.products,
-        isLoading: state.isLoading,
-        addProduct,
-        updateProduct,
-        deleteProduct,
-      }}
-    >
+    <ProductsContext.Provider value={value}>
       {children}
     </ProductsContext.Provider>
   );
