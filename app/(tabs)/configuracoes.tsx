@@ -6,13 +6,13 @@ import {
   StyleSheet,
   Switch,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SettingsDivider } from "../../src/components/settings/SettingsDivider";
 import { SettingsGroup } from "../../src/components/settings/SettingsGroup";
+import { SettingsLogoutButton } from "../../src/components/settings/SettingsLogoutButton";
 import { SettingsProfileCard } from "../../src/components/settings/SettingsProfileCard";
 import { SettingsRow } from "../../src/components/settings/SettingsRow";
 import { SettingsSectionTitle } from "../../src/components/settings/SettingsSectionTitle";
@@ -138,21 +138,7 @@ export default function ConfiguracoesScreen() {
         </SettingsGroup>
 
         <SettingsGroup style={styles.dangerGroup}>
-          <TouchableOpacity
-            style={styles.logoutButton}
-            activeOpacity={0.72}
-            onPress={handleLogout}
-            accessibilityRole="button"
-            accessibilityLabel="Sair da conta"
-          >
-            <Ionicons
-              name="log-out-outline"
-              size={22}
-              color={theme.colors.error}
-            />
-
-            <Text style={styles.logoutText}>Sair da Conta</Text>
-          </TouchableOpacity>
+          <SettingsLogoutButton onPress={handleLogout} />
         </SettingsGroup>
 
         <Text style={styles.versionText}>ProEstoque v1.0.0</Text>
@@ -190,23 +176,6 @@ const createStyles = (theme: ThemeType) =>
 
     dangerGroup: {
       marginTop: theme.spacing.sm,
-    },
-
-    logoutButton: {
-      minHeight: 60,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.md,
-    },
-
-    logoutText: {
-      marginLeft: theme.spacing.sm,
-      fontSize: theme.typography.callout.fontSize,
-      lineHeight: theme.typography.callout.lineHeight,
-      fontWeight: "700",
-      color: theme.colors.error,
     },
 
     versionText: {
