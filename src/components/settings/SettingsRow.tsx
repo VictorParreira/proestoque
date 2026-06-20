@@ -39,7 +39,9 @@ export function SettingsRow({
         ) : null}
       </View>
 
-      {rightContent}
+      {rightContent ? (
+        <View style={styles.rightContent}>{rightContent}</View>
+      ) : null}
     </>
   );
 
@@ -96,5 +98,12 @@ const createStyles = (theme: ThemeType) =>
       fontSize: theme.typography.footnote.fontSize,
       lineHeight: theme.typography.footnote.lineHeight,
       color: theme.colors.textSecondary,
+    },
+
+    rightContent: {
+      minHeight: 40,
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: theme.spacing.sm,
     },
   });

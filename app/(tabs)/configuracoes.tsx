@@ -15,22 +15,10 @@ import { SettingsDivider } from "../../src/components/settings/SettingsDivider";
 import { SettingsGroup } from "../../src/components/settings/SettingsGroup";
 import { SettingsRow } from "../../src/components/settings/SettingsRow";
 import { SettingsSectionTitle } from "../../src/components/settings/SettingsSectionTitle";
+import { ThemePreferenceSelector } from "../../src/components/settings/ThemePreferenceSelector";
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
-import {
-  useAppTheme,
-  type ThemePreference,
-} from "../../src/contexts/ThemeContext";
-
-const THEME_OPTIONS: {
-  label: string;
-  value: ThemePreference;
-  icon: keyof typeof Ionicons.glyphMap;
-}[] = [
-  { label: "Sistema", value: "system", icon: "phone-portrait-outline" },
-  { label: "Claro", value: "light", icon: "sunny-outline" },
-  { label: "Escuro", value: "dark", icon: "moon-outline" },
-];
+import { useAppTheme } from "../../src/contexts/ThemeContext";
 
 export default function ConfiguracoesScreen() {
   const { user, logout } = useAuth();
@@ -53,10 +41,6 @@ export default function ConfiguracoesScreen() {
         },
       ],
     );
-  };
-
-  const handleThemePreferenceChange = (nextPreference: ThemePreference) => {
-    setThemePreference(nextPreference);
   };
 
   const inicialUsuario = user?.name ? user.name.charAt(0).toUpperCase() : "?";
@@ -115,53 +99,10 @@ export default function ConfiguracoesScreen() {
 
           <SettingsDivider />
 
-          <View style={styles.themeSection}>
-            <SettingsRow
-              icon="contrast-outline"
-              label="Aparência"
-              description="Escolha como o ProEstoque deve adaptar a interface."
-            />
-
-            <View style={styles.themeOptions}>
-              {THEME_OPTIONS.map((option) => {
-                const isSelected = preference === option.value;
-
-                return (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      styles.themeOption,
-                      isSelected && styles.themeOptionSelected,
-                    ]}
-                    activeOpacity={0.72}
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: isSelected }}
-                    accessibilityLabel={`Tema ${option.label}`}
-                    onPress={() => handleThemePreferenceChange(option.value)}
-                  >
-                    <Ionicons
-                      name={option.icon}
-                      size={18}
-                      color={
-                        isSelected
-                          ? theme.colors.primary
-                          : theme.colors.textSecondary
-                      }
-                    />
-
-                    <Text
-                      style={[
-                        styles.themeOptionText,
-                        isSelected && styles.themeOptionTextSelected,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
+          <ThemePreferenceSelector
+            value={preference}
+            onChange={setThemePreference}
+          />
         </SettingsGroup>
 
         <SettingsSectionTitle>Dados e Suporte</SettingsSectionTitle>
@@ -322,44 +263,6 @@ const createStyles = (theme: ThemeType) =>
       backgroundColor: theme.colors.primarySubtle,
       justifyContent: "center",
       alignItems: "center",
-    },
-
-    themeSection: {
-      paddingBottom: theme.spacing.md,
-    },
-
-    themeOptions: {
-      flexDirection: "row",
-      gap: theme.spacing.sm,
-      paddingHorizontal: theme.spacing.md,
-    },
-
-    themeOption: {
-      flex: 1,
-      minHeight: 76,
-      alignItems: "center",
-      justifyContent: "center",
-      gap: theme.spacing.xs,
-      borderRadius: theme.borderRadius.md,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      backgroundColor: theme.colors.backgroundSecondary,
-    },
-
-    themeOptionSelected: {
-      borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.primarySubtle,
-    },
-
-    themeOptionText: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "600",
-      color: theme.colors.textSecondary,
-    },
-
-    themeOptionTextSelected: {
-      color: theme.colors.primary,
     },
 
     dangerGroup: {
