@@ -1,10 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ProductForm } from "../../../src/components/ProductForm";
+import { ProductFormHeader } from "../../../src/components/ProductFormHeader";
 import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../../src/contexts/ThemeContext";
@@ -84,28 +85,12 @@ export default function EditarProduto() {
   if (!product) {
     return (
       <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            activeOpacity={0.72}
-            accessibilityRole="button"
-            accessibilityLabel="Voltar para produtos"
-            onPress={goBackToProducts}
-          >
-            <Ionicons
-              name="chevron-back"
-              size={24}
-              color={theme.colors.primary}
-            />
-          </TouchableOpacity>
-
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.title}>Produto não encontrado</Text>
-            <Text style={styles.subtitle}>
-              O item selecionado não está mais disponível.
-            </Text>
-          </View>
-        </View>
+        <ProductFormHeader
+          title="Produto não encontrado"
+          subtitle="O item selecionado não está mais disponível."
+          backAccessibilityLabel="Voltar para produtos"
+          onBack={goBackToProducts}
+        />
 
         <View style={styles.emptyState}>
           <View style={styles.emptyIconContainer}>
@@ -128,41 +113,18 @@ export default function EditarProduto() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          activeOpacity={0.72}
-          accessibilityRole="button"
-          accessibilityLabel="Voltar para produtos"
-          onPress={goBackToProducts}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={24}
-            color={theme.colors.primary}
-          />
-        </TouchableOpacity>
-
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.title} numberOfLines={1}>
-            Editar produto
-          </Text>
-
-          <Text style={styles.subtitle} numberOfLines={1}>
-            {product.nome}
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          style={styles.deleteButton}
-          activeOpacity={0.72}
-          accessibilityRole="button"
-          accessibilityLabel={`Excluir produto ${product.nome}`}
-          onPress={confirmDelete}
-        >
-          <Ionicons name="trash-outline" size={22} color={theme.colors.error} />
-        </TouchableOpacity>
-      </View>
+      <ProductFormHeader
+        title="Editar produto"
+        subtitle={product.nome}
+        backAccessibilityLabel="Voltar para produtos"
+        onBack={goBackToProducts}
+        rightAction={{
+          icon: "trash-outline",
+          accessibilityLabel: `Excluir produto ${product.nome}`,
+          onPress: confirmDelete,
+          variant: "danger",
+        }}
+      />
 
       <View style={styles.content}>
         <ProductForm
@@ -180,57 +142,6 @@ const createStyles = (theme: ThemeType) =>
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-    },
-
-    header: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.md,
-      paddingBottom: theme.spacing.sm,
-      backgroundColor: theme.colors.background,
-    },
-
-    backButton: {
-      width: 40,
-      height: 40,
-      borderRadius: theme.borderRadius.pill,
-      alignItems: "center",
-      justifyContent: "center",
-      marginRight: theme.spacing.sm,
-      backgroundColor: theme.colors.primarySubtle,
-    },
-
-    headerTextContainer: {
-      flex: 1,
-      minHeight: 40,
-      justifyContent: "center",
-    },
-
-    title: {
-      color: theme.colors.text,
-      fontSize: theme.typography.title2.fontSize,
-      lineHeight: theme.typography.title2.lineHeight,
-      fontWeight: theme.typography.title2.fontWeight,
-      letterSpacing: -0.3,
-    },
-
-    subtitle: {
-      marginTop: theme.spacing.xs,
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "500",
-    },
-
-    deleteButton: {
-      width: 40,
-      height: 40,
-      borderRadius: theme.borderRadius.pill,
-      alignItems: "center",
-      justifyContent: "center",
-      marginLeft: theme.spacing.sm,
-      backgroundColor: theme.colors.errorSoft,
     },
 
     content: {
