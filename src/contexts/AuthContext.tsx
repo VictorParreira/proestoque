@@ -1,5 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 export type User = {
   name: string;
@@ -102,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadStorageData();
   }, []);
 
-  const login = async (name: string, email: string) => {
+  const login = useCallback(async (name: string, email: string) => {
     setIsSubmitting(true);
 
     try {
@@ -123,9 +130,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     setIsSubmitting(true);
 
     try {
@@ -138,24 +145,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isLoading,
-        isRestoringSession,
-        isSubmitting,
-        isAuthenticated: !!user && !!token,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const isAuthenticated = !!user && !!token;
+
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      token,
+      isLoading,
+      isRestoringSession,
+      isSubmitting,
+      isAuthenticated,
+      login,
+      logout,
+    }),
+    [
+      user,
+      token,
+      isLoading,
+      isRestoringSession,
+      isSubmitting,
+      isAuthenticated,
+      login,
+      logout,
+    ],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
