@@ -25,7 +25,7 @@ const INITIAL_ERRORS: CadastroErrors = {
 
 export default function Cadastro() {
   const router = useRouter();
-  const { login, isLoading } = useAuth();
+  const { login, isSubmitting } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -97,7 +97,7 @@ export default function Cadastro() {
           value={name}
           onChangeText={setName}
           error={error.name}
-          editable={!isLoading}
+          editable={!isSubmitting}
           accessibilityLabel="Nome completo"
         />
 
@@ -111,7 +111,7 @@ export default function Cadastro() {
           value={email}
           onChangeText={setEmail}
           error={error.email}
-          editable={!isLoading}
+          editable={!isSubmitting}
           accessibilityLabel="E-mail"
         />
 
@@ -123,7 +123,7 @@ export default function Cadastro() {
           value={password}
           onChangeText={setPassword}
           error={error.password}
-          editable={!isLoading}
+          editable={!isSubmitting}
           accessibilityLabel="Senha"
         />
 
@@ -135,15 +135,15 @@ export default function Cadastro() {
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           error={error.confirmPassword}
-          editable={!isLoading}
+          editable={!isSubmitting}
           accessibilityLabel="Confirmar senha"
         />
 
         <Button
           title="Finalizar cadastro"
           fullWidth
-          loading={isLoading}
-          disabled={isLoading}
+          loading={isSubmitting}
+          disabled={isSubmitting}
           onPress={handleCadastro}
           style={styles.submitButton}
         />
@@ -153,7 +153,7 @@ export default function Cadastro() {
         text="Já possui uma conta?"
         linkText="Entrar"
         accessibilityLabel="Entrar na conta"
-        disabled={isLoading}
+        disabled={isSubmitting}
         onPress={() => router.replace("/(auth)/login")}
       />
     </AuthScreenLayout>

@@ -11,7 +11,7 @@ import { useAuth } from "../../src/contexts/AuthContext";
 
 export default function Login() {
   const router = useRouter();
-  const { login, isLoading } = useAuth();
+  const { login, isSubmitting } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,7 +63,7 @@ export default function Login() {
           value={email}
           onChangeText={setEmail}
           error={errorEmail}
-          editable={!isLoading}
+          editable={!isSubmitting}
           accessibilityLabel="E-mail"
         />
 
@@ -75,14 +75,14 @@ export default function Login() {
           value={password}
           onChangeText={setPassword}
           error={errorPassword}
-          editable={!isLoading}
+          editable={!isSubmitting}
           accessibilityLabel="Senha"
         />
 
         <AuthTextButton
           title="Esqueceu a senha?"
           accessibilityLabel="Recuperar senha"
-          disabled={isLoading}
+          disabled={isSubmitting}
           onPress={() => router.replace("/(auth)/recuperar-senha")}
         />
 
@@ -90,7 +90,7 @@ export default function Login() {
           title="Entrar no sistema"
           fullWidth
           onPress={handleLogin}
-          loading={isLoading}
+          loading={isSubmitting}
         />
       </AuthCard>
 
@@ -98,7 +98,7 @@ export default function Login() {
         text="Ainda não tem uma conta?"
         linkText="Cadastre-se"
         accessibilityLabel="Criar conta"
-        disabled={isLoading}
+        disabled={isSubmitting}
         onPress={() => router.replace("/(auth)/cadastro")}
       />
     </AuthScreenLayout>
