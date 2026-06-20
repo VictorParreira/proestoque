@@ -30,6 +30,36 @@ const createFakeToken = () => {
   return `fake-jwt-token-${Date.now()}`;
 };
 
+const isUser = (value: unknown): value is User => {
+  if (!value || typeof value !== "object") return false;
+
+  const candidate = value as Partial<User>;
+
+  return (
+    typeof candidate.name === "string" &&
+    candidate.name.trim().length > 0 &&
+    typeof candidate.email === "string" &&
+    candidate.email.trim().length > 0
+  );
+};
+
+const parseStoredUser = (storedUser: string): User | null => {
+  try {
+    const parsedUser: unknown = JSON.parse(storedUser);
+
+    return isUser(parsedUser) ? parsedUser : null;
+  } catch {
+    return null;
+  }
+};
+
+const clearStoredSession = async () => {
+  await AsyncStorage.multiRemove([
+    AUTH_STORAGE_KEYS.user,
+    AUTH_STORAGE_KEYS.token,
+  ]);
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -46,10 +76,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           wait(AUTH_FAKE_DELAY_MS),
         ]);
 
-        if (storedUser && storedToken) {
-          setUser(JSON.parse(storedUser));
-          setToken(storedToken);
+        if (!storedUser || !storedToken) return;
+
+        const parsedUser = parseStoredUser(storedUser);
+
+        if (!parsedUser) {
+          await clearStoredSession();
+          return;
         }
+
+        setUser(parsedUser);
+        setToken(storedToken);
       } catch (error) {
         console.error("Erro ao restaurar a sessão:", error);
       } finally {
@@ -87,10 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     try {
-      await AsyncStorage.multiRemove([
-        AUTH_STORAGE_KEYS.user,
-        AUTH_STORAGE_KEYS.token,
-      ]);
+      await clearStoredSession();
 
       setUser(null);
       setToken(null);
