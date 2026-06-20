@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SettingsDivider } from "../../src/components/settings/SettingsDivider";
 import { SettingsGroup } from "../../src/components/settings/SettingsGroup";
+import { SettingsProfileCard } from "../../src/components/settings/SettingsProfileCard";
 import { SettingsRow } from "../../src/components/settings/SettingsRow";
 import { SettingsSectionTitle } from "../../src/components/settings/SettingsSectionTitle";
 import { ThemePreferenceSelector } from "../../src/components/settings/ThemePreferenceSelector";
@@ -43,8 +44,6 @@ export default function ConfiguracoesScreen() {
     );
   };
 
-  const inicialUsuario = user?.name ? user.name.charAt(0).toUpperCase() : "?";
-
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <View style={styles.header}>
@@ -55,27 +54,16 @@ export default function ConfiguracoesScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{inicialUsuario}</Text>
-          </View>
-
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{user?.name || "Visitante"}</Text>
-            <Text style={styles.profileEmail}>
-              {user?.email || "usuario@email.com"}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            style={styles.editButton}
-            activeOpacity={0.72}
-            accessibilityRole="button"
-            accessibilityLabel="Editar perfil"
-          >
-            <Ionicons name="pencil" size={18} color={theme.colors.primary} />
-          </TouchableOpacity>
-        </View>
+        <SettingsProfileCard
+          name={user?.name}
+          email={user?.email}
+          onEdit={() => {
+            Alert.alert(
+              "Editar perfil",
+              "A edição de perfil será implementada em uma próxima etapa.",
+            );
+          }}
+        />
 
         <SettingsSectionTitle>Preferências</SettingsSectionTitle>
 
@@ -198,71 +186,6 @@ const createStyles = (theme: ThemeType) =>
       paddingHorizontal: theme.spacing.lg,
       paddingTop: theme.spacing.md,
       paddingBottom: theme.spacing["3xl"],
-    },
-
-    profileCard: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: theme.colors.surface,
-      padding: theme.spacing.md,
-      borderRadius: theme.borderRadius.lg,
-      marginBottom: theme.spacing.xl,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
-    },
-
-    avatar: {
-      width: 60,
-      height: 60,
-      borderRadius: 30,
-      backgroundColor: theme.colors.primary,
-      justifyContent: "center",
-      alignItems: "center",
-      shadowColor: theme.colors.primary,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.24,
-      shadowRadius: 8,
-      elevation: 3,
-    },
-
-    avatarText: {
-      color: theme.colors.primaryContrast,
-      fontSize: theme.typography.title2.fontSize,
-      lineHeight: theme.typography.title2.lineHeight,
-      fontWeight: "700",
-    },
-
-    profileInfo: {
-      flex: 1,
-      marginLeft: theme.spacing.md,
-    },
-
-    profileName: {
-      fontSize: theme.typography.headline.fontSize,
-      lineHeight: theme.typography.headline.lineHeight,
-      fontWeight: theme.typography.headline.fontWeight,
-      color: theme.colors.text,
-      marginBottom: 2,
-    },
-
-    profileEmail: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      color: theme.colors.textSecondary,
-    },
-
-    editButton: {
-      width: 40,
-      height: 40,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.primarySubtle,
-      justifyContent: "center",
-      alignItems: "center",
     },
 
     dangerGroup: {
