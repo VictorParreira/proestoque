@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AuthCard } from "../../src/components/auth/AuthCard";
 import { AuthHeader } from "../../src/components/auth/AuthHeader";
 import { Button } from "../../src/components/Button";
 import { Input } from "../../src/components/Input";
@@ -70,7 +71,7 @@ export default function Login() {
             description="Acesse sua conta para gerenciar produtos, estoque e alertas."
           />
 
-          <View style={styles.card}>
+          <AuthCard>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>E-mail</Text>
 
@@ -123,7 +124,7 @@ export default function Login() {
               onPress={handleLogin}
               loading={isLoading}
             />
-          </View>
+          </AuthCard>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Ainda não tem uma conta? </Text>
@@ -162,19 +163,6 @@ const createStyles = (theme: ThemeType) =>
       justifyContent: "center",
       paddingHorizontal: theme.spacing.lg,
       paddingVertical: theme.spacing.xl,
-    },
-
-    card: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.lg,
-      padding: theme.spacing.lg,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.md.shadowColor,
-      shadowOffset: theme.shadow.md.shadowOffset,
-      shadowOpacity: theme.shadow.md.shadowOpacity,
-      shadowRadius: theme.shadow.md.shadowRadius,
-      elevation: theme.shadow.md.elevation,
     },
 
     inputGroup: {
