@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-import { PRODUCT_UNITS } from "../constants/productOptions";
+import { PRODUCT_UNITS, type ProductUnit } from "../constants/productOptions";
 
 const productUnitValues = PRODUCT_UNITS.map((unit) => unit.value) as [
-  string,
-  ...string[],
+  ProductUnit,
+  ...ProductUnit[],
 ];
 
 export const produtoSchema = z.object({

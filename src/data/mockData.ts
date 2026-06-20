@@ -1,3 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
+
+import type { ProductUnit } from "../constants/productOptions";
 import type { ThemeType } from "../constants/theme";
 
 export type CategoriaColorToken = Extract<
@@ -5,10 +8,12 @@ export type CategoriaColorToken = Extract<
   "primary" | "success" | "info" | "warning" | "error"
 >;
 
+export type CategoriaIconName = keyof typeof Ionicons.glyphMap;
+
 export type Categoria = {
   id: string;
   nome: string;
-  icone: any;
+  icone: CategoriaIconName;
   colorToken: CategoriaColorToken;
 };
 
@@ -19,7 +24,7 @@ export type Produto = {
   quantidade: number;
   quantidadeMinima: number;
   preco: number;
-  unidade: string;
+  unidade: ProductUnit;
   ultimaMovimentacao: string;
   foto?: string;
 };
