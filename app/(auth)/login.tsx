@@ -25,9 +25,11 @@ export default function Login() {
     setErrorEmail(undefined);
     setErrorPassword(undefined);
 
+    const normalizedEmail = email.trim();
+
     let hasError = false;
 
-    if (!email.trim()) {
+    if (!normalizedEmail) {
       setErrorEmail("O e-mail é obrigatório");
       hasError = true;
     }
@@ -39,8 +41,8 @@ export default function Login() {
 
     if (hasError) return;
 
-    const nameSimulado = email.split("@")[0] || "Usuário";
-    await login(nameSimulado, email);
+    const nameSimulado = normalizedEmail.split("@")[0] || "Usuário";
+    await login(nameSimulado, normalizedEmail);
   };
 
   return (

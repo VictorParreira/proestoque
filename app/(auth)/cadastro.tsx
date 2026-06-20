@@ -35,6 +35,9 @@ export default function Cadastro() {
   const [error, setError] = useState<CadastroErrors>(INITIAL_ERRORS);
 
   const handleCadastro = async () => {
+    const normalizedName = name.trim();
+    const normalizedEmail = email.trim();
+
     const newError: CadastroErrors = {
       name: "",
       email: "",
@@ -44,12 +47,12 @@ export default function Cadastro() {
 
     let hasError = false;
 
-    if (!name.trim()) {
+    if (!normalizedName) {
       newError.name = "O nome é obrigatório";
       hasError = true;
     }
 
-    if (!email.trim()) {
+    if (!normalizedEmail) {
       newError.email = "O e-mail é obrigatório";
       hasError = true;
     }
@@ -74,7 +77,7 @@ export default function Cadastro() {
 
     setError(INITIAL_ERRORS);
 
-    await login(name.trim(), email.trim());
+    await login(normalizedName, normalizedEmail);
   };
 
   return (
