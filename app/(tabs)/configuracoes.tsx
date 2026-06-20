@@ -28,6 +28,27 @@ export default function ConfiguracoesScreen() {
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  const handleEditProfile = () => {
+    Alert.alert(
+      "Editar perfil",
+      "A edição de perfil será implementada em uma próxima etapa.",
+    );
+  };
+
+  const handleExportReport = () => {
+    Alert.alert(
+      "Exportar relatório",
+      "A exportação em CSV será implementada em uma próxima etapa.",
+    );
+  };
+
+  const handleHelpCenter = () => {
+    Alert.alert(
+      "Central de Ajuda",
+      "A central de ajuda será implementada em uma próxima etapa.",
+    );
+  };
+
   const handleLogout = () => {
     Alert.alert(
       "Sair do aplicativo",
@@ -56,12 +77,7 @@ export default function ConfiguracoesScreen() {
         <SettingsProfileCard
           name={user?.name}
           email={user?.email}
-          onEdit={() => {
-            Alert.alert(
-              "Editar perfil",
-              "A edição de perfil será implementada em uma próxima etapa.",
-            );
-          }}
+          onEdit={handleEditProfile}
         />
 
         <SettingsSectionTitle>Preferências</SettingsSectionTitle>
@@ -100,12 +116,7 @@ export default function ConfiguracoesScreen() {
             label="Exportar Relatório (CSV)"
             accessibilityLabel="Exportar relatório em CSV"
             showChevron
-            onPress={() => {
-              Alert.alert(
-                "Exportar relatório",
-                "A exportação em CSV será implementada em uma próxima etapa.",
-              );
-            }}
+            onPress={handleExportReport}
           />
 
           <SettingsDivider />
@@ -115,12 +126,7 @@ export default function ConfiguracoesScreen() {
             label="Central de Ajuda"
             accessibilityLabel="Abrir central de ajuda"
             showChevron
-            onPress={() => {
-              Alert.alert(
-                "Central de Ajuda",
-                "A central de ajuda será implementada em uma próxima etapa.",
-              );
-            }}
+            onPress={handleHelpCenter}
           />
         </SettingsGroup>
 
