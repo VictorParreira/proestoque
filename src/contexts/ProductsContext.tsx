@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
 } from "react";
 import { Produto, PRODUTOS_MOCK } from "../data/mockData";
 import { ProdutoFormData } from "../schemas/produtoSchema";
@@ -121,6 +122,11 @@ function productsReducer(state: State, action: Action): State {
 
 export function ProductsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(productsReducer, initialState);
+  const productsRef = useRef<Produto[]>(initialState.products);
+
+  useEffect(() => {
+    productsRef.current = state.products;
+  }, [state.products]);
 
   const loadProducts = useCallback(async () => {
     try {
@@ -129,6 +135,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       if (!stored) {
         const defaultProducts = await restoreDefaultProducts();
 
+        productsRef.current = defaultProducts;
         dispatch({ type: "LOAD_PRODUCTS", payload: defaultProducts });
         return;
       }
@@ -138,14 +145,17 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       if (!parsedProducts) {
         const defaultProducts = await restoreDefaultProducts();
 
+        productsRef.current = defaultProducts;
         dispatch({ type: "LOAD_PRODUCTS", payload: defaultProducts });
         return;
       }
 
+      productsRef.current = parsedProducts;
       dispatch({ type: "LOAD_PRODUCTS", payload: parsedProducts });
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
 
+      productsRef.current = PRODUTOS_MOCK;
       dispatch({ type: "LOAD_PRODUCTS", payload: PRODUTOS_MOCK });
     }
   }, []);
@@ -154,24 +164,42 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     void loadProducts();
   }, [loadProducts]);
 
+  const commitProducts = useCallback(
+    async (products: Produto[], action: Action) => {
+      productsRef.current = products;
+      dispatch(action);
+      await persistProducts(products);
+    },
+    [],
+  );
+
   const addProduct = useCallback(
     async (data: ProdutoFormData) => {
+      const currentProducts = productsRef.current;
+
       const newProduct: Produto = {
         ...data,
         id: createProductId(),
         ultimaMovimentacao: getCurrentTimestamp(),
       };
 
-      const newProductsList = [...state.products, newProduct];
-      dispatch({ type: "ADD_PRODUCT", payload: newProduct });
-      await persistProducts(newProductsList);
+      const newProductsList = [...currentProducts, newProduct];
+
+      await commitProducts(newProductsList, {
+        type: "ADD_PRODUCT",
+        payload: newProduct,
+      });
     },
-    [state.products],
+    [commitProducts],
   );
 
   const updateProduct = useCallback(
     async (id: string, data: ProdutoFormData) => {
-      const existingProduct = state.products.find((p) => p.id === id);
+      const currentProducts = productsRef.current;
+      const existingProduct = currentProducts.find(
+        (product) => product.id === id,
+      );
+
       if (!existingProduct) return;
 
       const updatedProduct: Produto = {
@@ -180,22 +208,31 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
         ultimaMovimentacao: getCurrentTimestamp(),
       };
 
-      const newProductsList = state.products.map((p) =>
-        p.id === id ? updatedProduct : p,
+      const newProductsList = currentProducts.map((product) =>
+        product.id === id ? updatedProduct : product,
       );
-      dispatch({ type: "UPDATE_PRODUCT", payload: updatedProduct });
-      await persistProducts(newProductsList);
+
+      await commitProducts(newProductsList, {
+        type: "UPDATE_PRODUCT",
+        payload: updatedProduct,
+      });
     },
-    [state.products],
+    [commitProducts],
   );
 
   const deleteProduct = useCallback(
     async (id: string) => {
-      const newProductsList = state.products.filter((p) => p.id !== id);
-      dispatch({ type: "DELETE_PRODUCT", payload: id });
-      await persistProducts(newProductsList);
+      const currentProducts = productsRef.current;
+      const newProductsList = currentProducts.filter(
+        (product) => product.id !== id,
+      );
+
+      await commitProducts(newProductsList, {
+        type: "DELETE_PRODUCT",
+        payload: id,
+      });
     },
-    [state.products],
+    [commitProducts],
   );
 
   const value = useMemo<ProductsContextData>(
