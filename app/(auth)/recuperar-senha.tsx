@@ -7,11 +7,11 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AuthBackButton } from "../../src/components/auth/AuthBackButton";
 import { AuthCard } from "../../src/components/auth/AuthCard";
 import { AuthFormField } from "../../src/components/auth/AuthFormField";
 import { AuthHeader } from "../../src/components/auth/AuthHeader";
@@ -46,21 +46,7 @@ export default function RecuperarSenha() {
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={styles.topBar}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.replace("/(auth)/login")}
-            activeOpacity={0.72}
-            accessibilityRole="button"
-            accessibilityLabel="Voltar"
-          >
-            <Ionicons
-              name="chevron-back"
-              size={24}
-              color={theme.colors.primary}
-            />
-          </TouchableOpacity>
-        </View>
+        <AuthBackButton onPress={() => router.replace("/(auth)/login")} />
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -138,23 +124,6 @@ const createStyles = (theme: ThemeType) =>
 
     keyboardView: {
       flex: 1,
-    },
-
-    topBar: {
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.md,
-      paddingBottom: theme.spacing.sm,
-    },
-
-    backButton: {
-      width: 44,
-      height: 44,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.primarySubtle,
-      justifyContent: "center",
-      alignItems: "center",
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
     },
 
     scrollContent: {
