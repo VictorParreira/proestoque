@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { PRODUCT_FORM_DEFAULT_VALUES } from "../constants/productDefaults";
 import type { ThemeType } from "../constants/theme";
 import { useAppTheme } from "../contexts/ThemeContext";
 import type { ProdutoFormData } from "../schemas/produtoSchema";
@@ -26,15 +27,6 @@ type ProductFormProps = {
   initialValues?: ProdutoFormData;
   onSubmit: (data: ProdutoFormData) => void | Promise<void>;
   submitButtonText: string;
-};
-
-const PRODUCT_FORM_DEFAULT_VALUES: ProdutoFormData = {
-  nome: "",
-  categoriaId: "cat_1",
-  quantidade: 0,
-  quantidadeMinima: 0,
-  preco: 0,
-  unidade: "un",
 };
 
 export function ProductForm({
