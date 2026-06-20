@@ -12,9 +12,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AuthCard } from "../../src/components/auth/AuthCard";
+import { AuthFormField } from "../../src/components/auth/AuthFormField";
+import { AuthHeader } from "../../src/components/auth/AuthHeader";
 import { Button } from "../../src/components/Button";
-import { Input } from "../../src/components/Input";
-import { LogoProEstoque } from "../../src/components/LogoProEstoque";
 import type { ThemeType } from "../../src/constants/theme";
 import { useAppTheme } from "../../src/contexts/ThemeContext";
 
@@ -66,23 +67,17 @@ export default function RecuperarSenha() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.header}>
-            <LogoProEstoque size="md" />
+          <AuthHeader
+            title="Recuperar senha"
+            description="Informe seu e-mail e enviaremos um link seguro para redefinir sua senha."
+            logoSize="md"
+          />
 
-            <Text style={styles.title}>Recuperar senha</Text>
-
-            <Text style={styles.description}>
-              Informe seu e-mail e enviaremos um link seguro para redefinir sua
-              senha.
-            </Text>
-          </View>
-
-          <View style={styles.card}>
+          <AuthCard>
             {!enviado ? (
               <View style={styles.form}>
-                <Text style={styles.label}>E-mail de recuperação</Text>
-
-                <Input
+                <AuthFormField
+                  label="E-mail de recuperação"
                   icon="mail-outline"
                   placeholder="Digite seu e-mail cadastrado"
                   keyboardType="email-address"
@@ -127,7 +122,7 @@ export default function RecuperarSenha() {
                 />
               </View>
             )}
-          </View>
+          </AuthCard>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -169,55 +164,8 @@ const createStyles = (theme: ThemeType) =>
       paddingBottom: theme.spacing["2xl"],
     },
 
-    header: {
-      alignItems: "center",
-      marginBottom: theme.spacing.xl,
-    },
-
-    title: {
-      marginTop: theme.spacing.lg,
-      color: theme.colors.text,
-      fontSize: theme.typography.title1.fontSize,
-      lineHeight: theme.typography.title1.lineHeight,
-      fontWeight: theme.typography.title1.fontWeight,
-      letterSpacing: -0.5,
-      textAlign: "center",
-    },
-
-    description: {
-      maxWidth: 320,
-      marginTop: theme.spacing.sm,
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-      fontWeight: "500",
-      textAlign: "center",
-    },
-
-    card: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.lg,
-      padding: theme.spacing.lg,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.md.shadowColor,
-      shadowOffset: theme.shadow.md.shadowOffset,
-      shadowOpacity: theme.shadow.md.shadowOpacity,
-      shadowRadius: theme.shadow.md.shadowRadius,
-      elevation: theme.shadow.md.elevation,
-    },
-
     form: {
       width: "100%",
-    },
-
-    label: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "700",
-      color: theme.colors.textSecondary,
-      marginBottom: theme.spacing.sm,
-      marginLeft: theme.spacing.xs,
     },
 
     actionButton: {
