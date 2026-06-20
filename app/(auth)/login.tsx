@@ -10,10 +10,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { AuthHeader } from "../../src/components/auth/AuthHeader";
 import { Button } from "../../src/components/Button";
 import { Input } from "../../src/components/Input";
-import { LogoProEstoque } from "../../src/components/LogoProEstoque";
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useAppTheme } from "../../src/contexts/ThemeContext";
@@ -66,15 +65,10 @@ export default function Login() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.header}>
-            <LogoProEstoque size="lg" />
-
-            <Text style={styles.subtitle}>Bem-vindo de volta!</Text>
-
-            <Text style={styles.description}>
-              Acesse sua conta para gerenciar produtos, estoque e alertas.
-            </Text>
-          </View>
+          <AuthHeader
+            title="Bem-vindo de volta!"
+            description="Acesse sua conta para gerenciar produtos, estoque e alertas."
+          />
 
           <View style={styles.card}>
             <View style={styles.inputGroup}>
@@ -168,32 +162,6 @@ const createStyles = (theme: ThemeType) =>
       justifyContent: "center",
       paddingHorizontal: theme.spacing.lg,
       paddingVertical: theme.spacing.xl,
-    },
-
-    header: {
-      alignItems: "center",
-      marginBottom: theme.spacing.xl,
-      marginTop: theme.spacing.md,
-    },
-
-    subtitle: {
-      marginTop: theme.spacing.md,
-      color: theme.colors.text,
-      fontSize: theme.typography.title3.fontSize,
-      lineHeight: theme.typography.title3.lineHeight,
-      fontWeight: theme.typography.title3.fontWeight,
-      letterSpacing: -0.2,
-      textAlign: "center",
-    },
-
-    description: {
-      marginTop: theme.spacing.xs,
-      maxWidth: 300,
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-      fontWeight: "500",
-      textAlign: "center",
     },
 
     card: {
