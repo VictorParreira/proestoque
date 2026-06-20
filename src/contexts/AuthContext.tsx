@@ -15,6 +15,21 @@ export type AuthContextType = {
   logout: () => Promise<void>;
 };
 
+const AUTH_STORAGE_KEYS = {
+  user: "@ProEstoque:user",
+  token: "@ProEstoque:token",
+} as const;
+
+const AUTH_FAKE_DELAY_MS = 1500;
+
+const wait = (milliseconds: number) => {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+};
+
+const createFakeToken = () => {
+  return `fake-jwt-token-${Date.now()}`;
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -26,9 +41,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async function loadStorageData() {
       try {
         const [storedUser, storedToken] = await Promise.all([
-          AsyncStorage.getItem("@ProEstoque:user"),
-          AsyncStorage.getItem("@ProEstoque:token"),
-          new Promise((resolve) => setTimeout(resolve, 1500)),
+          AsyncStorage.getItem(AUTH_STORAGE_KEYS.user),
+          AsyncStorage.getItem(AUTH_STORAGE_KEYS.token),
+          wait(AUTH_FAKE_DELAY_MS),
         ]);
 
         if (storedUser && storedToken) {
@@ -49,16 +64,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await wait(AUTH_FAKE_DELAY_MS);
 
       const loggedUser = { name, email };
-      const fakeToken = `fake-jwt-token-${Date.now()}`;
+      const fakeToken = createFakeToken();
 
-      await AsyncStorage.setItem(
-        "@ProEstoque:user",
-        JSON.stringify(loggedUser),
-      );
-      await AsyncStorage.setItem("@ProEstoque:token", fakeToken);
+      await AsyncStorage.multiSet([
+        [AUTH_STORAGE_KEYS.user, JSON.stringify(loggedUser)],
+        [AUTH_STORAGE_KEYS.token, fakeToken],
+      ]);
 
       setUser(loggedUser);
       setToken(fakeToken);
@@ -73,8 +87,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     try {
-      await AsyncStorage.removeItem("@ProEstoque:user");
-      await AsyncStorage.removeItem("@ProEstoque:token");
+      await AsyncStorage.multiRemove([
+        AUTH_STORAGE_KEYS.user,
+        AUTH_STORAGE_KEYS.token,
+      ]);
 
       setUser(null);
       setToken(null);
@@ -91,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         token,
         isLoading,
-        isAuthenticated: !!user,
+        isAuthenticated: !!user && !!token,
         login,
         logout,
       }}
