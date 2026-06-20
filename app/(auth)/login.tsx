@@ -5,16 +5,14 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
-  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthCard } from "../../src/components/auth/AuthCard";
+import { AuthFormField } from "../../src/components/auth/AuthFormField";
 import { AuthHeader } from "../../src/components/auth/AuthHeader";
 import { AuthLinkFooter } from "../../src/components/auth/AuthLinkFooter";
 import { AuthTextButton } from "../../src/components/auth/AuthTextButton";
 import { Button } from "../../src/components/Button";
-import { Input } from "../../src/components/Input";
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useAppTheme } from "../../src/contexts/ThemeContext";
@@ -73,37 +71,31 @@ export default function Login() {
           />
 
           <AuthCard>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>E-mail</Text>
+            <AuthFormField
+              label="E-mail"
+              icon="mail-outline"
+              placeholder="Digite seu e-mail"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={email}
+              onChangeText={setEmail}
+              error={errorEmail}
+              editable={!isLoading}
+              accessibilityLabel="E-mail"
+            />
 
-              <Input
-                icon="mail-outline"
-                placeholder="Digite seu e-mail"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                value={email}
-                onChangeText={setEmail}
-                error={errorEmail}
-                editable={!isLoading}
-                accessibilityLabel="E-mail"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Senha</Text>
-
-              <Input
-                icon="lock-closed-outline"
-                placeholder="Digite sua senha"
-                isPassword
-                value={password}
-                onChangeText={setPassword}
-                error={errorPassword}
-                editable={!isLoading}
-                accessibilityLabel="Senha"
-              />
-            </View>
+            <AuthFormField
+              label="Senha"
+              icon="lock-closed-outline"
+              placeholder="Digite sua senha"
+              isPassword
+              value={password}
+              onChangeText={setPassword}
+              error={errorPassword}
+              editable={!isLoading}
+              accessibilityLabel="Senha"
+            />
 
             <AuthTextButton
               title="Esqueceu a senha?"
@@ -149,18 +141,5 @@ const createStyles = (theme: ThemeType) =>
       justifyContent: "center",
       paddingHorizontal: theme.spacing.lg,
       paddingVertical: theme.spacing.xl,
-    },
-
-    inputGroup: {
-      marginBottom: 0,
-    },
-
-    label: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "700",
-      color: theme.colors.textSecondary,
-      marginBottom: theme.spacing.sm,
-      marginLeft: theme.spacing.xs,
     },
   });
