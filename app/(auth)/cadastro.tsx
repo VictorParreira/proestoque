@@ -5,15 +5,14 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AuthCard } from "../../src/components/auth/AuthCard";
+import { AuthFormField } from "../../src/components/auth/AuthFormField";
+import { AuthHeader } from "../../src/components/auth/AuthHeader";
+import { AuthLinkFooter } from "../../src/components/auth/AuthLinkFooter";
 import { Button } from "../../src/components/Button";
-import { Input } from "../../src/components/Input";
-import { LogoProEstoque } from "../../src/components/LogoProEstoque";
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useAppTheme } from "../../src/contexts/ThemeContext";
@@ -100,78 +99,62 @@ export default function Cadastro() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.header}>
-            <LogoProEstoque size="md" />
+          <AuthHeader
+            title="Crie sua conta"
+            description="Comece a gerenciar produtos, estoque e alertas em poucos minutos."
+            logoSize="md"
+          />
 
-            <Text style={styles.title}>Crie sua conta</Text>
+          <AuthCard>
+            <AuthFormField
+              label="Nome completo"
+              icon="person-outline"
+              placeholder="Seu nome completo"
+              autoCapitalize="words"
+              value={name}
+              onChangeText={setName}
+              error={error.name}
+              editable={!isLoading}
+              accessibilityLabel="Nome completo"
+            />
 
-            <Text style={styles.subtitle}>
-              Comece a gerenciar produtos, estoque e alertas em poucos minutos.
-            </Text>
-          </View>
+            <AuthFormField
+              label="E-mail"
+              icon="mail-outline"
+              placeholder="Seu melhor e-mail"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={email}
+              onChangeText={setEmail}
+              error={error.email}
+              editable={!isLoading}
+              accessibilityLabel="E-mail"
+            />
 
-          <View style={styles.card}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Nome completo</Text>
+            <AuthFormField
+              label="Senha"
+              icon="lock-closed-outline"
+              placeholder="Crie uma senha forte"
+              isPassword
+              value={password}
+              onChangeText={setPassword}
+              error={error.password}
+              editable={!isLoading}
+              accessibilityLabel="Senha"
+            />
 
-              <Input
-                icon="person-outline"
-                placeholder="Seu nome completo"
-                autoCapitalize="words"
-                value={name}
-                onChangeText={setName}
-                error={error.name}
-                editable={!isLoading}
-                accessibilityLabel="Nome completo"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>E-mail</Text>
-
-              <Input
-                icon="mail-outline"
-                placeholder="Seu melhor e-mail"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                value={email}
-                onChangeText={setEmail}
-                error={error.email}
-                editable={!isLoading}
-                accessibilityLabel="E-mail"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Senha</Text>
-
-              <Input
-                icon="lock-closed-outline"
-                placeholder="Crie uma senha forte"
-                isPassword
-                value={password}
-                onChangeText={setPassword}
-                error={error.password}
-                editable={!isLoading}
-                accessibilityLabel="Senha"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Confirmar senha</Text>
-
-              <Input
-                icon="checkmark-circle-outline"
-                placeholder="Repita sua senha"
-                isPassword
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                error={error.confirmPassword}
-                editable={!isLoading}
-                accessibilityLabel="Confirmar senha"
-              />
-            </View>
+            <AuthFormField
+              label="Confirmar senha"
+              icon="checkmark-circle-outline"
+              placeholder="Repita sua senha"
+              isPassword
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              error={error.confirmPassword}
+              editable={!isLoading}
+              accessibilityLabel="Confirmar senha"
+            />
 
             <Button
               title="Finalizar cadastro"
@@ -181,23 +164,15 @@ export default function Cadastro() {
               onPress={handleCadastro}
               style={styles.submitButton}
             />
-          </View>
+          </AuthCard>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Já possui uma conta? </Text>
-
-            <TouchableOpacity
-              onPress={() => router.replace("/(auth)/login")}
-              disabled={isLoading}
-              activeOpacity={0.72}
-              accessibilityRole="button"
-              accessibilityLabel="Entrar na conta"
-            >
-              <Text style={[styles.linkText, isLoading && styles.disabledText]}>
-                Entrar
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <AuthLinkFooter
+            text="Já possui uma conta?"
+            linkText="Entrar"
+            accessibilityLabel="Entrar na conta"
+            disabled={isLoading}
+            onPress={() => router.replace("/(auth)/login")}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -222,84 +197,7 @@ const createStyles = (theme: ThemeType) =>
       paddingBottom: theme.spacing.lg,
     },
 
-    header: {
-      alignItems: "center",
-      marginBottom: theme.spacing.xl,
-    },
-
-    title: {
-      marginTop: theme.spacing.lg,
-      color: theme.colors.text,
-      fontSize: theme.typography.title1.fontSize,
-      lineHeight: theme.typography.title1.lineHeight,
-      fontWeight: theme.typography.title1.fontWeight,
-      letterSpacing: -0.5,
-      textAlign: "center",
-    },
-
-    subtitle: {
-      marginTop: theme.spacing.xs,
-      maxWidth: 320,
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-      fontWeight: "500",
-      textAlign: "center",
-    },
-
-    card: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.lg,
-      padding: theme.spacing.lg,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.md.shadowColor,
-      shadowOffset: theme.shadow.md.shadowOffset,
-      shadowOpacity: theme.shadow.md.shadowOpacity,
-      shadowRadius: theme.shadow.md.shadowRadius,
-      elevation: theme.shadow.md.elevation,
-    },
-
-    inputGroup: {
-      marginBottom: 0,
-    },
-
-    label: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "700",
-      color: theme.colors.textSecondary,
-      marginBottom: theme.spacing.sm,
-      marginLeft: theme.spacing.xs,
-    },
-
     submitButton: {
       marginTop: theme.spacing.md,
-    },
-
-    footer: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-      marginTop: theme.spacing.xl,
-      marginBottom: theme.spacing.md,
-    },
-
-    footerText: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-      fontWeight: "500",
-    },
-
-    linkText: {
-      color: theme.colors.primary,
-      fontWeight: "800",
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-    },
-
-    disabledText: {
-      opacity: theme.opacity.disabled,
     },
   });
