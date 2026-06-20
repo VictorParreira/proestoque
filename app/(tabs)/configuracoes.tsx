@@ -11,7 +11,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { SettingsDivider } from "../../src/components/settings/SettingsDivider";
 import { SettingsGroup } from "../../src/components/settings/SettingsGroup";
+import { SettingsRow } from "../../src/components/settings/SettingsRow";
 import { SettingsSectionTitle } from "../../src/components/settings/SettingsSectionTitle";
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
@@ -94,48 +96,31 @@ export default function ConfiguracoesScreen() {
         <SettingsSectionTitle>Preferências</SettingsSectionTitle>
 
         <SettingsGroup>
-          <View style={styles.settingsRow}>
-            <View style={styles.settingsIconBg}>
-              <Ionicons
-                name="notifications-outline"
-                size={20}
-                color={theme.colors.textSecondary}
+          <SettingsRow
+            icon="notifications-outline"
+            label="Notificações de Estoque"
+            rightContent={
+              <Switch
+                value={notificacoes}
+                onValueChange={setNotificacoes}
+                trackColor={{
+                  false: theme.colors.surfaceTertiary,
+                  true: theme.colors.primary,
+                }}
+                thumbColor={theme.colors.primaryContrast}
+                ios_backgroundColor={theme.colors.surfaceTertiary}
               />
-            </View>
+            }
+          />
 
-            <Text style={styles.settingsLabel}>Notificações de Estoque</Text>
-
-            <Switch
-              value={notificacoes}
-              onValueChange={setNotificacoes}
-              trackColor={{
-                false: theme.colors.surfaceTertiary,
-                true: theme.colors.primary,
-              }}
-              thumbColor={theme.colors.primaryContrast}
-              ios_backgroundColor={theme.colors.surfaceTertiary}
-            />
-          </View>
-
-          <View style={styles.divider} />
+          <SettingsDivider />
 
           <View style={styles.themeSection}>
-            <View style={styles.themeHeader}>
-              <View style={styles.settingsIconBg}>
-                <Ionicons
-                  name="contrast-outline"
-                  size={20}
-                  color={theme.colors.textSecondary}
-                />
-              </View>
-
-              <View style={styles.themeHeaderText}>
-                <Text style={styles.settingsLabel}>Aparência</Text>
-                <Text style={styles.settingsDescription}>
-                  Escolha como o ProEstoque deve adaptar a interface.
-                </Text>
-              </View>
-            </View>
+            <SettingsRow
+              icon="contrast-outline"
+              label="Aparência"
+              description="Escolha como o ProEstoque deve adaptar a interface."
+            />
 
             <View style={styles.themeOptions}>
               {THEME_OPTIONS.map((option) => {
@@ -182,51 +167,45 @@ export default function ConfiguracoesScreen() {
         <SettingsSectionTitle>Dados e Suporte</SettingsSectionTitle>
 
         <SettingsGroup>
-          <TouchableOpacity
-            style={styles.settingsRow}
-            activeOpacity={0.72}
-            accessibilityRole="button"
-          >
-            <View style={styles.settingsIconBg}>
+          <SettingsRow
+            icon="cloud-download-outline"
+            label="Exportar Relatório (CSV)"
+            accessibilityLabel="Exportar relatório em CSV"
+            onPress={() => {
+              Alert.alert(
+                "Exportar relatório",
+                "A exportação em CSV será implementada em uma próxima etapa.",
+              );
+            }}
+            rightContent={
               <Ionicons
-                name="cloud-download-outline"
+                name="chevron-forward"
                 size={20}
-                color={theme.colors.textSecondary}
+                color={theme.colors.textTertiary}
               />
-            </View>
+            }
+          />
 
-            <Text style={styles.settingsLabel}>Exportar Relatório (CSV)</Text>
+          <SettingsDivider />
 
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={theme.colors.textTertiary}
-            />
-          </TouchableOpacity>
-
-          <View style={styles.divider} />
-
-          <TouchableOpacity
-            style={styles.settingsRow}
-            activeOpacity={0.72}
-            accessibilityRole="button"
-          >
-            <View style={styles.settingsIconBg}>
+          <SettingsRow
+            icon="help-buoy-outline"
+            label="Central de Ajuda"
+            accessibilityLabel="Abrir central de ajuda"
+            onPress={() => {
+              Alert.alert(
+                "Central de Ajuda",
+                "A central de ajuda será implementada em uma próxima etapa.",
+              );
+            }}
+            rightContent={
               <Ionicons
-                name="help-buoy-outline"
+                name="chevron-forward"
                 size={20}
-                color={theme.colors.textSecondary}
+                color={theme.colors.textTertiary}
               />
-            </View>
-
-            <Text style={styles.settingsLabel}>Central de Ajuda</Text>
-
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={theme.colors.textTertiary}
-            />
-          </TouchableOpacity>
+            }
+          />
         </SettingsGroup>
 
         <SettingsGroup style={styles.dangerGroup}>
@@ -345,63 +324,14 @@ const createStyles = (theme: ThemeType) =>
       alignItems: "center",
     },
 
-    settingsRow: {
-      minHeight: 64,
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.sm + theme.spacing.xs,
-    },
-
-    settingsIconBg: {
-      width: 36,
-      height: 36,
-      borderRadius: theme.borderRadius.sm,
-      backgroundColor: theme.colors.surfaceSecondary,
-      justifyContent: "center",
-      alignItems: "center",
-      marginRight: theme.spacing.sm + theme.spacing.xs,
-    },
-
-    settingsLabel: {
-      flex: 1,
-      fontSize: theme.typography.callout.fontSize,
-      lineHeight: theme.typography.callout.lineHeight,
-      fontWeight: "600",
-      color: theme.colors.text,
-    },
-
-    settingsDescription: {
-      marginTop: 2,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      color: theme.colors.textSecondary,
-    },
-
-    divider: {
-      height: StyleSheet.hairlineWidth,
-      backgroundColor: theme.colors.separator,
-      marginLeft: 64,
-    },
-
     themeSection: {
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.md,
-    },
-
-    themeHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: theme.spacing.md,
-    },
-
-    themeHeaderText: {
-      flex: 1,
+      paddingBottom: theme.spacing.md,
     },
 
     themeOptions: {
       flexDirection: "row",
       gap: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.md,
     },
 
     themeOption: {
