@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React, {
   useCallback,
   useEffect,
@@ -11,10 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { EmptyState } from "../../src/components/EmptyState";
 import { ProductListItem } from "../../src/components/ProductListItem";
 
-import {
-  SummaryCard,
-  type SummaryCardVariant,
-} from "../../src/components/SummaryCard";
+import { SummaryCard } from "../../src/components/SummaryCard";
 
 import { CriticalStockAlert } from "../../src/components/CriticalStockAlert";
 
@@ -22,21 +18,8 @@ import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useProducts } from "../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../src/contexts/ThemeContext";
-import {
-  CATEGORIAS_MOCK,
-  formatarPreco,
-  getProdutosComEstoqueBaixo,
-  getValorTotalEstoque,
-  type Produto,
-} from "../../src/data/mockData";
-
-type DashboardSummaryCard = {
-  id: string;
-  title: string;
-  value: string | number;
-  icon: keyof typeof Ionicons.glyphMap;
-  variant: SummaryCardVariant;
-};
+import type { Produto } from "../../src/data/mockData";
+import { useDashboardMetrics } from "../../src/hooks/useDashboardMetrics";
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -57,47 +40,7 @@ export default function HomeScreen() {
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const alertas = useMemo(() => {
-    return getProdutosComEstoqueBaixo(products);
-  }, [products]);
-
-  const valorTotal = useMemo(() => {
-    return getValorTotalEstoque(products);
-  }, [products]);
-
-  const cardResumo = useMemo<DashboardSummaryCard[]>(
-    () => [
-      {
-        id: "total",
-        title: "Produtos",
-        value: products.length,
-        icon: "cube-outline",
-        variant: "primary",
-      },
-      {
-        id: "alertas",
-        title: "Alertas",
-        value: alertas.length,
-        icon: "alert-circle-outline",
-        variant: "error",
-      },
-      {
-        id: "categorias",
-        title: "Categorias",
-        value: CATEGORIAS_MOCK.length,
-        icon: "grid-outline",
-        variant: "info",
-      },
-      {
-        id: "valor",
-        title: "Em Estoque",
-        value: formatarPreco(valorTotal),
-        icon: "cash-outline",
-        variant: "success",
-      },
-    ],
-    [alertas.length, products.length, valorTotal],
-  );
+  const { alertas, cardResumo, recentProducts } = useDashboardMetrics(products);
 
   const saudacao = useMemo(() => {
     const hora = new Date().getHours();
@@ -117,10 +60,6 @@ export default function HomeScreen() {
   }, []);
 
   const inicialUsuario = user?.name ? user.name.charAt(0).toUpperCase() : "?";
-
-  const recentProducts = useMemo(() => {
-    return products.slice(-5).reverse();
-  }, [products]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
