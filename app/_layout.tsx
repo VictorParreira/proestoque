@@ -10,7 +10,7 @@ import { ProductsProvider } from "../src/contexts/ProductsContext";
 import { ThemeProvider, useAppTheme } from "../src/contexts/ThemeContext";
 
 function NavigationGuard({ children }: { children: React.ReactNode }) {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isRestoringSession, isAuthenticated } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
@@ -20,7 +20,7 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
   const [isSplashAnimationDone, setIsSplashAnimationDone] = useState(false);
 
   useEffect(() => {
-    if (isLoading || !isSplashAnimationDone) return;
+    if (isRestoringSession || !isSplashAnimationDone) return;
 
     const redirectTimeout = setTimeout(() => {
       const inAuthGroup = segments[0] === "(auth)";
@@ -36,9 +36,15 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
     }, 1);
 
     return () => clearTimeout(redirectTimeout);
-  }, [isLoading, isAuthenticated, segments, router, isSplashAnimationDone]);
+  }, [
+    isRestoringSession,
+    isAuthenticated,
+    segments,
+    router,
+    isSplashAnimationDone,
+  ]);
 
-  const isAppReady = !isLoading && isSplashAnimationDone;
+  const isAppReady = !isRestoringSession && isSplashAnimationDone;
 
   return (
     <View style={styles.container}>
