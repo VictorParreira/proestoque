@@ -145,14 +145,16 @@ export const PRODUTOS_MOCK: Produto[] = [
   },
 ];
 
-export const getProdutosComEstoqueBaixo = () => {
-  return PRODUTOS_MOCK.filter(
+export const getProdutosComEstoqueBaixo = (
+  produtos: Produto[] = PRODUTOS_MOCK,
+) => {
+  return produtos.filter(
     (produto) => produto.quantidade < produto.quantidadeMinima,
   );
 };
 
-export const getValorTotalEstoque = () => {
-  return PRODUTOS_MOCK.reduce(
+export const getValorTotalEstoque = (produtos: Produto[] = PRODUTOS_MOCK) => {
+  return produtos.reduce(
     (total, produto) => total + produto.quantidade * produto.preco,
     0,
   );
