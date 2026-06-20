@@ -37,7 +37,19 @@ const initialState: State = {
   isLoading: true,
 };
 
-const STORAGE_KEY = "@ProEstoque:products";
+const PRODUCTS_STORAGE_KEY = "@ProEstoque:products";
+
+const createProductId = () => {
+  return `prod_${Date.now()}`;
+};
+
+const getCurrentTimestamp = () => {
+  return new Date().toISOString();
+};
+
+const persistProducts = async (products: Produto[]) => {
+  await AsyncStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+};
 
 function productsReducer(state: State, action: Action): State {
   switch (action.type) {
@@ -71,11 +83,11 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 
   const loadProducts = async () => {
     try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      const stored = await AsyncStorage.getItem(PRODUCTS_STORAGE_KEY);
       if (stored) {
         dispatch({ type: "LOAD_PRODUCTS", payload: JSON.parse(stored) });
       } else {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(PRODUTOS_MOCK));
+        await persistProducts(PRODUTOS_MOCK);
         dispatch({ type: "LOAD_PRODUCTS", payload: PRODUTOS_MOCK });
       }
     } catch (error) {
@@ -87,13 +99,13 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   const addProduct = async (data: ProdutoFormData) => {
     const newProduct: Produto = {
       ...data,
-      id: `prod_${Date.now()}`,
-      ultimaMovimentacao: new Date().toISOString(),
+      id: createProductId(),
+      ultimaMovimentacao: getCurrentTimestamp(),
     };
 
     const newProductsList = [...state.products, newProduct];
     dispatch({ type: "ADD_PRODUCT", payload: newProduct });
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newProductsList));
+    await persistProducts(newProductsList);
   };
 
   const updateProduct = async (id: string, data: ProdutoFormData) => {
@@ -103,20 +115,20 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     const updatedProduct: Produto = {
       ...existingProduct,
       ...data,
-      ultimaMovimentacao: new Date().toISOString(),
+      ultimaMovimentacao: getCurrentTimestamp(),
     };
 
     const newProductsList = state.products.map((p) =>
       p.id === id ? updatedProduct : p,
     );
     dispatch({ type: "UPDATE_PRODUCT", payload: updatedProduct });
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newProductsList));
+    await persistProducts(newProductsList);
   };
 
   const deleteProduct = async (id: string) => {
     const newProductsList = state.products.filter((p) => p.id !== id);
     dispatch({ type: "DELETE_PRODUCT", payload: id });
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newProductsList));
+    await persistProducts(newProductsList);
   };
 
   return (
