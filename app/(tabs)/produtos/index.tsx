@@ -27,7 +27,7 @@ import {
 import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../../src/contexts/ThemeContext";
-import { formatarPreco, type Produto } from "../../../src/data/mockData";
+import { formatarPreco, type Produto } from "../../../src/domain/produtos";
 import { useCategorias } from "../../../src/hooks/useCategorias";
 
 type ViewMode = "lista" | "grade" | "agrupado";

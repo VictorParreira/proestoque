@@ -20,7 +20,7 @@ import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useProducts } from "../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../src/contexts/ThemeContext";
-import type { Produto } from "../../src/data/mockData";
+import type { Produto } from "../../src/domain/produtos";
 import { useDashboardGreeting } from "../../src/hooks/useDashboardGreeting";
 import { useDashboardMetrics } from "../../src/hooks/useDashboardMetrics";
 

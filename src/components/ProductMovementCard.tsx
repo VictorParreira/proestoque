@@ -7,7 +7,7 @@ import type {
   MovimentacaoProdutoData,
 } from "../contexts/ProductsContext";
 import { useAppTheme } from "../contexts/ThemeContext";
-import type { Produto } from "../data/mockData";
+import type { Produto } from "../domain/produtos";
 import { Button } from "./Button";
 import { Input } from "./Input";
 import { IntegerInput } from "./IntegerInput";

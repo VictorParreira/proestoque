@@ -11,7 +11,7 @@ import {
 
 import type { ThemeType } from "../constants/theme";
 import { useAppTheme } from "../contexts/ThemeContext";
-import type { Produto } from "../data/mockData";
+import type { Produto } from "../domain/produtos";
 
 type CriticalStockAlertProps = ViewProps & {
   items: Produto[];

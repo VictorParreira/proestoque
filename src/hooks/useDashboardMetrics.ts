@@ -7,7 +7,7 @@ import {
   getProdutosComEstoqueBaixo,
   getValorTotalEstoque,
   type Produto,
-} from "../data/mockData";
+} from "../domain/produtos";
 
 export type DashboardSummaryCard = {
   id: string;

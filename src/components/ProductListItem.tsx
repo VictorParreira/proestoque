@@ -11,7 +11,7 @@ import {
 
 import type { ThemeType } from "../constants/theme";
 import { useAppTheme } from "../contexts/ThemeContext";
-import { formatarPreco, type Produto } from "../data/mockData";
+import { formatarPreco, type Produto } from "../domain/produtos";
 import { StatusBadge } from "./StatusBadge";
 
 type ProductStatus = {

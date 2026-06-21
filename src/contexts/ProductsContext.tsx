@@ -9,7 +9,7 @@ import React, {
   useReducer,
 } from "react";
 
-import type { Produto } from "../data/mockData";
+import type { Produto } from "../domain/produtos";
 import type { ProdutoFormData } from "../schemas/produtoSchema";
 import type { ApiErrorResponse } from "../services/api";
 import { api } from "../services/api";

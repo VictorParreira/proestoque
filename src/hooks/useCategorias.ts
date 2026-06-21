@@ -6,7 +6,7 @@ import type {
   Categoria,
   CategoriaColorToken,
   CategoriaIconName,
-} from "../data/mockData";
+} from "../domain/produtos";
 import { api, type ApiErrorResponse } from "../services/api";
 
 type ApiCategoria = {
