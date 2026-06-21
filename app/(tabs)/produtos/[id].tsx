@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import React, { useMemo, useRef, useState } from "react";
+import { Alert, Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { EmptyState } from "../../../src/components/EmptyState";
@@ -10,11 +10,26 @@ import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../../src/contexts/ThemeContext";
 import type { ProdutoFormData } from "../../../src/schemas/produtoSchema";
+import { useStableAlert } from "../../../src/hooks/useStableAlert";
 
 type ViewMode = "lista" | "grade" | "agrupado";
 
 const isViewMode = (value: unknown): value is ViewMode => {
   return value === "lista" || value === "grade" || value === "agrupado";
+};
+
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Não foi possível concluir a operação. Tente novamente.";
+};
+
+const MIN_FORM_OPERATION_DURATION_MS = 1200;
+
+const wait = (milliseconds: number) => {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
 
 export default function EditarProduto() {
@@ -23,8 +38,15 @@ export default function EditarProduto() {
     viewMode?: string | string[];
   }>();
   const router = useRouter();
+  const isUpdatingRef = useRef(false);
+const isDeletingRef = useRef(false);
+const showAlert = useStableAlert();
   const { products, updateProduct, deleteProduct } = useProducts();
   const { theme } = useAppTheme();
+  const [isUpdating, setIsUpdating] = useState(false);
+const [isDeleting, setIsDeleting] = useState(false);
+
+const isScreenBusy = isUpdating || isDeleting;
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -40,19 +62,19 @@ export default function EditarProduto() {
     return isViewMode(paramViewMode) ? paramViewMode : "lista";
   }, [params.viewMode]);
 
-const goBackToProducts = () => {
-  if (router.canGoBack()) {
-    router.back();
-    return;
-  }
+  const goBackToProducts = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
 
-  router.replace({
-    pathname: "/(tabs)/produtos",
-    params: {
-      viewMode: returnViewMode,
-    },
-  });
-};
+    router.replace({
+      pathname: "/(tabs)/produtos",
+      params: {
+        viewMode: returnViewMode,
+      },
+    });
+  };
 
   const product = useMemo(() => {
     if (!productId) return undefined;
@@ -60,15 +82,37 @@ const goBackToProducts = () => {
     return products.find((item) => item.id === productId);
   }, [productId, products]);
 
-  const handleUpdate = async (data: ProdutoFormData) => {
-    if (!productId) return;
+const handleUpdate = async (data: ProdutoFormData) => {
+  if (!productId || isUpdatingRef.current || isDeletingRef.current) return;
 
+  Keyboard.dismiss();
+
+  isUpdatingRef.current = true;
+  setIsUpdating(true);
+
+  const minimumOperationDuration = wait(MIN_FORM_OPERATION_DURATION_MS);
+
+  try {
     await updateProduct(productId, data);
+    await minimumOperationDuration;
+
     goBackToProducts();
-  };
+  } catch (error) {
+    await minimumOperationDuration;
+
+    showAlert("Erro ao atualizar produto", getErrorMessage(error));
+  } finally {
+    isUpdatingRef.current = false;
+    setIsUpdating(false);
+  }
+};
 
   const confirmDelete = () => {
     if (!productId) return;
+
+    if (isScreenBusy) return;
+
+Keyboard.dismiss();
 
     Alert.alert(
       "Excluir produto",
@@ -76,13 +120,33 @@ const goBackToProducts = () => {
       [
         { text: "Cancelar", style: "cancel" },
         {
-          text: "Excluir",
-          style: "destructive",
-          onPress: async () => {
-            await deleteProduct(productId);
-            goBackToProducts();
-          },
-        },
+  text: "Excluir",
+  style: "destructive",
+onPress: async () => {
+  if (isDeletingRef.current || isUpdatingRef.current) return;
+
+  Keyboard.dismiss();
+
+  isDeletingRef.current = true;
+  setIsDeleting(true);
+
+  const minimumOperationDuration = wait(MIN_FORM_OPERATION_DURATION_MS);
+
+  try {
+    await deleteProduct(productId);
+    await minimumOperationDuration;
+
+    goBackToProducts();
+  } catch (error) {
+    await minimumOperationDuration;
+
+    showAlert("Erro ao excluir produto", getErrorMessage(error));
+  } finally {
+    isDeletingRef.current = false;
+    setIsDeleting(false);
+  }
+},
+},
       ],
     );
   };
@@ -110,24 +174,28 @@ const goBackToProducts = () => {
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <ProductFormHeader
-        title="Editar produto"
-        subtitle={product.nome}
-        backAccessibilityLabel="Voltar para produtos"
-        onBack={goBackToProducts}
-        rightAction={{
-          icon: "trash-outline",
-          accessibilityLabel: `Excluir produto ${product.nome}`,
-          onPress: confirmDelete,
-          variant: "danger",
-        }}
-      />
+  title="Editar produto"
+  subtitle={product.nome}
+  backAccessibilityLabel="Voltar para produtos"
+  onBack={goBackToProducts}
+  disabled={isScreenBusy}
+  rightAction={{
+    icon: "trash-outline",
+    accessibilityLabel: `Excluir produto ${product.nome}`,
+    onPress: confirmDelete,
+    variant: "danger",
+    disabled: isScreenBusy,
+  }}
+/>
 
       <View style={styles.content}>
         <ProductForm
-          initialValues={product}
-          onSubmit={handleUpdate}
-          submitButtonText="Salvar Alterações"
-        />
+  initialValues={product}
+  onSubmit={handleUpdate}
+  submitButtonText="Salvar Alterações"
+  disabled={isScreenBusy}
+  busyLabel={isDeleting ? "Excluindo produto..." : "Salvando produto..."}
+/>
       </View>
     </SafeAreaView>
   );

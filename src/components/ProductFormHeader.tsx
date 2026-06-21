@@ -10,6 +10,7 @@ type HeaderAction = {
   accessibilityLabel: string;
   onPress: () => void;
   variant?: "primary" | "danger";
+  disabled?: boolean;
 };
 
 type ProductFormHeaderProps = {
@@ -18,6 +19,7 @@ type ProductFormHeaderProps = {
   onBack: () => void;
   backAccessibilityLabel?: string;
   rightAction?: HeaderAction;
+  disabled?: boolean;
 };
 
 export function ProductFormHeader({
@@ -26,23 +28,27 @@ export function ProductFormHeader({
   onBack,
   backAccessibilityLabel = "Voltar",
   rightAction,
+  disabled = false,
 }: ProductFormHeaderProps) {
   const { theme } = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const isDangerAction = rightAction?.variant === "danger";
+  const isRightActionDisabled = disabled || rightAction?.disabled;
 
   return (
     <View style={styles.header}>
       <TouchableOpacity
-        style={styles.backButton}
-        activeOpacity={0.72}
-        accessibilityRole="button"
-        accessibilityLabel={backAccessibilityLabel}
-        onPress={onBack}
-      >
-        <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
-      </TouchableOpacity>
+  style={[styles.backButton, disabled && styles.buttonDisabled]}
+  activeOpacity={0.72}
+  accessibilityRole="button"
+  accessibilityLabel={backAccessibilityLabel}
+  accessibilityState={{ disabled }}
+  disabled={disabled}
+  onPress={onBack}
+>
+  <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
+</TouchableOpacity>
 
       <View style={styles.headerTextContainer}>
         <Text style={styles.title} numberOfLines={1}>
@@ -58,21 +64,24 @@ export function ProductFormHeader({
 
       {rightAction ? (
         <TouchableOpacity
-          style={[
-            styles.actionButton,
-            isDangerAction && styles.actionButtonDanger,
-          ]}
-          activeOpacity={0.72}
-          accessibilityRole="button"
-          accessibilityLabel={rightAction.accessibilityLabel}
-          onPress={rightAction.onPress}
-        >
-          <Ionicons
-            name={rightAction.icon}
-            size={22}
-            color={isDangerAction ? theme.colors.error : theme.colors.primary}
-          />
-        </TouchableOpacity>
+  style={[
+    styles.actionButton,
+    isDangerAction && styles.actionButtonDanger,
+    isRightActionDisabled && styles.buttonDisabled,
+  ]}
+  activeOpacity={0.72}
+  accessibilityRole="button"
+  accessibilityLabel={rightAction.accessibilityLabel}
+  accessibilityState={{ disabled: isRightActionDisabled }}
+  disabled={isRightActionDisabled}
+  onPress={rightAction.onPress}
+>
+  <Ionicons
+    name={rightAction.icon}
+    size={22}
+    color={isDangerAction ? theme.colors.error : theme.colors.primary}
+  />
+</TouchableOpacity>
       ) : null}
     </View>
   );
@@ -134,4 +143,8 @@ const createStyles = (theme: ThemeType) =>
     actionButtonDanger: {
       backgroundColor: theme.colors.errorSoft,
     },
+
+    buttonDisabled: {
+  opacity: theme.opacity.disabled,
+},
   });

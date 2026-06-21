@@ -2,6 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
+  ActivityIndicator,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -27,12 +29,16 @@ type ProductFormProps = {
   initialValues?: ProdutoFormData;
   onSubmit: (data: ProdutoFormData) => void | Promise<void>;
   submitButtonText: string;
+  disabled?: boolean;
+  busyLabel?: string;
 };
 
 export function ProductForm({
   initialValues,
   onSubmit,
   submitButtonText,
+  disabled = false,
+  busyLabel = "Processando...",
 }: ProductFormProps) {
   const { theme } = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -46,7 +52,11 @@ export function ProductForm({
     defaultValues: initialValues ?? PRODUCT_FORM_DEFAULT_VALUES,
   });
 
+  const isBusy = disabled || isSubmitting;
+
 const handleFormSubmit = (data: ProdutoFormData) => {
+  Keyboard.dismiss();
+
   return onSubmit({
     ...data,
     foto:
@@ -64,12 +74,15 @@ const handleFormSubmit = (data: ProdutoFormData) => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
     >
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
+      <View style={styles.formWrapper}>
+  <ScrollView
+    style={styles.scrollView}
+    contentContainerStyle={styles.container}
+    showsVerticalScrollIndicator={false}
+    keyboardShouldPersistTaps={isBusy ? "never" : "handled"}
+    scrollEnabled={!isBusy}
+  >
+    <View pointerEvents={isBusy ? "none" : "auto"}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Imagem</Text>
 
@@ -218,12 +231,27 @@ const handleFormSubmit = (data: ProdutoFormData) => {
 
         <Button
           title={submitButtonText}
-          onPress={handleSubmit(handleFormSubmit)}
-          fullWidth
-          loading={isSubmitting}
-          style={styles.submitButton}
+        onPress={handleSubmit(handleFormSubmit)}
+        fullWidth
+        loading={isSubmitting}
+        disabled={isBusy}
+        style={styles.submitButton}
         />
+        </View>
       </ScrollView>
+
+      {isBusy && (
+    <View style={styles.interactionBlocker} pointerEvents="auto">
+      <View style={styles.busyIndicator}>
+        <ActivityIndicator color={theme.colors.primary} />
+
+        <Text style={styles.busyText}>
+          {isSubmitting ? "Salvando..." : busyLabel}
+        </Text>
+      </View>
+    </View>
+  )}
+</View>
     </KeyboardAvoidingView>
   );
 }
@@ -288,4 +316,38 @@ const createStyles = (theme: ThemeType) =>
       marginTop: theme.spacing.sm,
       marginBottom: theme.spacing.xl,
     },
+
+    formWrapper: {
+  flex: 1,
+},
+
+interactionBlocker: {
+  ...StyleSheet.absoluteFillObject,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+busyIndicator: {
+  minHeight: 44,
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: theme.spacing.md,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.surfaceElevated,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  shadowColor: theme.shadow.sm.shadowColor,
+  shadowOffset: theme.shadow.sm.shadowOffset,
+  shadowOpacity: theme.shadow.sm.shadowOpacity,
+  shadowRadius: theme.shadow.sm.shadowRadius,
+  elevation: theme.shadow.sm.elevation,
+  gap: theme.spacing.sm,
+},
+
+busyText: {
+  color: theme.colors.text,
+  fontSize: theme.typography.footnote.fontSize,
+  lineHeight: theme.typography.footnote.lineHeight,
+  fontWeight: "700",
+},
   });
