@@ -17,9 +17,14 @@ export default function NovoProduto() {
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const goBackToProducts = () => {
-    router.replace("/(tabs)/produtos");
-  };
+const goBackToProducts = () => {
+  if (router.canGoBack()) {
+    router.back();
+    return;
+  }
+
+  router.replace("/(tabs)/produtos");
+};
 
   const handleCreate = async (data: ProdutoFormData) => {
     await addProduct(data);

@@ -40,14 +40,19 @@ export default function EditarProduto() {
     return isViewMode(paramViewMode) ? paramViewMode : "lista";
   }, [params.viewMode]);
 
-  const goBackToProducts = () => {
-    router.replace({
-      pathname: "/(tabs)/produtos",
-      params: {
-        viewMode: returnViewMode,
-      },
-    });
-  };
+const goBackToProducts = () => {
+  if (router.canGoBack()) {
+    router.back();
+    return;
+  }
+
+  router.replace({
+    pathname: "/(tabs)/produtos",
+    params: {
+      viewMode: returnViewMode,
+    },
+  });
+};
 
   const product = useMemo(() => {
     if (!productId) return undefined;

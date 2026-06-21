@@ -92,10 +92,8 @@ export function useCategorias(): UseCategoriasResult {
     } catch (requestError) {
       const message = getApiErrorMessage(requestError);
 
-      console.error("Erro ao carregar categorias:", requestError);
-
       setCategorias([]);
-      setError(message);
+setError(message);
     } finally {
       setIsLoading(false);
     }

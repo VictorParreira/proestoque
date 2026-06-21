@@ -41,17 +41,17 @@ export function CategorySelector({
   return (
     <View style={[styles.container, style]} {...rest}>
       {isLoading ? (
-        <View style={styles.stateContainer}>
-          <Ionicons
-            name="hourglass-outline"
-            size={18}
-            color={theme.colors.textSecondary}
-          />
+  <View style={styles.loadingContainer}>
+    <Ionicons
+      name="hourglass-outline"
+      size={18}
+      color={theme.colors.textSecondary}
+    />
 
-          <Text style={styles.stateText}>Carregando categorias...</Text>
-        </View>
-      ) : categoriasError ? (
-        <View style={styles.stateContainer}>
+    <Text style={styles.loadingText}>Carregando categorias...</Text>
+  </View>
+) : categoriasError ? (
+        <View style={styles.errorStateContainer}>
           <Ionicons
             name="alert-circle-outline"
             size={18}
@@ -142,26 +142,42 @@ const createStyles = (theme: ThemeType) =>
       paddingRight: theme.spacing.lg,
     },
 
-    stateContainer: {
-      minHeight: 48,
-      flexDirection: "row",
-      alignItems: "center",
-      flexWrap: "wrap",
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.sm,
-      borderRadius: theme.borderRadius.md,
-      backgroundColor: theme.colors.surface,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      gap: theme.spacing.sm,
-    },
+loadingContainer: {
+  height: 56,
+  width: "100%",
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: theme.spacing.md,
+  borderRadius: theme.borderRadius.md,
+  backgroundColor: theme.colors.surface,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  gap: theme.spacing.sm,
+},
 
-    stateText: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "600",
-    },
+loadingText: {
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.footnote.fontSize,
+  lineHeight: theme.typography.footnote.fontSize,
+  fontWeight: "600",
+  includeFontPadding: false,
+  textAlignVertical: "center",
+},
+
+errorStateContainer: {
+  minHeight: 56,
+  width: "100%",
+  flexDirection: "row",
+  alignItems: "center",
+  flexWrap: "wrap",
+  paddingHorizontal: theme.spacing.md,
+  paddingVertical: theme.spacing.sm,
+  borderRadius: theme.borderRadius.md,
+  backgroundColor: theme.colors.surface,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  gap: theme.spacing.sm,
+},
 
     retryButton: {
       minHeight: 32,

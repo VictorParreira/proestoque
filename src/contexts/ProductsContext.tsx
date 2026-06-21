@@ -116,12 +116,11 @@ function productsReducer(state: State, action: Action): State {
       };
 
     case "LOAD_PRODUCTS_FAILURE":
-      return {
-        ...state,
-        products: [],
-        isLoading: false,
-        error: action.payload,
-      };
+  return {
+    ...state,
+    isLoading: false,
+    error: action.payload,
+  };
 
     case "ADD_PRODUCT":
       return {
@@ -182,12 +181,10 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       const message = getApiErrorMessage(error);
 
-      console.error("Erro ao carregar produtos:", error);
-
       dispatch({
-        type: "LOAD_PRODUCTS_FAILURE",
-        payload: message,
-      });
+  type: "LOAD_PRODUCTS_FAILURE",
+  payload: message,
+});
     }
   }, []);
 

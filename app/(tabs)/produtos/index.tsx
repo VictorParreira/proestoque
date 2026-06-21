@@ -1,8 +1,11 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
   Image,
+  RefreshControl,
   ScrollView,
   SectionList,
   StyleSheet,
@@ -10,33 +13,25 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-import { Ionicons } from "@expo/vector-icons";
-
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import { CategoryChip } from "../../../src/components/CategoryChip";
 import { EmptyState } from "../../../src/components/EmptyState";
+import { ErrorView } from "../../../src/components/ErrorView";
+import { LoadingView } from "../../../src/components/LoadingView";
 import { ProductListItem } from "../../../src/components/ProductListItem";
 import { SearchField } from "../../../src/components/SearchField";
 import {
   ViewModeSelector,
   type ViewModeSelectorOption,
 } from "../../../src/components/ViewModeSelector";
-
 import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../../src/contexts/ThemeContext";
-import {
-  formatarPreco,
-  type Produto,
-} from "../../../src/data/mockData";
+import { formatarPreco, type Produto } from "../../../src/data/mockData";
 import { useCategorias } from "../../../src/hooks/useCategorias";
 
 type ViewMode = "lista" | "grade" | "agrupado";
-
-const isViewMode = (value: unknown): value is ViewMode => {
-  return value === "lista" || value === "grade" || value === "agrupado";
-};
 
 type SecaoProduto = {
   title: string;
@@ -49,9 +44,20 @@ const VIEW_MODES: ViewModeSelectorOption<ViewMode>[] = [
   { value: "agrupado", icon: "albums-outline", label: "Agrupado" },
 ];
 
+const MIN_REFRESH_DURATION_MS = 850;
+
+const wait = (milliseconds: number) => {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+};
+
+const isViewMode = (value: unknown): value is ViewMode => {
+  return value === "lista" || value === "grade" || value === "agrupado";
+};
+
 export default function ListaProdutos() {
   const router = useRouter();
   const params = useLocalSearchParams<{ viewMode?: string | string[] }>();
+  const navigationLockRef = useRef(false);
 
   const initialViewMode = useMemo<ViewMode>(() => {
     const paramViewMode = Array.isArray(params.viewMode)
@@ -61,34 +67,76 @@ export default function ListaProdutos() {
     return isViewMode(paramViewMode) ? paramViewMode : "lista";
   }, [params.viewMode]);
 
-  const { products } = useProducts();
-  const { theme } = useAppTheme();
+  const { products, isLoading, error, carregarProdutos } = useProducts();
 
   const {
-  categorias,
-  isLoading: isLoadingCategorias,
-  error: categoriasError,
-  carregarCategorias,
-} = useCategorias();
+    categorias,
+    isLoading: isLoadingCategorias,
+    error: categoriasError,
+    carregarCategorias,
+  } = useCategorias();
+
+  const { theme } = useAppTheme();
 
   const [busca, setBusca] = useState("");
   const [categoriaAtiva, setCategoriaAtiva] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-  if (!categoriaAtiva) return;
-  if (categorias.length === 0) return;
+  useFocusEffect(
+  useCallback(() => {
+    navigationLockRef.current = false;
 
-  const categoriaAindaExiste = categorias.some(
-    (categoria) => categoria.id === categoriaAtiva,
-  );
-
-  if (!categoriaAindaExiste) {
-    setCategoriaAtiva(null);
-  }
-}, [categoriaAtiva, categorias]);
+    return () => {
+      navigationLockRef.current = false;
+    };
+  }, []),
+);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
+
+  const isInitialLoading = isLoading && products.length === 0;
+  const hasInitialError = Boolean(error && products.length === 0);
+  const hasInlineError = Boolean(error && products.length > 0);
+
+  useEffect(() => {
+    if (!categoriaAtiva) return;
+    if (categorias.length === 0) return;
+
+    const categoriaAindaExiste = categorias.some(
+      (categoria) => categoria.id === categoriaAtiva,
+    );
+
+    if (!categoriaAindaExiste) {
+      setCategoriaAtiva(null);
+    }
+  }, [categoriaAtiva, categorias]);
+
+  const handleRefresh = useCallback(async () => {
+    if (isRefreshing) return;
+
+    setIsRefreshing(true);
+
+    try {
+      await Promise.all([
+  carregarProdutos(),
+  carregarCategorias(),
+  wait(MIN_REFRESH_DURATION_MS),
+]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [carregarCategorias, carregarProdutos, isRefreshing]);
+
+  const refreshControl = (
+    <RefreshControl
+      refreshing={isRefreshing}
+      onRefresh={handleRefresh}
+      tintColor={theme.colors.primary}
+      colors={[theme.colors.primary]}
+      progressViewOffset={theme.spacing.lg}
+    />
+  );
 
   const produtosFiltrados = useMemo(() => {
     const termoBusca = busca.toLowerCase().trim();
@@ -104,21 +152,26 @@ export default function ListaProdutos() {
   }, [busca, categoriaAtiva, products]);
 
   const secoesFiltradas = useMemo<SecaoProduto[]>(() => {
-  return categorias
-    .map((categoria) => {
-      const produtosDaCategoria = produtosFiltrados.filter(
-        (produto) => produto.categoriaId === categoria.id,
-      );
+    return categorias
+      .map((categoria) => {
+        const produtosDaCategoria = produtosFiltrados.filter(
+          (produto) => produto.categoriaId === categoria.id,
+        );
 
-      return {
-        title: categoria.nome,
-        data: produtosDaCategoria,
-      };
-    })
-    .filter((secao) => secao.data.length > 0);
-}, [categorias, produtosFiltrados]);
+        return {
+          title: categoria.nome,
+          data: produtosDaCategoria,
+        };
+      })
+      .filter((secao) => secao.data.length > 0);
+  }, [categorias, produtosFiltrados]);
 
-  const handleOpenProduct = (productId: string) => {
+const handleOpenProduct = useCallback(
+  (productId: string) => {
+    if (navigationLockRef.current) return;
+
+    navigationLockRef.current = true;
+
     router.push({
       pathname: "/(tabs)/produtos/[id]",
       params: {
@@ -126,7 +179,9 @@ export default function ListaProdutos() {
         viewMode,
       },
     });
-  };
+  },
+  [router, viewMode],
+);
 
   const renderProduto = ({ item }: { item: Produto }) => {
     const isGrade = viewMode === "grade";
@@ -198,6 +253,30 @@ export default function ListaProdutos() {
     />
   );
 
+  const inlineErrorBanner = hasInlineError ? (
+    <View style={styles.inlineError}>
+      <Ionicons
+        name="alert-circle-outline"
+        size={18}
+        color={theme.colors.error}
+      />
+
+      <Text style={styles.inlineErrorText}>{error}</Text>
+
+      <TouchableOpacity
+        activeOpacity={0.72}
+        accessibilityRole="button"
+        accessibilityLabel="Tentar carregar produtos novamente"
+        onPress={() => {
+          void handleRefresh();
+        }}
+        style={styles.inlineErrorButton}
+      >
+        <Text style={styles.inlineErrorButtonText}>Retry</Text>
+      </TouchableOpacity>
+    </View>
+  ) : null;
+
   const headerProdutos = (
     <View style={styles.header}>
       <View style={styles.titleRow}>
@@ -232,63 +311,101 @@ export default function ListaProdutos() {
         />
 
         {isLoadingCategorias ? (
-  <View style={styles.categoryStateChip}>
-    <Ionicons
-      name="hourglass-outline"
-      size={14}
-      color={theme.colors.textSecondary}
-    />
-    <Text style={styles.categoryStateText}>Carregando categorias...</Text>
-  </View>
-) : categoriasError ? (
-  <TouchableOpacity
-    activeOpacity={0.72}
-    accessibilityRole="button"
-    accessibilityLabel="Tentar carregar categorias novamente"
-    onPress={() => {
-      void carregarCategorias();
-    }}
-    style={styles.categoryRetryChip}
-  >
-    <Ionicons
-      name="alert-circle-outline"
-      size={14}
-      color={theme.colors.error}
-    />
-    <Text style={styles.categoryRetryText}>Recarregar categorias</Text>
-  </TouchableOpacity>
-) : (
-  categorias.map((categoria) => {
-    const isActive = categoriaAtiva === categoria.id;
+          <View style={styles.categoryStateChip}>
+            <Ionicons
+              name="hourglass-outline"
+              size={14}
+              color={theme.colors.textSecondary}
+            />
+            <Text style={styles.categoryStateText}>
+              Carregando categorias...
+            </Text>
+          </View>
+        ) : categoriasError ? (
+          <TouchableOpacity
+            activeOpacity={0.72}
+            accessibilityRole="button"
+            accessibilityLabel="Tentar carregar categorias novamente"
+            onPress={() => {
+              void carregarCategorias();
+            }}
+            style={styles.categoryRetryChip}
+          >
+            <Ionicons
+              name="alert-circle-outline"
+              size={14}
+              color={theme.colors.error}
+            />
+            <Text style={styles.categoryRetryText}>
+              Recarregar categorias
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          categorias.map((categoria) => {
+            const isActive = categoriaAtiva === categoria.id;
 
-    return (
-      <CategoryChip
-        key={categoria.id}
-        label={categoria.nome}
-        selected={isActive}
-        onPress={() => setCategoriaAtiva(categoria.id)}
-      />
-    );
-  })
-)}
+            return (
+              <CategoryChip
+                key={categoria.id}
+                label={categoria.nome}
+                selected={isActive}
+                onPress={() => setCategoriaAtiva(categoria.id)}
+              />
+            );
+          })
+        )}
       </ScrollView>
+
+      {inlineErrorBanner}
     </View>
   );
 
+  if (isInitialLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+        <LoadingView
+          title="Carregando produtos"
+          description="Buscando os produtos cadastrados na API."
+        />
+      </SafeAreaView>
+    );
+  }
+
+if (hasInitialError) {
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      {headerProdutos}
+      <ScrollView
+        style={styles.errorScrollView}
+        contentContainerStyle={styles.errorScrollContent}
+        refreshControl={refreshControl}
+        showsVerticalScrollIndicator={false}
+      >
+        <ErrorView
+          description={error ?? "Não foi possível carregar os produtos."}
+          onRetry={() => {
+            void handleRefresh();
+          }}
+          style={styles.errorView}
+        />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
 
+  return (
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       {viewMode === "agrupado" ? (
         <SectionList
           sections={secoesFiltradas}
           keyExtractor={(item) => item.id}
           renderItem={renderProduto}
           renderSectionHeader={renderSectionHeader}
+          ListHeaderComponent={headerProdutos}
           contentContainerStyle={styles.listContent}
           stickySectionHeadersEnabled
           ListEmptyComponent={emptyComponent}
           showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
         />
       ) : (
         <FlatList
@@ -296,6 +413,7 @@ export default function ListaProdutos() {
           data={produtosFiltrados}
           keyExtractor={(item) => item.id}
           renderItem={renderProduto}
+          ListHeaderComponent={headerProdutos}
           numColumns={viewMode === "grade" ? 2 : 1}
           columnWrapperStyle={
             viewMode === "grade" ? styles.rowWrapper : undefined
@@ -303,6 +421,7 @@ export default function ListaProdutos() {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={emptyComponent}
           showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
         />
       )}
     </SafeAreaView>
@@ -351,8 +470,83 @@ const createStyles = (theme: ThemeType) =>
       paddingHorizontal: theme.spacing.lg,
     },
 
+    categoryStateChip: {
+      minHeight: 36,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: theme.spacing.md,
+      borderRadius: theme.borderRadius.pill,
+      backgroundColor: theme.colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+      gap: theme.spacing.xs,
+    },
+
+    categoryStateText: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.caption1.fontSize,
+      lineHeight: theme.typography.caption1.lineHeight,
+      fontWeight: "600",
+    },
+
+    categoryRetryChip: {
+      minHeight: 36,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: theme.spacing.md,
+      borderRadius: theme.borderRadius.pill,
+      backgroundColor: theme.colors.errorSoft,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.error,
+      gap: theme.spacing.xs,
+    },
+
+    categoryRetryText: {
+      color: theme.colors.error,
+      fontSize: theme.typography.caption1.fontSize,
+      lineHeight: theme.typography.caption1.lineHeight,
+      fontWeight: "700",
+    },
+
+    inlineError: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginHorizontal: theme.spacing.lg,
+      marginBottom: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.borderRadius.md,
+      backgroundColor: theme.colors.errorSoft,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.error,
+      gap: theme.spacing.sm,
+    },
+
+    inlineErrorText: {
+      flex: 1,
+      color: theme.colors.error,
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "600",
+    },
+
+    inlineErrorButton: {
+      minHeight: 30,
+      justifyContent: "center",
+      paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+      borderRadius: theme.borderRadius.pill,
+      backgroundColor: theme.colors.error,
+    },
+
+    inlineErrorButtonText: {
+      color: theme.colors.primaryContrast,
+      fontSize: theme.typography.caption1.fontSize,
+      lineHeight: theme.typography.caption1.lineHeight,
+      fontWeight: "700",
+    },
+
     listContent: {
-      paddingTop: theme.spacing.sm,
+      flexGrow: 1,
       paddingBottom: 148,
     },
 
@@ -457,41 +651,15 @@ const createStyles = (theme: ThemeType) =>
       marginTop: theme.spacing["3xl"],
     },
 
-    categoryStateChip: {
-  minHeight: 36,
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: theme.spacing.md,
-  borderRadius: theme.borderRadius.pill,
-  backgroundColor: theme.colors.surface,
-  borderWidth: StyleSheet.hairlineWidth,
-  borderColor: theme.colors.separator,
-  gap: theme.spacing.xs,
+    errorScrollView: {
+  flex: 1,
 },
 
-categoryStateText: {
-  color: theme.colors.textSecondary,
-  fontSize: theme.typography.caption1.fontSize,
-  lineHeight: theme.typography.caption1.lineHeight,
-  fontWeight: "600",
+errorScrollContent: {
+  flexGrow: 1,
 },
 
-categoryRetryChip: {
-  minHeight: 36,
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: theme.spacing.md,
-  borderRadius: theme.borderRadius.pill,
-  backgroundColor: theme.colors.errorSoft,
-  borderWidth: StyleSheet.hairlineWidth,
-  borderColor: theme.colors.error,
-  gap: theme.spacing.xs,
-},
-
-categoryRetryText: {
-  color: theme.colors.error,
-  fontSize: theme.typography.caption1.fontSize,
-  lineHeight: theme.typography.caption1.lineHeight,
-  fontWeight: "700",
+errorView: {
+  flex: 1,
 },
   });

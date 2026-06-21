@@ -184,19 +184,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(authenticatedUser);
           setToken(latestAccessToken ?? storedAccessToken);
           setRefreshToken(latestRefreshToken ?? storedRefreshToken);
-        } catch (error) {
-          console.error("Erro ao validar sessão:", error);
-          await clearStoredSession();
+        } catch {
+  await clearStoredSession();
 
-          setUser(null);
-          setToken(null);
-          setRefreshToken(null);
+  setUser(null);
+  setToken(null);
+  setRefreshToken(null);
         }
-      } catch (error) {
-        console.error("Erro ao restaurar a sessão:", error);
-      } finally {
-        setIsRestoringSession(false);
-      }
+      } catch {
+  await clearStoredSession();
+
+  setUser(null);
+  setToken(null);
+  setRefreshToken(null);
+} finally {
+  setIsRestoringSession(false);
+}
     }
 
     void loadStorageData();
@@ -252,11 +255,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setToken(null);
       setRefreshToken(null);
-    } catch (error) {
-      console.error("Erro no logout:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch {
+  setUser(null);
+  setToken(null);
+  setRefreshToken(null);
+} finally {
+  setIsSubmitting(false);
+}
   }, []);
 
   const isAuthenticated = !!user && !!token && !!refreshToken;

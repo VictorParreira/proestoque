@@ -15,16 +15,20 @@ export default function ProdutosLayout() {
       }}
     >
       <Stack.Screen name="index" />
+
       <Stack.Screen
         name="novo"
         options={{
           presentation: "modal",
+          gestureEnabled: false,
         }}
       />
+
       <Stack.Screen
         name="[id]"
         options={{
           presentation: "modal",
+          gestureEnabled: false,
         }}
       />
     </Stack>
