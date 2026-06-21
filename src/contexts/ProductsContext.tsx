@@ -9,11 +9,11 @@ import React, {
   useReducer,
 } from "react";
 
-import { useAuth } from "./AuthContext";
-import type { ApiErrorResponse } from "../services/api";
-import { api } from "../services/api";
 import type { Produto } from "../data/mockData";
 import type { ProdutoFormData } from "../schemas/produtoSchema";
+import type { ApiErrorResponse } from "../services/api";
+import { api } from "../services/api";
+import { useAuth } from "./AuthContext";
 
 type ApiProduto = {
   id: string;
@@ -27,6 +27,33 @@ type ApiProduto = {
   ultimaMovimentacao: string;
   criadoEm?: string;
   atualizadoEm?: string;
+};
+
+type TipoMovimentacao = "entrada" | "saida";
+
+type ApiMovimentacao = {
+  id: string;
+  produtoId: string;
+  tipo: TipoMovimentacao;
+  quantidade: number;
+  observacao?: string | null;
+  criadaEm: string;
+};
+
+type ApiMovimentacaoResponse = {
+  movimentacao: ApiMovimentacao;
+  produto: ApiProduto;
+};
+
+export type MovimentacaoProdutoData = {
+  tipo: TipoMovimentacao;
+  quantidade: number;
+  observacao?: string;
+};
+
+export type MovimentacaoProdutoResult = {
+  movimentacao: ApiMovimentacao;
+  produto: Produto;
 };
 
 type Action =
@@ -53,6 +80,10 @@ type ProductsContextData = {
   addProduct: (data: ProdutoFormData) => Promise<void>;
   updateProduct: (id: string, data: ProdutoFormData) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
+  registrarMovimentacaoProduto: (
+    produtoId: string,
+    data: MovimentacaoProdutoData,
+  ) => Promise<MovimentacaoProdutoResult>;
 };
 
 const ProductsContext = createContext<ProductsContextData | undefined>(
@@ -116,11 +147,11 @@ function productsReducer(state: State, action: Action): State {
       };
 
     case "LOAD_PRODUCTS_FAILURE":
-  return {
-    ...state,
-    isLoading: false,
-    error: action.payload,
-  };
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload,
+      };
 
     case "ADD_PRODUCT":
       return {
@@ -182,9 +213,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       const message = getApiErrorMessage(error);
 
       dispatch({
-  type: "LOAD_PRODUCTS_FAILURE",
-  payload: message,
-});
+        type: "LOAD_PRODUCTS_FAILURE",
+        payload: message,
+      });
     }
   }, []);
 
@@ -270,6 +301,41 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const registrarMovimentacaoProduto = useCallback(
+    async (produtoId: string, data: MovimentacaoProdutoData) => {
+      dispatch({ type: "CLEAR_ERROR" });
+
+      try {
+        const response = await api.post<ApiMovimentacaoResponse>(
+          `/produtos/${produtoId}/movimentacoes`,
+          data,
+        );
+
+        const produto = mapApiProdutoToProduto(response.data.produto);
+
+        dispatch({
+          type: "UPDATE_PRODUCT",
+          payload: produto,
+        });
+
+        return {
+          movimentacao: response.data.movimentacao,
+          produto,
+        };
+      } catch (error) {
+        const message = getApiErrorMessage(error);
+
+        dispatch({
+          type: "LOAD_PRODUCTS_FAILURE",
+          payload: message,
+        });
+
+        throw new Error(message);
+      }
+    },
+    [],
+  );
+
   const value = useMemo<ProductsContextData>(
     () => ({
       products: state.products,
@@ -279,6 +345,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       addProduct,
       updateProduct,
       deleteProduct,
+      registrarMovimentacaoProduto,
     }),
     [
       state.products,
@@ -288,6 +355,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       addProduct,
       updateProduct,
       deleteProduct,
+      registrarMovimentacaoProduto,
     ],
   );
 

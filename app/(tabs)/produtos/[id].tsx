@@ -11,6 +11,8 @@ import { useProducts } from "../../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../../src/contexts/ThemeContext";
 import type { ProdutoFormData } from "../../../src/schemas/produtoSchema";
 import { useStableAlert } from "../../../src/hooks/useStableAlert";
+import { ProductMovementCard } from "../../../src/components/ProductMovementCard";
+import type { MovimentacaoProdutoData } from "../../../src/contexts/ProductsContext";
 
 type ViewMode = "lista" | "grade" | "agrupado";
 
@@ -40,13 +42,20 @@ export default function EditarProduto() {
   const router = useRouter();
   const isUpdatingRef = useRef(false);
 const isDeletingRef = useRef(false);
+const isMovingRef = useRef(false);
 const showAlert = useStableAlert();
-  const { products, updateProduct, deleteProduct } = useProducts();
+  const {
+  products,
+  updateProduct,
+  deleteProduct,
+  registrarMovimentacaoProduto,
+} = useProducts();
   const { theme } = useAppTheme();
   const [isUpdating, setIsUpdating] = useState(false);
 const [isDeleting, setIsDeleting] = useState(false);
+const [isMoving, setIsMoving] = useState(false);
 
-const isScreenBusy = isUpdating || isDeleting;
+const isScreenBusy = isUpdating || isDeleting || isMoving;
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -82,8 +91,39 @@ const isScreenBusy = isUpdating || isDeleting;
     return products.find((item) => item.id === productId);
   }, [productId, products]);
 
+const handleRegisterMovement = async (data: MovimentacaoProdutoData) => {
+  if (!productId || isScreenBusy || isMovingRef.current) return;
+
+  Keyboard.dismiss();
+
+  isMovingRef.current = true;
+  setIsMoving(true);
+
+  const minimumOperationDuration = wait(MIN_FORM_OPERATION_DURATION_MS);
+
+  try {
+    await registrarMovimentacaoProduto(productId, data);
+    await minimumOperationDuration;
+  } catch (error) {
+    await minimumOperationDuration;
+
+    showAlert("Erro ao registrar movimentação", getErrorMessage(error));
+    throw error;
+  } finally {
+    isMovingRef.current = false;
+    setIsMoving(false);
+  }
+};
+
 const handleUpdate = async (data: ProdutoFormData) => {
-  if (!productId || isUpdatingRef.current || isDeletingRef.current) return;
+  if (
+  !productId ||
+  isUpdatingRef.current ||
+  isDeletingRef.current ||
+  isMovingRef.current
+) {
+  return;
+}
 
   Keyboard.dismiss();
 
@@ -123,7 +163,9 @@ Keyboard.dismiss();
   text: "Excluir",
   style: "destructive",
 onPress: async () => {
-  if (isDeletingRef.current || isUpdatingRef.current) return;
+  if (isDeletingRef.current || isUpdatingRef.current || isMovingRef.current) {
+  return;
+}
 
   Keyboard.dismiss();
 
@@ -189,12 +231,26 @@ onPress: async () => {
 />
 
       <View style={styles.content}>
-        <ProductForm
+<ProductForm
   initialValues={product}
   onSubmit={handleUpdate}
   submitButtonText="Salvar Alterações"
   disabled={isScreenBusy}
-  busyLabel={isDeleting ? "Excluindo produto..." : "Salvando produto..."}
+  busyLabel={
+    isDeleting
+      ? "Excluindo produto..."
+      : isMoving
+        ? "Registrando movimentação..."
+        : "Salvando produto..."
+  }
+  headerComponent={
+    <ProductMovementCard
+      product={product}
+      disabled={isScreenBusy}
+      onSubmit={handleRegisterMovement}
+      style={styles.movementCard}
+    />
+  }
 />
       </View>
     </SafeAreaView>
@@ -217,4 +273,10 @@ const createStyles = (theme: ThemeType) =>
       justifyContent: "center",
       paddingBottom: theme.spacing["3xl"],
     },
+
+    movementCard: {
+  marginHorizontal: 0,
+  marginTop: 0,
+  marginBottom: theme.spacing.lg,
+},
   });

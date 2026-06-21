@@ -31,6 +31,7 @@ type ProductFormProps = {
   submitButtonText: string;
   disabled?: boolean;
   busyLabel?: string;
+  headerComponent?: React.ReactNode;
 };
 
 export function ProductForm({
@@ -39,6 +40,7 @@ export function ProductForm({
   submitButtonText,
   disabled = false,
   busyLabel = "Processando...",
+  headerComponent,
 }: ProductFormProps) {
   const { theme } = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -83,6 +85,7 @@ const handleFormSubmit = (data: ProdutoFormData) => {
     scrollEnabled={!isBusy}
   >
     <View pointerEvents={isBusy ? "none" : "auto"}>
+      {headerComponent}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Imagem</Text>
 
