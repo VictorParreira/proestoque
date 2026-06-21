@@ -14,8 +14,8 @@ import type { ThemeType } from "../constants/theme";
 import { useAppTheme } from "../contexts/ThemeContext";
 
 type ImagePickerFieldProps = {
-  value?: string;
-  onChange: (uri: string) => void;
+  value?: string | null;
+  onChange: (uri: string | null) => void;
   error?: string;
 };
 
@@ -28,11 +28,13 @@ export function ImagePickerField({
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [isPicking, setIsPicking] = useState(false);
 
-  const [previewUri, setPreviewUri] = useState<string | undefined>(value);
+  const [previewUri, setPreviewUri] = useState<string | undefined>(
+  value ?? undefined,
+);
 
-  useEffect(() => {
-    setPreviewUri(value || undefined);
-  }, [value]);
+useEffect(() => {
+  setPreviewUri(value?.trim() ? value : undefined);
+}, [value]);
 
   const hasError = Boolean(error);
   const hasImage = Boolean(previewUri);
@@ -55,7 +57,7 @@ export function ImagePickerField({
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ["images"],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.72,
@@ -77,10 +79,10 @@ export function ImagePickerField({
     }
   };
 
-  const removeImage = () => {
-    setPreviewUri(undefined);
-    onChange("");
-  };
+const removeImage = () => {
+  setPreviewUri(undefined);
+  onChange(null);
+};
 
   return (
     <View style={styles.container}>

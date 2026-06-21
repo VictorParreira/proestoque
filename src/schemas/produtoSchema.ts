@@ -35,7 +35,7 @@ export const produtoSchema = z.object({
     message: "Selecione uma unidade válida",
   }),
 
-  foto: z.string().trim().optional(),
+  foto: z.string().trim().nullable().optional(),
 });
 
 export type ProdutoFormData = z.infer<typeof produtoSchema>;
