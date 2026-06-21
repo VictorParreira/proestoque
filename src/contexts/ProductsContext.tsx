@@ -56,6 +56,21 @@ export type MovimentacaoProdutoResult = {
   produto: Produto;
 };
 
+type ProdutoUpdatePayload = Omit<ProdutoFormData, "quantidade">;
+
+const mapProdutoFormDataToUpdatePayload = (
+  data: ProdutoFormData,
+): ProdutoUpdatePayload => {
+  return {
+    nome: data.nome,
+    categoriaId: data.categoriaId,
+    quantidadeMinima: data.quantidadeMinima,
+    preco: data.preco,
+    unidade: data.unidade,
+    foto: data.foto,
+  };
+};
+
 type Action =
   | { type: "LOAD_PRODUCTS_START" }
   | { type: "LOAD_PRODUCTS_SUCCESS"; payload: Produto[] }
@@ -253,31 +268,35 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const updateProduct = useCallback(
-    async (id: string, data: ProdutoFormData) => {
-      dispatch({ type: "CLEAR_ERROR" });
+const updateProduct = useCallback(
+  async (id: string, data: ProdutoFormData) => {
+    dispatch({ type: "CLEAR_ERROR" });
 
-      try {
-        const response = await api.put<ApiProduto>(`/produtos/${id}`, data);
-        const produto = mapApiProdutoToProduto(response.data);
+    try {
+      const response = await api.put<ApiProduto>(
+        `/produtos/${id}`,
+        mapProdutoFormDataToUpdatePayload(data),
+      );
 
-        dispatch({
-          type: "UPDATE_PRODUCT",
-          payload: produto,
-        });
-      } catch (error) {
-        const message = getApiErrorMessage(error);
+      const produto = mapApiProdutoToProduto(response.data);
 
-        dispatch({
-          type: "LOAD_PRODUCTS_FAILURE",
-          payload: message,
-        });
+      dispatch({
+        type: "UPDATE_PRODUCT",
+        payload: produto,
+      });
+    } catch (error) {
+      const message = getApiErrorMessage(error);
 
-        throw new Error(message);
-      }
-    },
-    [],
-  );
+      dispatch({
+        type: "LOAD_PRODUCTS_FAILURE",
+        payload: message,
+      });
+
+      throw new Error(message);
+    }
+  },
+  [],
+);
 
   const deleteProduct = useCallback(async (id: string) => {
     dispatch({ type: "CLEAR_ERROR" });
