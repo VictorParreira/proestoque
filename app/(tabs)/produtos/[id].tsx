@@ -13,6 +13,8 @@ import type { ProdutoFormData } from "../../../src/schemas/produtoSchema";
 import { useStableAlert } from "../../../src/hooks/useStableAlert";
 import { ProductMovementCard } from "../../../src/components/ProductMovementCard";
 import type { MovimentacaoProdutoData } from "../../../src/contexts/ProductsContext";
+import { ProductMovementHistoryCard } from "../../../src/components/ProductMovementHistoryCard";
+import { useProductMovements } from "../../../src/hooks/useProductMovements";
 
 type ViewMode = "lista" | "grade" | "agrupado";
 
@@ -63,6 +65,13 @@ const isScreenBusy = isUpdating || isDeleting || isMoving;
     return Array.isArray(params.id) ? params.id[0] : params.id;
   }, [params.id]);
 
+  const {
+  movimentacoes,
+  isLoading: isLoadingMovimentacoes,
+  error: movimentacoesError,
+  carregarMovimentacoes,
+} = useProductMovements(productId);
+
   const returnViewMode = useMemo<ViewMode>(() => {
     const paramViewMode = Array.isArray(params.viewMode)
       ? params.viewMode[0]
@@ -103,7 +112,8 @@ const handleRegisterMovement = async (data: MovimentacaoProdutoData) => {
 
   try {
     await registrarMovimentacaoProduto(productId, data);
-    await minimumOperationDuration;
+await carregarMovimentacoes();
+await minimumOperationDuration;
   } catch (error) {
     await minimumOperationDuration;
 
@@ -243,14 +253,26 @@ onPress: async () => {
         ? "Registrando movimentação..."
         : "Salvando produto..."
   }
-  headerComponent={
+headerComponent={
+  <>
     <ProductMovementCard
       product={product}
       disabled={isScreenBusy}
       onSubmit={handleRegisterMovement}
       style={styles.movementCard}
     />
-  }
+
+    <ProductMovementHistoryCard
+      movements={movimentacoes}
+      isLoading={isLoadingMovimentacoes}
+      error={movimentacoesError}
+      onRetry={() => {
+        void carregarMovimentacoes();
+      }}
+      style={styles.historyCard}
+    />
+  </>
+}
 />
       </View>
     </SafeAreaView>
@@ -277,6 +299,10 @@ const createStyles = (theme: ThemeType) =>
     movementCard: {
   marginHorizontal: 0,
   marginTop: 0,
+  marginBottom: theme.spacing.lg,
+},
+
+historyCard: {
   marginBottom: theme.spacing.lg,
 },
   });
