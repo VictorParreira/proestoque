@@ -25,7 +25,7 @@ const INITIAL_ERRORS: CadastroErrors = {
 
 export default function Cadastro() {
   const router = useRouter();
-  const { login, isSubmitting } = useAuth();
+  const { registrar, isSubmitting } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -58,9 +58,12 @@ export default function Cadastro() {
     }
 
     if (!password.trim()) {
-      newError.password = "A senha é obrigatória";
-      hasError = true;
-    }
+  newError.password = "A senha é obrigatória";
+  hasError = true;
+} else if (password.length < 8) {
+  newError.password = "A senha deve ter no mínimo 8 caracteres";
+  hasError = true;
+}
 
     if (!confirmPassword.trim()) {
       newError.confirmPassword = "Confirme sua senha";
@@ -70,14 +73,26 @@ export default function Cadastro() {
       hasError = true;
     }
 
-    if (hasError) {
-      setError(newError);
-      return;
-    }
+if (hasError) {
+  setError(newError);
+  return;
+}
 
-    setError(INITIAL_ERRORS);
+setError(INITIAL_ERRORS);
 
-    await login(normalizedName, normalizedEmail);
+try {
+  await registrar(normalizedName, normalizedEmail, password);
+} catch (apiError) {
+  const message =
+    apiError instanceof Error
+      ? apiError.message
+      : "Não foi possível finalizar o cadastro.";
+
+  setError((currentError) => ({
+    ...currentError,
+    email: message,
+  }));
+}
   };
 
   return (

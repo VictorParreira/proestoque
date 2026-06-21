@@ -22,28 +22,36 @@ export default function Login() {
   );
 
   const handleLogin = async () => {
-    setErrorEmail(undefined);
-    setErrorPassword(undefined);
+  setErrorEmail(undefined);
+  setErrorPassword(undefined);
 
-    const normalizedEmail = email.trim();
+  const normalizedEmail = email.trim();
 
-    let hasError = false;
+  let hasError = false;
 
-    if (!normalizedEmail) {
-      setErrorEmail("O e-mail é obrigatório");
-      hasError = true;
-    }
+  if (!normalizedEmail) {
+    setErrorEmail("O e-mail é obrigatório");
+    hasError = true;
+  }
 
-    if (!password.trim()) {
-      setErrorPassword("A senha é obrigatória");
-      hasError = true;
-    }
+  if (!password.trim()) {
+    setErrorPassword("A senha é obrigatória");
+    hasError = true;
+  }
 
-    if (hasError) return;
+  if (hasError) return;
 
-    const nameSimulado = normalizedEmail.split("@")[0] || "Usuário";
-    await login(nameSimulado, normalizedEmail);
-  };
+  try {
+    await login(normalizedEmail, password);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Não foi possível entrar no sistema.";
+
+    setErrorPassword(message);
+  }
+};
 
   return (
     <AuthScreenLayout centerContent>
@@ -87,11 +95,12 @@ export default function Login() {
         />
 
         <Button
-          title="Entrar no sistema"
-          fullWidth
-          onPress={handleLogin}
-          loading={isSubmitting}
-        />
+  title="Entrar no sistema"
+  fullWidth
+  onPress={handleLogin}
+  loading={isSubmitting}
+  disabled={isSubmitting}
+/>
       </AuthCard>
 
       <AuthLinkFooter

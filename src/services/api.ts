@@ -41,10 +41,6 @@ api.interceptors.request.use(async (request) => {
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorResponse>) => {
-    if (error.response?.status === 401) {
-      console.warn("Sessão expirada ou token inválido.");
-    }
-
     return Promise.reject(error);
   },
 );

@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { isAxiosError } from "axios";
 import React, {
   createContext,
   useCallback,
@@ -8,7 +9,15 @@ import React, {
   useState,
 } from "react";
 
+import {
+  api,
+  type ApiErrorResponse,
+  type ApiUser,
+  type AuthResponse,
+} from "../services/api";
+
 export type User = {
+  id: string;
   name: string;
   email: string;
 };
@@ -20,8 +29,13 @@ export type AuthContextType = {
   isRestoringSession: boolean;
   isSubmitting: boolean;
   isAuthenticated: boolean;
-  login: (name: string, email: string) => Promise<void>;
+  login: (email: string, senha: string) => Promise<void>;
+  registrar: (nome: string, email: string, senha: string) => Promise<void>;
   logout: () => Promise<void>;
+};
+
+type AuthMeResponse = {
+  usuario: ApiUser;
 };
 
 const AUTH_STORAGE_KEYS = {
@@ -29,14 +43,27 @@ const AUTH_STORAGE_KEYS = {
   token: "@ProEstoque:token",
 } as const;
 
-const AUTH_FAKE_DELAY_MS = 1500;
-
-const wait = (milliseconds: number) => {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+const mapApiUserToUser = (apiUser: ApiUser): User => {
+  return {
+    id: apiUser.id,
+    name: apiUser.nome,
+    email: apiUser.email,
+  };
 };
 
-const createFakeToken = () => {
-  return `fake-jwt-token-${Date.now()}`;
+const getApiErrorMessage = (error: unknown) => {
+  if (isAxiosError<ApiErrorResponse>(error)) {
+    return (
+      error.response?.data?.erro ??
+      "Não foi possível se conectar ao servidor."
+    );
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Erro inesperado de autenticação.";
 };
 
 const isUser = (value: unknown): value is User => {
@@ -45,6 +72,8 @@ const isUser = (value: unknown): value is User => {
   const candidate = value as Partial<User>;
 
   return (
+    typeof candidate.id === "string" &&
+    candidate.id.trim().length > 0 &&
     typeof candidate.name === "string" &&
     candidate.name.trim().length > 0 &&
     typeof candidate.email === "string" &&
@@ -79,13 +108,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isLoading = isRestoringSession || isSubmitting;
 
+  const persistSession = useCallback(async (authResponse: AuthResponse) => {
+    const authenticatedUser = mapApiUserToUser(authResponse.usuario);
+
+    await AsyncStorage.multiSet([
+      [AUTH_STORAGE_KEYS.user, JSON.stringify(authenticatedUser)],
+      [AUTH_STORAGE_KEYS.token, authResponse.token],
+    ]);
+
+    setUser(authenticatedUser);
+    setToken(authResponse.token);
+  }, []);
+
   useEffect(() => {
     async function loadStorageData() {
       try {
         const [storedUser, storedToken] = await Promise.all([
           AsyncStorage.getItem(AUTH_STORAGE_KEYS.user),
           AsyncStorage.getItem(AUTH_STORAGE_KEYS.token),
-          wait(AUTH_FAKE_DELAY_MS),
         ]);
 
         if (!storedUser || !storedToken) return;
@@ -97,8 +137,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        setUser(parsedUser);
-        setToken(storedToken);
+        try {
+          const response = await api.get<AuthMeResponse>("/auth/me");
+          const authenticatedUser = mapApiUserToUser(response.data.usuario);
+
+          await AsyncStorage.setItem(
+            AUTH_STORAGE_KEYS.user,
+            JSON.stringify(authenticatedUser),
+          );
+
+          setUser(authenticatedUser);
+          setToken(storedToken);
+        } catch (error) {
+          console.error("Erro ao validar sessão:", error);
+          await clearStoredSession();
+
+          setUser(null);
+          setToken(null);
+        }
       } catch (error) {
         console.error("Erro ao restaurar a sessão:", error);
       } finally {
@@ -106,31 +162,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    loadStorageData();
+    void loadStorageData();
   }, []);
 
-  const login = useCallback(async (name: string, email: string) => {
-    setIsSubmitting(true);
+  const login = useCallback(
+    async (email: string, senha: string) => {
+      setIsSubmitting(true);
 
-    try {
-      await wait(AUTH_FAKE_DELAY_MS);
+      try {
+        const response = await api.post<AuthResponse>("/auth/login", {
+          email: email.trim().toLowerCase(),
+          senha,
+        });
 
-      const loggedUser = { name, email };
-      const fakeToken = createFakeToken();
+        await persistSession(response.data);
+      } catch (error) {
+        throw new Error(getApiErrorMessage(error));
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [persistSession],
+  );
 
-      await AsyncStorage.multiSet([
-        [AUTH_STORAGE_KEYS.user, JSON.stringify(loggedUser)],
-        [AUTH_STORAGE_KEYS.token, fakeToken],
-      ]);
+  const registrar = useCallback(
+    async (nome: string, email: string, senha: string) => {
+      setIsSubmitting(true);
 
-      setUser(loggedUser);
-      setToken(fakeToken);
-    } catch (error) {
-      console.error("Erro no login:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, []);
+      try {
+        const response = await api.post<AuthResponse>("/auth/registro", {
+          nome: nome.trim(),
+          email: email.trim().toLowerCase(),
+          senha,
+        });
+
+        await persistSession(response.data);
+      } catch (error) {
+        throw new Error(getApiErrorMessage(error));
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [persistSession],
+  );
 
   const logout = useCallback(async () => {
     setIsSubmitting(true);
@@ -158,6 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isSubmitting,
       isAuthenticated,
       login,
+      registrar,
       logout,
     }),
     [
@@ -168,6 +243,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isSubmitting,
       isAuthenticated,
       login,
+      registrar,
       logout,
     ],
   );
