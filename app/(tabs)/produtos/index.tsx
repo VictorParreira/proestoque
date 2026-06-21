@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Image,
@@ -27,10 +27,10 @@ import type { ThemeType } from "../../../src/constants/theme";
 import { useProducts } from "../../../src/contexts/ProductsContext";
 import { useAppTheme } from "../../../src/contexts/ThemeContext";
 import {
-  CATEGORIAS_MOCK,
   formatarPreco,
   type Produto,
 } from "../../../src/data/mockData";
+import { useCategorias } from "../../../src/hooks/useCategorias";
 
 type ViewMode = "lista" | "grade" | "agrupado";
 
@@ -64,9 +64,29 @@ export default function ListaProdutos() {
   const { products } = useProducts();
   const { theme } = useAppTheme();
 
+  const {
+  categorias,
+  isLoading: isLoadingCategorias,
+  error: categoriasError,
+  carregarCategorias,
+} = useCategorias();
+
   const [busca, setBusca] = useState("");
   const [categoriaAtiva, setCategoriaAtiva] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
+
+  useEffect(() => {
+  if (!categoriaAtiva) return;
+  if (categorias.length === 0) return;
+
+  const categoriaAindaExiste = categorias.some(
+    (categoria) => categoria.id === categoriaAtiva,
+  );
+
+  if (!categoriaAindaExiste) {
+    setCategoriaAtiva(null);
+  }
+}, [categoriaAtiva, categorias]);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -84,7 +104,8 @@ export default function ListaProdutos() {
   }, [busca, categoriaAtiva, products]);
 
   const secoesFiltradas = useMemo<SecaoProduto[]>(() => {
-    return CATEGORIAS_MOCK.map((categoria) => {
+  return categorias
+    .map((categoria) => {
       const produtosDaCategoria = produtosFiltrados.filter(
         (produto) => produto.categoriaId === categoria.id,
       );
@@ -93,8 +114,9 @@ export default function ListaProdutos() {
         title: categoria.nome,
         data: produtosDaCategoria,
       };
-    }).filter((secao) => secao.data.length > 0);
-  }, [produtosFiltrados]);
+    })
+    .filter((secao) => secao.data.length > 0);
+}, [categorias, produtosFiltrados]);
 
   const handleOpenProduct = (productId: string) => {
     router.push({
@@ -209,18 +231,46 @@ export default function ListaProdutos() {
           onPress={() => setCategoriaAtiva(null)}
         />
 
-        {CATEGORIAS_MOCK.map((categoria) => {
-          const isActive = categoriaAtiva === categoria.id;
+        {isLoadingCategorias ? (
+  <View style={styles.categoryStateChip}>
+    <Ionicons
+      name="hourglass-outline"
+      size={14}
+      color={theme.colors.textSecondary}
+    />
+    <Text style={styles.categoryStateText}>Carregando categorias...</Text>
+  </View>
+) : categoriasError ? (
+  <TouchableOpacity
+    activeOpacity={0.72}
+    accessibilityRole="button"
+    accessibilityLabel="Tentar carregar categorias novamente"
+    onPress={() => {
+      void carregarCategorias();
+    }}
+    style={styles.categoryRetryChip}
+  >
+    <Ionicons
+      name="alert-circle-outline"
+      size={14}
+      color={theme.colors.error}
+    />
+    <Text style={styles.categoryRetryText}>Recarregar categorias</Text>
+  </TouchableOpacity>
+) : (
+  categorias.map((categoria) => {
+    const isActive = categoriaAtiva === categoria.id;
 
-          return (
-            <CategoryChip
-              key={categoria.id}
-              label={categoria.nome}
-              selected={isActive}
-              onPress={() => setCategoriaAtiva(categoria.id)}
-            />
-          );
-        })}
+    return (
+      <CategoryChip
+        key={categoria.id}
+        label={categoria.nome}
+        selected={isActive}
+        onPress={() => setCategoriaAtiva(categoria.id)}
+      />
+    );
+  })
+)}
       </ScrollView>
     </View>
   );
@@ -406,4 +456,42 @@ const createStyles = (theme: ThemeType) =>
     emptyState: {
       marginTop: theme.spacing["3xl"],
     },
+
+    categoryStateChip: {
+  minHeight: 36,
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: theme.spacing.md,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.surface,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  gap: theme.spacing.xs,
+},
+
+categoryStateText: {
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "600",
+},
+
+categoryRetryChip: {
+  minHeight: 36,
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: theme.spacing.md,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.errorSoft,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.error,
+  gap: theme.spacing.xs,
+},
+
+categoryRetryText: {
+  color: theme.colors.error,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "700",
+},
   });

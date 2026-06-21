@@ -3,11 +3,10 @@ import { useMemo } from "react";
 
 import type { SummaryCardVariant } from "../components/SummaryCard";
 import {
-    CATEGORIAS_MOCK,
-    formatarPreco,
-    getProdutosComEstoqueBaixo,
-    getValorTotalEstoque,
-    type Produto,
+  formatarPreco,
+  getProdutosComEstoqueBaixo,
+  getValorTotalEstoque,
+  type Produto,
 } from "../data/mockData";
 
 export type DashboardSummaryCard = {
@@ -18,11 +17,22 @@ export type DashboardSummaryCard = {
   variant: SummaryCardVariant;
 };
 
+const getTotalCategoriasComProdutos = (products: Produto[]) => {
+  const categoriasIds = new Set(
+    products
+      .map((produto) => produto.categoriaId)
+      .filter((categoriaId) => categoriaId.trim().length > 0),
+  );
+
+  return categoriasIds.size;
+};
+
 export function useDashboardMetrics(products: Produto[]) {
   return useMemo(() => {
     const alertas = getProdutosComEstoqueBaixo(products);
     const valorTotal = getValorTotalEstoque(products);
     const recentProducts = products.slice(-5).reverse();
+    const totalCategorias = getTotalCategoriasComProdutos(products);
 
     const cardResumo: DashboardSummaryCard[] = [
       {
@@ -42,7 +52,7 @@ export function useDashboardMetrics(products: Produto[]) {
       {
         id: "categorias",
         title: "Categorias",
-        value: CATEGORIAS_MOCK.length,
+        value: totalCategorias,
         icon: "grid-outline",
         variant: "info",
       },

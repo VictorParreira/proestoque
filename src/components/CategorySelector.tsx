@@ -1,17 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    type ViewProps,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  type ViewProps,
 } from "react-native";
 
 import type { ThemeType } from "../constants/theme";
 import { useAppTheme } from "../contexts/ThemeContext";
-import { CATEGORIAS_MOCK } from "../data/mockData";
+import { useCategorias } from "../hooks/useCategorias";
 
 type CategorySelectorProps = ViewProps & {
   value: string;
@@ -29,52 +29,97 @@ export function CategorySelector({
   const { theme } = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  const {
+    categorias,
+    isLoading,
+    error: categoriasError,
+    carregarCategorias,
+  } = useCategorias();
+
+  const hasError = Boolean(error || categoriasError);
+
   return (
     <View style={[styles.container, style]} {...rest}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
-        {CATEGORIAS_MOCK.map((category) => {
-          const isSelected = value === category.id;
+      {isLoading ? (
+        <View style={styles.stateContainer}>
+          <Ionicons
+            name="hourglass-outline"
+            size={18}
+            color={theme.colors.textSecondary}
+          />
 
-          return (
-            <TouchableOpacity
-              key={category.id}
-              activeOpacity={0.72}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`Categoria ${category.nome}`}
-              onPress={() => onChange(category.id)}
-              style={[
-                styles.option,
-                isSelected && styles.optionSelected,
-                error && styles.optionError,
-              ]}
-            >
-              <Ionicons
-                name={category.icone}
-                size={18}
-                color={
-                  isSelected ? theme.colors.primary : theme.colors.textSecondary
-                }
-              />
+          <Text style={styles.stateText}>Carregando categorias...</Text>
+        </View>
+      ) : categoriasError ? (
+        <View style={styles.stateContainer}>
+          <Ionicons
+            name="alert-circle-outline"
+            size={18}
+            color={theme.colors.error}
+          />
 
-              <Text
-                numberOfLines={1}
+          <Text style={styles.errorText}>{categoriasError}</Text>
+
+          <TouchableOpacity
+            activeOpacity={0.72}
+            accessibilityRole="button"
+            accessibilityLabel="Tentar carregar categorias novamente"
+            onPress={() => {
+              void carregarCategorias();
+            }}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryButtonText}>Tentar novamente</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          {categorias.map((category) => {
+            const isSelected = value === category.id;
+
+            return (
+              <TouchableOpacity
+                key={category.id}
+                activeOpacity={0.72}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`Categoria ${category.nome}`}
+                onPress={() => onChange(category.id)}
                 style={[
-                  styles.optionText,
-                  isSelected && styles.optionTextSelected,
+                  styles.option,
+                  isSelected && styles.optionSelected,
+                  hasError && styles.optionError,
                 ]}
               >
-                {category.nome}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+                <Ionicons
+                  name={category.icone}
+                  size={18}
+                  color={
+                    isSelected
+                      ? theme.colors.primary
+                      : theme.colors.textSecondary
+                  }
+                />
+
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.optionText,
+                    isSelected && styles.optionTextSelected,
+                  ]}
+                >
+                  {category.nome}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
 
       {error && (
         <View style={styles.errorContainer}>
@@ -95,6 +140,42 @@ const createStyles = (theme: ThemeType) =>
     content: {
       gap: theme.spacing.sm,
       paddingRight: theme.spacing.lg,
+    },
+
+    stateContainer: {
+      minHeight: 48,
+      flexDirection: "row",
+      alignItems: "center",
+      flexWrap: "wrap",
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.borderRadius.md,
+      backgroundColor: theme.colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.separator,
+      gap: theme.spacing.sm,
+    },
+
+    stateText: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "600",
+    },
+
+    retryButton: {
+      minHeight: 32,
+      justifyContent: "center",
+      paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+      borderRadius: theme.borderRadius.pill,
+      backgroundColor: theme.colors.primarySubtle,
+    },
+
+    retryButtonText: {
+      color: theme.colors.primary,
+      fontSize: theme.typography.caption1.fontSize,
+      lineHeight: theme.typography.caption1.lineHeight,
+      fontWeight: "700",
     },
 
     option: {
