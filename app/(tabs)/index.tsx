@@ -1,19 +1,22 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useCallback, useMemo, useState } from "react";
+import {
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { EmptyState } from "../../src/components/EmptyState";
-import { ProductListItem } from "../../src/components/ProductListItem";
-
-import { SummaryCard } from "../../src/components/SummaryCard";
 
 import { CriticalStockAlert } from "../../src/components/CriticalStockAlert";
-
+import { EmptyState } from "../../src/components/EmptyState";
+import { ErrorView } from "../../src/components/ErrorView";
+import { LoadingView } from "../../src/components/LoadingView";
+import { ProductListItem } from "../../src/components/ProductListItem";
+import { SummaryCard } from "../../src/components/SummaryCard";
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useProducts } from "../../src/contexts/ProductsContext";
@@ -22,22 +25,18 @@ import type { Produto } from "../../src/data/mockData";
 import { useDashboardGreeting } from "../../src/hooks/useDashboardGreeting";
 import { useDashboardMetrics } from "../../src/hooks/useDashboardMetrics";
 
+const MIN_DASHBOARD_REFRESH_DURATION_MS = 900;
+
+const wait = (milliseconds: number) => {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+};
+
 export default function HomeScreen() {
   const { user } = useAuth();
-  const { products } = useProducts();
+  const { products, isLoading, error, carregarProdutos } = useProducts();
   const { theme } = useAppTheme();
 
   const [refreshing, setRefreshing] = useState(false);
-
-  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -46,18 +45,59 @@ export default function HomeScreen() {
   const { greeting, formattedDate, displayName, userInitial } =
     useDashboardGreeting(user?.name);
 
-  const onRefresh = useCallback(() => {
+  const isInitialLoading = isLoading && products.length === 0;
+  const hasInitialError = Boolean(error && products.length === 0);
+  const hasInlineError = Boolean(error && products.length > 0);
+
+  const onRefresh = useCallback(async () => {
+    if (refreshing) return;
+
     setRefreshing(true);
 
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-    }
-
-    refreshTimeoutRef.current = setTimeout(() => {
+    try {
+      await Promise.all([
+        carregarProdutos(),
+        wait(MIN_DASHBOARD_REFRESH_DURATION_MS),
+      ]);
+    } finally {
       setRefreshing(false);
-      refreshTimeoutRef.current = null;
-    }, 900);
-  }, []);
+    }
+  }, [carregarProdutos, refreshing]);
+
+  const refreshControl = (
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      tintColor={theme.colors.primary}
+      colors={[theme.colors.primary]}
+      progressBackgroundColor={theme.colors.surface}
+      progressViewOffset={theme.spacing.lg}
+    />
+  );
+
+  const inlineErrorBanner = hasInlineError ? (
+    <View style={styles.inlineError}>
+      <Ionicons
+        name="alert-circle-outline"
+        size={18}
+        color={theme.colors.error}
+      />
+
+      <Text style={styles.inlineErrorText}>{error}</Text>
+
+      <TouchableOpacity
+        activeOpacity={0.72}
+        accessibilityRole="button"
+        accessibilityLabel="Tentar carregar dashboard novamente"
+        onPress={() => {
+          void onRefresh();
+        }}
+        style={styles.inlineErrorButton}
+      >
+        <Text style={styles.inlineErrorButtonText}>Retry</Text>
+      </TouchableOpacity>
+    </View>
+  ) : null;
 
   const DashboardHeader = () => (
     <View style={styles.headerContainer}>
@@ -74,6 +114,8 @@ export default function HomeScreen() {
           <Text style={styles.avatarText}>{userInitial}</Text>
         </View>
       </View>
+
+      {inlineErrorBanner}
 
       <View style={styles.cardsGrid}>
         {cardResumo.map((card) => (
@@ -113,6 +155,38 @@ export default function HomeScreen() {
     );
   };
 
+  if (isInitialLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+        <LoadingView
+          title="Carregando dashboard"
+          description="Buscando produtos, alertas e indicadores atualizados."
+        />
+      </SafeAreaView>
+    );
+  }
+
+  if (hasInitialError) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+        <ScrollView
+          style={styles.errorScrollView}
+          contentContainerStyle={styles.errorScrollContent}
+          refreshControl={refreshControl}
+          showsVerticalScrollIndicator={false}
+        >
+          <ErrorView
+            description={error ?? "Não foi possível carregar o dashboard."}
+            onRetry={() => {
+              void onRefresh();
+            }}
+            style={styles.errorView}
+          />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <FlatList
@@ -123,15 +197,7 @@ export default function HomeScreen() {
         ListEmptyComponent={EmptyProducts}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={theme.colors.primary}
-            colors={[theme.colors.primary]}
-            progressBackgroundColor={theme.colors.surface}
-          />
-        }
+        refreshControl={refreshControl}
       />
     </SafeAreaView>
   );
@@ -145,6 +211,7 @@ const createStyles = (theme: ThemeType) =>
     },
 
     listContent: {
+      flexGrow: 1,
       paddingBottom: 148,
     },
 
@@ -204,6 +271,42 @@ const createStyles = (theme: ThemeType) =>
       fontWeight: "700",
     },
 
+    inlineError: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: theme.spacing.lg,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.borderRadius.md,
+      backgroundColor: theme.colors.errorSoft,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.error,
+      gap: theme.spacing.sm,
+    },
+
+    inlineErrorText: {
+      flex: 1,
+      color: theme.colors.error,
+      fontSize: theme.typography.footnote.fontSize,
+      lineHeight: theme.typography.footnote.lineHeight,
+      fontWeight: "600",
+    },
+
+    inlineErrorButton: {
+      minHeight: 30,
+      justifyContent: "center",
+      paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+      borderRadius: theme.borderRadius.pill,
+      backgroundColor: theme.colors.error,
+    },
+
+    inlineErrorButtonText: {
+      color: theme.colors.primaryContrast,
+      fontSize: theme.typography.caption1.fontSize,
+      lineHeight: theme.typography.caption1.lineHeight,
+      fontWeight: "700",
+    },
+
     cardsGrid: {
       flexDirection: "row",
       flexWrap: "wrap",
@@ -244,5 +347,17 @@ const createStyles = (theme: ThemeType) =>
       backgroundColor: theme.colors.surface,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.separator,
+    },
+
+    errorScrollView: {
+      flex: 1,
+    },
+
+    errorScrollContent: {
+      flexGrow: 1,
+    },
+
+    errorView: {
+      flex: 1,
     },
   });
