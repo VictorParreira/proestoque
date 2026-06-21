@@ -14,7 +14,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import { CategoryChip } from "../../../src/components/CategoryChip";
 import { EmptyState } from "../../../src/components/EmptyState";
 import { ErrorView } from "../../../src/components/ErrorView";
@@ -83,7 +82,7 @@ export default function ListaProdutos() {
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useFocusEffect(
+useFocusEffect(
   useCallback(() => {
     navigationLockRef.current = false;
 
@@ -112,31 +111,31 @@ export default function ListaProdutos() {
     }
   }, [categoriaAtiva, categorias]);
 
-  const handleRefresh = useCallback(async () => {
-    if (isRefreshing) return;
+const handleRefresh = useCallback(async () => {
+  if (isRefreshing) return;
 
-    setIsRefreshing(true);
+  setIsRefreshing(true);
 
-    try {
-      await Promise.all([
-  carregarProdutos(),
-  carregarCategorias(),
-  wait(MIN_REFRESH_DURATION_MS),
-]);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [carregarCategorias, carregarProdutos, isRefreshing]);
+  try {
+    await Promise.all([
+      carregarProdutos(),
+      carregarCategorias(),
+      wait(MIN_REFRESH_DURATION_MS),
+    ]);
+  } finally {
+    setIsRefreshing(false);
+  }
+}, [carregarCategorias, carregarProdutos, isRefreshing]);
 
-  const refreshControl = (
-    <RefreshControl
-      refreshing={isRefreshing}
-      onRefresh={handleRefresh}
-      tintColor={theme.colors.primary}
-      colors={[theme.colors.primary]}
-      progressViewOffset={theme.spacing.lg}
-    />
-  );
+const refreshControl = (
+  <RefreshControl
+    refreshing={isRefreshing}
+    onRefresh={handleRefresh}
+    tintColor={theme.colors.primary}
+    colors={[theme.colors.primary]}
+    progressViewOffset={theme.spacing.lg}
+  />
+);
 
   const produtosFiltrados = useMemo(() => {
     const termoBusca = busca.toLowerCase().trim();
@@ -356,7 +355,7 @@ const handleOpenProduct = useCallback(
         )}
       </ScrollView>
 
-      {inlineErrorBanner}
+{inlineErrorBanner}
     </View>
   );
 

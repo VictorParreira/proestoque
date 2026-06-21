@@ -10,7 +10,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import { CriticalStockAlert } from "../../src/components/CriticalStockAlert";
 import { EmptyState } from "../../src/components/EmptyState";
 import { ErrorView } from "../../src/components/ErrorView";
@@ -49,31 +48,31 @@ export default function HomeScreen() {
   const hasInitialError = Boolean(error && products.length === 0);
   const hasInlineError = Boolean(error && products.length > 0);
 
-  const onRefresh = useCallback(async () => {
-    if (refreshing) return;
+const onRefresh = useCallback(async () => {
+  if (refreshing) return;
 
-    setRefreshing(true);
+  setRefreshing(true);
 
-    try {
-      await Promise.all([
-        carregarProdutos(),
-        wait(MIN_DASHBOARD_REFRESH_DURATION_MS),
-      ]);
-    } finally {
-      setRefreshing(false);
-    }
-  }, [carregarProdutos, refreshing]);
+  try {
+    await Promise.all([
+      carregarProdutos(),
+      wait(MIN_DASHBOARD_REFRESH_DURATION_MS),
+    ]);
+  } finally {
+    setRefreshing(false);
+  }
+}, [carregarProdutos, refreshing]);
 
-  const refreshControl = (
-    <RefreshControl
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-      tintColor={theme.colors.primary}
-      colors={[theme.colors.primary]}
-      progressBackgroundColor={theme.colors.surface}
-      progressViewOffset={theme.spacing.lg}
-    />
-  );
+const refreshControl = (
+  <RefreshControl
+    refreshing={refreshing}
+    onRefresh={onRefresh}
+    tintColor={theme.colors.primary}
+    colors={[theme.colors.primary]}
+    progressBackgroundColor={theme.colors.surface}
+    progressViewOffset={theme.spacing.lg}
+  />
+);
 
   const inlineErrorBanner = hasInlineError ? (
     <View style={styles.inlineError}>
@@ -115,9 +114,9 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {inlineErrorBanner}
+{inlineErrorBanner}
 
-      <View style={styles.cardsGrid}>
+<View style={styles.cardsGrid}>
         {cardResumo.map((card) => (
           <SummaryCard
             key={card.id}
