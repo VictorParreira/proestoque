@@ -11,6 +11,9 @@ import React, {
 
 import {
   api,
+  API_AUTH_STORAGE_KEYS,
+  getAccessTokenFromAuthResponse,
+  setUnauthorizedHandler,
   type ApiErrorResponse,
   type ApiUser,
   type AuthResponse,
@@ -25,6 +28,7 @@ export type User = {
 export type AuthContextType = {
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
   isLoading: boolean;
   isRestoringSession: boolean;
   isSubmitting: boolean;
@@ -40,7 +44,8 @@ type AuthMeResponse = {
 
 const AUTH_STORAGE_KEYS = {
   user: "@ProEstoque:user",
-  token: "@ProEstoque:token",
+  accessToken: API_AUTH_STORAGE_KEYS.accessToken,
+  refreshToken: API_AUTH_STORAGE_KEYS.refreshToken,
 } as const;
 
 const mapApiUserToUser = (apiUser: ApiUser): User => {
@@ -94,7 +99,8 @@ const parseStoredUser = (storedUser: string): User | null => {
 const clearStoredSession = async () => {
   await AsyncStorage.multiRemove([
     AUTH_STORAGE_KEYS.user,
-    AUTH_STORAGE_KEYS.token,
+    AUTH_STORAGE_KEYS.accessToken,
+    AUTH_STORAGE_KEYS.refreshToken,
   ]);
 };
 
@@ -103,6 +109,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isRestoringSession, setIsRestoringSession] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -110,25 +117,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const persistSession = useCallback(async (authResponse: AuthResponse) => {
     const authenticatedUser = mapApiUserToUser(authResponse.usuario);
+    const accessToken = getAccessTokenFromAuthResponse(authResponse);
+    const nextRefreshToken = authResponse.refreshToken;
 
     await AsyncStorage.multiSet([
       [AUTH_STORAGE_KEYS.user, JSON.stringify(authenticatedUser)],
-      [AUTH_STORAGE_KEYS.token, authResponse.token],
+      [AUTH_STORAGE_KEYS.accessToken, accessToken],
+      [AUTH_STORAGE_KEYS.refreshToken, nextRefreshToken],
     ]);
 
     setUser(authenticatedUser);
-    setToken(authResponse.token);
+    setToken(accessToken);
+    setRefreshToken(nextRefreshToken);
+  }, []);
+
+  useEffect(() => {
+    setUnauthorizedHandler(async () => {
+      await clearStoredSession();
+
+      setUser(null);
+      setToken(null);
+      setRefreshToken(null);
+    });
+
+    return () => {
+      setUnauthorizedHandler(null);
+    };
   }, []);
 
   useEffect(() => {
     async function loadStorageData() {
       try {
-        const [storedUser, storedToken] = await Promise.all([
-          AsyncStorage.getItem(AUTH_STORAGE_KEYS.user),
-          AsyncStorage.getItem(AUTH_STORAGE_KEYS.token),
-        ]);
+        const [storedUser, storedAccessToken, storedRefreshToken] =
+          await Promise.all([
+            AsyncStorage.getItem(AUTH_STORAGE_KEYS.user),
+            AsyncStorage.getItem(AUTH_STORAGE_KEYS.accessToken),
+            AsyncStorage.getItem(AUTH_STORAGE_KEYS.refreshToken),
+          ]);
 
-        if (!storedUser || !storedToken) return;
+        if (!storedUser || !storedAccessToken || !storedRefreshToken) {
+          await clearStoredSession();
+          return;
+        }
 
         const parsedUser = parseStoredUser(storedUser);
 
@@ -141,19 +171,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const response = await api.get<AuthMeResponse>("/auth/me");
           const authenticatedUser = mapApiUserToUser(response.data.usuario);
 
+          const [latestAccessToken, latestRefreshToken] = await Promise.all([
+            AsyncStorage.getItem(AUTH_STORAGE_KEYS.accessToken),
+            AsyncStorage.getItem(AUTH_STORAGE_KEYS.refreshToken),
+          ]);
+
           await AsyncStorage.setItem(
             AUTH_STORAGE_KEYS.user,
             JSON.stringify(authenticatedUser),
           );
 
           setUser(authenticatedUser);
-          setToken(storedToken);
+          setToken(latestAccessToken ?? storedAccessToken);
+          setRefreshToken(latestRefreshToken ?? storedRefreshToken);
         } catch (error) {
           console.error("Erro ao validar sessão:", error);
           await clearStoredSession();
 
           setUser(null);
           setToken(null);
+          setRefreshToken(null);
         }
       } catch (error) {
         console.error("Erro ao restaurar a sessão:", error);
@@ -214,6 +251,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(null);
       setToken(null);
+      setRefreshToken(null);
     } catch (error) {
       console.error("Erro no logout:", error);
     } finally {
@@ -221,12 +259,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const isAuthenticated = !!user && !!token;
+  const isAuthenticated = !!user && !!token && !!refreshToken;
 
   const value = useMemo<AuthContextType>(
     () => ({
       user,
       token,
+      refreshToken,
       isLoading,
       isRestoringSession,
       isSubmitting,
@@ -238,6 +277,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [
       user,
       token,
+      refreshToken,
       isLoading,
       isRestoringSession,
       isSubmitting,
