@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
@@ -32,6 +32,7 @@ type ProductFormProps = {
   disabled?: boolean;
   busyLabel?: string;
   headerComponent?: React.ReactNode;
+  lockQuantity?: boolean;
 };
 
 export function ProductForm({
@@ -41,26 +42,40 @@ export function ProductForm({
   disabled = false,
   busyLabel = "Processando...",
   headerComponent,
+  lockQuantity = false,
 }: ProductFormProps) {
   const { theme } = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const {
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<ProdutoFormData>({
+  control,
+  handleSubmit,
+  setValue,
+  formState: { errors, isSubmitting },
+} = useForm<ProdutoFormData>({
     resolver: zodResolver(produtoSchema),
     defaultValues: initialValues ?? PRODUCT_FORM_DEFAULT_VALUES,
   });
 
   const isBusy = disabled || isSubmitting;
 
+  useEffect(() => {
+  if (!lockQuantity || !initialValues) return;
+
+  setValue("quantidade", initialValues.quantidade, {
+    shouldDirty: false,
+    shouldTouch: false,
+    shouldValidate: false,
+  });
+}, [initialValues, lockQuantity, setValue]);
+
 const handleFormSubmit = (data: ProdutoFormData) => {
   Keyboard.dismiss();
 
   return onSubmit({
     ...data,
+    quantidade:
+      lockQuantity && initialValues ? initialValues.quantidade : data.quantidade,
     foto:
       data.foto === null
         ? null
@@ -152,21 +167,24 @@ const handleFormSubmit = (data: ProdutoFormData) => {
 
           <View style={styles.row}>
             <View style={styles.rowItem}>
-              <Text style={styles.label}>Quantidade</Text>
+              <Text style={styles.label}>
+  {lockQuantity ? "Quantidade atual" : "Quantidade"}
+</Text>
 
               <Controller
                 control={control}
                 name="quantidade"
                 render={({ field: { onChange, value } }) => (
                   <IntegerInput
-                    icon="layers-outline"
-                    placeholder="0"
-                    value={value}
-                    onChangeValue={onChange}
-                    error={errors.quantidade?.message}
-                    returnKeyType="next"
-                    accessibilityLabel="Quantidade em estoque"
-                  />
+  icon="layers-outline"
+  placeholder="0"
+  value={value}
+  onChangeValue={onChange}
+  error={errors.quantidade?.message}
+  returnKeyType="next"
+  accessibilityLabel="Quantidade em estoque"
+  editable={!lockQuantity}
+/>
                 )}
               />
             </View>

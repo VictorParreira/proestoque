@@ -246,6 +246,7 @@ onPress: async () => {
   onSubmit={handleUpdate}
   submitButtonText="Salvar Alterações"
   disabled={isScreenBusy}
+  lockQuantity
   busyLabel={
     isDeleting
       ? "Excluindo produto..."
@@ -253,26 +254,26 @@ onPress: async () => {
         ? "Registrando movimentação..."
         : "Salvando produto..."
   }
-headerComponent={
-  <>
-    <ProductMovementCard
-      product={product}
-      disabled={isScreenBusy}
-      onSubmit={handleRegisterMovement}
-      style={styles.movementCard}
-    />
+  headerComponent={
+    <>
+      <ProductMovementCard
+        product={product}
+        disabled={isScreenBusy}
+        onSubmit={handleRegisterMovement}
+        style={styles.movementCard}
+      />
 
-    <ProductMovementHistoryCard
-      movements={movimentacoes}
-      isLoading={isLoadingMovimentacoes}
-      error={movimentacoesError}
-      onRetry={() => {
-        void carregarMovimentacoes();
-      }}
-      style={styles.historyCard}
-    />
-  </>
-}
+      <ProductMovementHistoryCard
+        movements={movimentacoes}
+        isLoading={isLoadingMovimentacoes}
+        error={movimentacoesError}
+        onRetry={() => {
+          void carregarMovimentacoes();
+        }}
+        style={styles.historyCard}
+      />
+    </>
+  }
 />
       </View>
     </SafeAreaView>
