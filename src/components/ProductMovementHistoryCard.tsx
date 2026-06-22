@@ -59,7 +59,7 @@ export function ProductMovementHistoryCard({
         <View>
           <Text style={styles.title}>Histórico de movimentações</Text>
           <Text style={styles.subtitle}>
-            Últimas alterações de estoque deste produto.
+            Últimas entradas e saídas registradas para este produto.
           </Text>
         </View>
 
@@ -105,7 +105,7 @@ export function ProductMovementHistoryCard({
           />
 
           <Text style={styles.emptyText}>
-            Nenhuma movimentação registrada ainda.
+            Nenhuma entrada ou saída registrada ainda.
           </Text>
         </View>
       ) : null}

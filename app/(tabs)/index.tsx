@@ -93,7 +93,7 @@ const refreshControl = (
         }}
         style={styles.inlineErrorButton}
       >
-        <Text style={styles.inlineErrorButtonText}>Retry</Text>
+        <Text style={styles.inlineErrorButtonText}>Tentar novamente</Text>
       </TouchableOpacity>
     </View>
   ) : null;
@@ -175,7 +175,8 @@ const refreshControl = (
           showsVerticalScrollIndicator={false}
         >
           <ErrorView
-            description={error ?? "Não foi possível carregar o dashboard."}
+  title="Não foi possível carregar o dashboard"
+  description={error ?? "Verifique sua conexão e tente novamente."}
             onRetry={() => {
               void onRefresh();
             }}

@@ -150,6 +150,8 @@ const refreshControl = (
     });
   }, [busca, categoriaAtiva, products]);
 
+  const hasActiveFilters = busca.trim().length > 0 || Boolean(categoriaAtiva);
+
   const secoesFiltradas = useMemo<SecaoProduto[]>(() => {
     return categorias
       .map((categoria) => {
@@ -243,14 +245,18 @@ const handleOpenProduct = useCallback(
     </View>
   );
 
-  const emptyComponent = (
-    <EmptyState
-      icon="search-outline"
-      title="Nenhum produto"
-      description="Não encontramos resultados para a busca ou categoria selecionada."
-      style={styles.emptyState}
-    />
-  );
+const emptyComponent = (
+  <EmptyState
+    icon={hasActiveFilters ? "search-outline" : "cube-outline"}
+    title={hasActiveFilters ? "Nenhum resultado" : "Nenhum produto cadastrado"}
+    description={
+      hasActiveFilters
+        ? "Ajuste a busca ou selecione outra categoria."
+        : "Cadastre seu primeiro produto para iniciar o controle de estoque."
+    }
+    style={styles.emptyState}
+  />
+);
 
   const inlineErrorBanner = hasInlineError ? (
     <View style={styles.inlineError}>
@@ -271,7 +277,7 @@ const handleOpenProduct = useCallback(
         }}
         style={styles.inlineErrorButton}
       >
-        <Text style={styles.inlineErrorButtonText}>Retry</Text>
+        <Text style={styles.inlineErrorButtonText}>Tentar novamente</Text>
       </TouchableOpacity>
     </View>
   ) : null;
@@ -364,7 +370,7 @@ const handleOpenProduct = useCallback(
       <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
         <LoadingView
           title="Carregando produtos"
-          description="Buscando os produtos cadastrados na API."
+          description="Buscando os produtos cadastrados."
         />
       </SafeAreaView>
     );

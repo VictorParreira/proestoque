@@ -19,7 +19,7 @@ type ErrorViewProps = ViewProps & {
 };
 
 export function ErrorView({
-  title = "Algo deu errado",
+  title = "Não foi possível carregar os dados",
   description,
   retryLabel = "Tentar novamente",
   onRetry,
