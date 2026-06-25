@@ -1,14 +1,18 @@
 import React, { useMemo, useState } from "react";
 import {
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
 import { SettingsDivider } from "../../src/components/settings/SettingsDivider";
 import { SettingsGroup } from "../../src/components/settings/SettingsGroup";
 import { SettingsLogoutButton } from "../../src/components/settings/SettingsLogoutButton";
@@ -22,11 +26,15 @@ import { useAppTheme } from "../../src/contexts/ThemeContext";
 
 export default function ConfiguracoesScreen() {
   const { user, logout, isSubmitting } = useAuth();
-  const { preference, setThemePreference, theme } = useAppTheme();
+const { preference, setThemePreference, theme, isDark } = useAppTheme();
+const insets = useSafeAreaInsets();
 
-  const [notificacoes, setNotificacoes] = useState(true);
+const [notificacoes, setNotificacoes] = useState(true);
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+const styles = useMemo(
+  () => createStyles(theme, isDark, insets.top),
+  [theme, isDark, insets.top],
+);
 
   const handleEditProfile = () => {
     Alert.alert(
@@ -69,15 +77,26 @@ export default function ConfiguracoesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <View style={styles.header}>
-        <Text style={styles.titulo}>Configurações</Text>
-      </View>
+<SafeAreaView style={styles.container} edges={["left", "right"]}>
+  <View pointerEvents="none" style={styles.topBlur}>
+    <BlurView
+      intensity={Platform.OS === "android" ? 72 : 34}
+      tint={
+        isDark ? "systemUltraThinMaterialDark" : "systemUltraThinMaterialLight"
+      }
+      experimentalBlurMethod="dimezisBlurView"
+      style={StyleSheet.absoluteFill}
+    />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+    <View style={styles.topBlurScrim} />
+  </View>
+
+  <ScrollView
+    contentContainerStyle={styles.scrollContent}
+    contentInsetAdjustmentBehavior="never"
+    showsVerticalScrollIndicator={false}
+  >
+    <Text style={styles.titulo}>Configurações</Text>
         <SettingsProfileCard
           name={user?.name}
           email={user?.email}
@@ -147,32 +166,47 @@ export default function ConfiguracoesScreen() {
   );
 }
 
-const createStyles = (theme: ThemeType) =>
+const createStyles = (
+  theme: ThemeType,
+  isDark: boolean,
+  topInset: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
 
-    header: {
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.md,
-      paddingBottom: theme.spacing.sm,
-    },
+topBlur: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: topInset + theme.spacing.xs,
+  zIndex: 10,
+  overflow: "hidden",
+},
 
-    titulo: {
-      fontSize: theme.typography.largeTitle.fontSize,
-      lineHeight: theme.typography.largeTitle.lineHeight,
-      fontWeight: theme.typography.largeTitle.fontWeight,
-      color: theme.colors.text,
-      letterSpacing: -0.7,
-    },
+topBlurScrim: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: theme.colors.background,
+  opacity: isDark ? 0.18 : 0.28,
+},
 
-    scrollContent: {
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.md,
-      paddingBottom: theme.spacing["3xl"],
-    },
+titulo: {
+  fontSize: 30,
+  lineHeight: 36,
+  fontWeight: theme.typography.largeTitle.fontWeight,
+  color: theme.colors.text,
+  letterSpacing: -0.6,
+  marginBottom: theme.spacing.sm + theme.spacing.xs,
+},
+
+scrollContent: {
+  paddingHorizontal: theme.spacing.lg,
+  paddingTop: topInset + theme.spacing.sm + theme.spacing.xs,
+  paddingBottom: theme.spacing["3xl"],
+},
 
     dangerGroup: {
       marginTop: theme.spacing.sm,

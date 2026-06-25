@@ -19,6 +19,10 @@ type ImagePickerFieldProps = {
   error?: string;
 };
 
+const IMAGE_PICKER_HEIGHT = 112;
+const IMAGE_PICKER_ICON_WRAPPER_SIZE = 42;
+const IMAGE_PICKER_ICON_SIZE = 21;
+
 export function ImagePickerField({
   value,
   onChange,
@@ -150,22 +154,24 @@ const removeImage = () => {
           </>
         ) : (
           <View style={styles.placeholder}>
-            <View style={styles.iconWrapper}>
-              <Ionicons
-                name={isPicking ? "hourglass-outline" : "camera-outline"}
-                size={28}
-                color={theme.colors.primary}
-              />
-            </View>
+<View style={styles.placeholder}>
+  <View style={styles.iconWrapper}>
+    <Ionicons
+      name={isPicking ? "hourglass-outline" : "camera-outline"}
+      size={IMAGE_PICKER_ICON_SIZE}
+      color={theme.colors.primary}
+    />
+  </View>
 
-            <Text style={styles.placeholderText}>
-              {isPicking ? "Abrindo galeria..." : "Adicionar foto do produto"}
-            </Text>
+  <Text style={styles.placeholderText}>
+    {isPicking ? "Abrindo galeria..." : "Adicionar foto do produto"}
+  </Text>
 
-            <Text style={styles.placeholderSubtext}>
-              {isPicking ? "Aguarde um instante" : "Toque para abrir a galeria"}
-            </Text>
-          </View>
+  <Text style={styles.placeholderSubtext}>
+    {isPicking ? "Aguarde um instante" : "Toque para abrir a galeria"}
+  </Text>
+</View>
+</View>
         )}
       </TouchableOpacity>
 
@@ -187,8 +193,8 @@ const removeImage = () => {
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     container: {
-      marginBottom: theme.spacing.md + theme.spacing.xs,
-    },
+  marginBottom: theme.spacing.md,
+},
 
     pickerButtonDisabled: {
       opacity: theme.opacity.disabled,
@@ -206,22 +212,21 @@ const createStyles = (theme: ThemeType) =>
       backgroundColor: theme.colors.scrim,
     },
 
-    pickerButton: {
-      width: "100%",
-      height: 160,
-      maxHeight: 160,
-      borderRadius: theme.borderRadius.md,
-      overflow: "hidden",
-      justifyContent: "center",
-      alignItems: "center",
-    },
+pickerButton: {
+  width: "100%",
+  height: IMAGE_PICKER_HEIGHT,
+  borderRadius: theme.borderRadius.md,
+  overflow: "hidden",
+  justifyContent: "center",
+  alignItems: "center",
+},
 
-    pickerButtonEmpty: {
-      backgroundColor: theme.colors.inputBackground,
-      borderWidth: theme.borderWidth.md,
-      borderColor: theme.colors.inputBorder,
-      borderStyle: "dashed",
-    },
+pickerButtonEmpty: {
+  backgroundColor: theme.colors.inputBackground,
+  borderWidth: theme.borderWidth.sm,
+  borderColor: theme.colors.inputBorder,
+  borderStyle: "dashed",
+},
 
     pickerButtonFilled: {
       backgroundColor: theme.colors.surface,
@@ -241,37 +246,37 @@ const createStyles = (theme: ThemeType) =>
       height: "100%",
     },
 
-    placeholder: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: theme.spacing.lg,
-    },
+placeholder: {
+  alignItems: "center",
+  justifyContent: "center",
+  paddingHorizontal: theme.spacing.lg,
+},
 
-    iconWrapper: {
-      width: 56,
-      height: 56,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.primarySubtle,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: theme.spacing.sm + theme.spacing.xs,
-    },
+iconWrapper: {
+  width: IMAGE_PICKER_ICON_WRAPPER_SIZE,
+  height: IMAGE_PICKER_ICON_WRAPPER_SIZE,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.primarySubtle,
+  justifyContent: "center",
+  alignItems: "center",
+  marginBottom: theme.spacing.xs,
+},
 
-    placeholderText: {
-      color: theme.colors.text,
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-      fontWeight: "700",
-      textAlign: "center",
-    },
+placeholderText: {
+  color: theme.colors.text,
+  fontSize: theme.typography.subheadline.fontSize,
+  lineHeight: theme.typography.subheadline.lineHeight,
+  fontWeight: "700",
+  textAlign: "center",
+},
 
-    placeholderSubtext: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      marginTop: theme.spacing.xs,
-      textAlign: "center",
-    },
+placeholderSubtext: {
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  marginTop: theme.spacing.xxs,
+  textAlign: "center",
+},
 
     editOverlay: {
       position: "absolute",
@@ -295,18 +300,22 @@ const createStyles = (theme: ThemeType) =>
     },
 
     errorContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginTop: theme.spacing.sm,
-      marginLeft: theme.spacing.xs,
-    },
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: theme.spacing.xs,
+  marginLeft: theme.spacing.xs,
+},
 
     errorText: {
-      flex: 1,
-      color: theme.colors.error,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "600",
-      marginLeft: theme.spacing.xs,
-    },
+  flex: 1,
+  color: theme.colors.error,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "600",
+  marginLeft: theme.spacing.xs,
+},
+
+    placeholderTextContainer: {
+  flex: 1,
+},
   });

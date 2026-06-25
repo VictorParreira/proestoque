@@ -43,13 +43,15 @@ export function CategoryChip({
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     container: {
-      paddingHorizontal: theme.spacing.md + theme.spacing.xs,
-      paddingVertical: theme.spacing.sm + theme.spacing.xxs,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.surface,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-    },
+  minHeight: 36,
+  justifyContent: "center",
+  paddingHorizontal: theme.spacing.md,
+  paddingVertical: theme.spacing.xs,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.surface,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+},
 
     containerSelected: {
       backgroundColor: theme.colors.primary,
@@ -57,14 +59,14 @@ const createStyles = (theme: ThemeType) =>
     },
 
     text: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      color: theme.colors.textSecondary,
-      fontWeight: "600",
-    },
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  color: theme.colors.textSecondary,
+  fontWeight: "600",
+},
 
     textSelected: {
-      color: theme.colors.primaryContrast,
-      fontWeight: "700",
-    },
+  color: theme.colors.primaryContrast,
+  fontWeight: "700",
+},
   });

@@ -32,7 +32,7 @@ const createStyles = (theme: ThemeType) =>
       color: theme.colors.textSecondary,
       textTransform: "uppercase",
       letterSpacing: 0.6,
-      marginBottom: theme.spacing.sm + theme.spacing.xs,
+      marginBottom: theme.spacing.sm,
       marginLeft: theme.spacing.xs,
     },
   });

@@ -21,6 +21,9 @@ type ProductMovementCardProps = {
   style?: View["props"]["style"];
 };
 
+const MOVEMENT_BADGE_ICON_SIZE = 15;
+const MOVEMENT_SEGMENT_ICON_SIZE = 16;
+
 export function ProductMovementCard({
   product,
   disabled = false,
@@ -80,10 +83,10 @@ export function ProductMovementCard({
 
         <View style={styles.stockBadge}>
           <Ionicons
-            name="cube-outline"
-            size={16}
-            color={theme.colors.primary}
-          />
+  name="cube-outline"
+  size={MOVEMENT_BADGE_ICON_SIZE}
+  color={theme.colors.primary}
+/>
           <Text style={styles.stockBadgeText}>{product.quantidade}</Text>
         </View>
       </View>
@@ -103,7 +106,7 @@ export function ProductMovementCard({
         >
           <Ionicons
             name="arrow-down-circle-outline"
-            size={18}
+            size={MOVEMENT_SEGMENT_ICON_SIZE}
             color={isEntrada ? theme.colors.primary : theme.colors.textSecondary}
           />
           <Text
@@ -130,7 +133,7 @@ export function ProductMovementCard({
         >
           <Ionicons
             name="arrow-up-circle-outline"
-            size={18}
+            size={MOVEMENT_SEGMENT_ICON_SIZE}
             color={!isEntrada ? theme.colors.error : theme.colors.textSecondary}
           />
           <Text
@@ -189,80 +192,80 @@ export function ProductMovementCard({
 
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
-    container: {
-      marginHorizontal: theme.spacing.lg,
-      marginTop: theme.spacing.lg,
-      marginBottom: theme.spacing.md,
-      padding: theme.spacing.md,
-      borderRadius: theme.borderRadius.lg,
-      backgroundColor: theme.colors.surface,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-    },
+container: {
+  marginHorizontal: theme.spacing.lg,
+  marginTop: theme.spacing.md,
+  marginBottom: theme.spacing.md,
+  padding: theme.spacing.md,
+  borderRadius: theme.borderRadius.lg,
+  backgroundColor: theme.colors.surface,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+},
 
     containerDisabled: {
       opacity: 0.92,
     },
 
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: theme.spacing.md,
-      gap: theme.spacing.md,
-    },
+header: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: theme.spacing.sm + theme.spacing.xs,
+  gap: theme.spacing.sm,
+},
 
-    title: {
-      color: theme.colors.text,
-      fontSize: theme.typography.headline.fontSize,
-      lineHeight: theme.typography.headline.lineHeight,
-      fontWeight: theme.typography.headline.fontWeight,
-    },
+title: {
+  color: theme.colors.text,
+  fontSize: theme.typography.subheadline.fontSize,
+  lineHeight: theme.typography.subheadline.lineHeight,
+  fontWeight: "800",
+},
 
-    subtitle: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "600",
-      marginTop: theme.spacing.xs,
-    },
+subtitle: {
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "600",
+  marginTop: theme.spacing.xxs,
+},
 
-    stockBadge: {
-      minHeight: 36,
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.primarySubtle,
-      gap: theme.spacing.xs,
-    },
+stockBadge: {
+  minHeight: 30,
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: theme.spacing.sm,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.primarySubtle,
+  gap: theme.spacing.xxs,
+},
 
-    stockBadgeText: {
-      color: theme.colors.primary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "800",
-    },
+stockBadgeText: {
+  color: theme.colors.primary,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "800",
+},
 
-    segmentedControl: {
-      flexDirection: "row",
-      gap: theme.spacing.sm,
-      marginBottom: theme.spacing.md,
-    },
+segmentedControl: {
+  flexDirection: "row",
+  gap: theme.spacing.sm,
+  marginBottom: theme.spacing.sm + theme.spacing.xs,
+},
 
-    segmentButton: {
-      flex: 1,
-      minHeight: 44,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: theme.spacing.md,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.inputBackground,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      gap: theme.spacing.xs,
-    },
+segmentButton: {
+  flex: 1,
+  minHeight: 40,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.inputBackground,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  gap: theme.spacing.xs,
+},
 
     segmentButtonEntradaSelected: {
       backgroundColor: theme.colors.primarySubtle,
@@ -274,12 +277,12 @@ const createStyles = (theme: ThemeType) =>
       borderColor: theme.colors.error,
     },
 
-    segmentText: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "700",
-    },
+segmentText: {
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "700",
+},
 
     segmentTextEntradaSelected: {
       color: theme.colors.primary,
@@ -289,16 +292,18 @@ const createStyles = (theme: ThemeType) =>
       color: theme.colors.error,
     },
 
-    label: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "700",
-      color: theme.colors.textSecondary,
-      marginBottom: theme.spacing.sm,
-      marginLeft: theme.spacing.xs,
-    },
+label: {
+  fontSize: theme.typography.footnote.fontSize,
+  lineHeight: theme.typography.footnote.lineHeight,
+  fontWeight: "700",
+  color: theme.colors.textSecondary,
+  marginBottom: theme.spacing.xs,
+  marginLeft: theme.spacing.xs,
+},
 
-    submitButton: {
-      marginTop: theme.spacing.xs,
-    },
+submitButton: {
+  minHeight: 50,
+  marginTop: 0,
+  paddingVertical: theme.spacing.sm,
+},
   });

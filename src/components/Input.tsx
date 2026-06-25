@@ -18,6 +18,9 @@ interface InputProps extends TextInputProps {
   isPassword?: boolean;
 }
 
+const INPUT_HEIGHT = 50;
+const INPUT_ICON_SIZE = 20;
+
 export function Input({
   icon,
   error,
@@ -62,11 +65,11 @@ export function Input({
       >
         {icon && (
           <Ionicons
-            name={icon}
-            size={22}
-            color={iconColor}
-            style={styles.icon}
-          />
+  name={icon}
+  size={INPUT_ICON_SIZE}
+  color={iconColor}
+  style={styles.icon}
+/>
         )}
 
         <TextInput
@@ -109,10 +112,10 @@ export function Input({
             }
           >
             <Ionicons
-              name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
-              size={22}
-              color={theme.colors.textSecondary}
-            />
+  name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+  size={INPUT_ICON_SIZE}
+  color={theme.colors.textSecondary}
+/>
           </TouchableOpacity>
         )}
       </View>
@@ -135,19 +138,19 @@ export function Input({
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     container: {
-      marginBottom: theme.spacing.md + theme.spacing.xs,
-    },
+  marginBottom: theme.spacing.md,
+},
 
     inputContainer: {
-      minHeight: 56,
-      flexDirection: "row",
-      alignItems: "center",
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.inputBorder,
-      borderRadius: theme.borderRadius.md,
-      paddingHorizontal: theme.spacing.md,
-      backgroundColor: theme.colors.inputBackground,
-    },
+  minHeight: INPUT_HEIGHT,
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.inputBorder,
+  borderRadius: theme.borderRadius.md,
+  paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+  backgroundColor: theme.colors.inputBackground,
+},
 
     inputFocused: {
       borderColor: theme.colors.inputBorderFocused,
@@ -165,32 +168,32 @@ const createStyles = (theme: ThemeType) =>
     },
 
     icon: {
-      marginRight: theme.spacing.sm + theme.spacing.xs,
-    },
+  marginRight: theme.spacing.sm,
+},
 
     input: {
-      flex: 1,
-      minHeight: 56,
-      color: theme.colors.text,
-      fontSize: theme.typography.callout.fontSize,
-      lineHeight: theme.typography.callout.lineHeight,
-      fontWeight: theme.typography.callout.fontWeight,
-      paddingVertical: 0,
-    },
+  flex: 1,
+  minHeight: INPUT_HEIGHT,
+  color: theme.colors.text,
+  fontSize: theme.typography.subheadline.fontSize,
+  lineHeight: theme.typography.subheadline.lineHeight,
+  fontWeight: theme.typography.subheadline.fontWeight,
+  paddingVertical: 0,
+},
 
     errorContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginTop: theme.spacing.sm,
-      marginLeft: theme.spacing.xs,
-    },
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: theme.spacing.xs,
+  marginLeft: theme.spacing.xs,
+},
 
     errorText: {
-      flex: 1,
-      color: theme.colors.error,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "600",
-      marginLeft: theme.spacing.xs,
-    },
+  flex: 1,
+  color: theme.colors.error,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "600",
+  marginLeft: theme.spacing.xs,
+},
   });

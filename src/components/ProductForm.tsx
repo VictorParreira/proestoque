@@ -59,6 +59,10 @@ export function ProductForm({
 
   const isBusy = disabled || isSubmitting;
 
+  const formCardDescription = initialValues
+  ? "Atualize as informações cadastrais, comerciais e visuais deste item."
+  : "Cadastre as informações.";
+
   useEffect(() => {
   if (!lockQuantity || !initialValues) return;
 
@@ -101,31 +105,41 @@ const handleFormSubmit = (data: ProdutoFormData) => {
   >
     <View pointerEvents={isBusy ? "none" : "auto"}>
       {headerComponent}
+
+      <View style={styles.formCard}>
+        {initialValues ? (
+  <View style={styles.formCardHeader}>
+    <Text style={styles.formCardTitle}>Detalhes do produto</Text>
+
+    <Text style={styles.formCardDescription}>
+      {formCardDescription}
+    </Text>
+  </View>
+) : null}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Imagem</Text>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Foto do Produto</Text>
-
-            <Controller
-              control={control}
-              name="foto"
-              render={({ field: { onChange, value } }) => (
-                <ImagePickerField
-                  value={value}
-                  onChange={onChange}
-                  error={errors.foto?.message}
-                />
-              )}
-            />
-          </View>
+<View style={[styles.formGroup, styles.lastFormGroup]}>
+  <Controller
+    control={control}
+    name="foto"
+    render={({ field: { onChange, value } }) => (
+      <ImagePickerField
+        value={value}
+        onChange={onChange}
+        error={errors.foto?.message}
+      />
+    )}
+  />
+</View>
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section, styles.dividedSection]}>
           <Text style={styles.sectionTitle}>Informações básicas</Text>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Nome do Produto</Text>
+  <Text style={styles.label}>Nome do Produto</Text>
 
             <Controller
               control={control}
@@ -145,8 +159,8 @@ const handleFormSubmit = (data: ProdutoFormData) => {
             />
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Categoria</Text>
+          <View style={[styles.formGroup, styles.lastFormGroup]}>
+  <Text style={styles.label}>Categoria</Text>
 
             <Controller
               control={control}
@@ -162,29 +176,29 @@ const handleFormSubmit = (data: ProdutoFormData) => {
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section, styles.dividedSection]}>
           <Text style={styles.sectionTitle}>Estoque</Text>
 
           <View style={styles.row}>
             <View style={styles.rowItem}>
               <Text style={styles.label}>
-  {lockQuantity ? "Quantidade atual" : "Quantidade"}
-</Text>
+                {lockQuantity ? "Quantidade atual" : "Quantidade"}
+              </Text>
 
               <Controller
                 control={control}
                 name="quantidade"
                 render={({ field: { onChange, value } }) => (
                   <IntegerInput
-  icon="layers-outline"
-  placeholder="0"
-  value={value}
-  onChangeValue={onChange}
-  error={errors.quantidade?.message}
-  returnKeyType="next"
-  accessibilityLabel="Quantidade em estoque"
-  editable={!lockQuantity}
-/>
+                    icon="layers-outline"
+                    placeholder="0"
+                    value={value}
+                    onChangeValue={onChange}
+                    error={errors.quantidade?.message}
+                    returnKeyType="next"
+                    accessibilityLabel="Quantidade em estoque"
+                    editable={!lockQuantity}
+                  />
                 )}
               />
             </View>
@@ -211,11 +225,11 @@ const handleFormSubmit = (data: ProdutoFormData) => {
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section, styles.dividedSection]}>
           <Text style={styles.sectionTitle}>Comercial</Text>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Preço</Text>
+  <Text style={styles.label}>Preço</Text>
 
             <Controller
               control={control}
@@ -233,8 +247,8 @@ const handleFormSubmit = (data: ProdutoFormData) => {
             />
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Unidade</Text>
+          <View style={[styles.formGroup, styles.lastFormGroup]}>
+  <Text style={styles.label}>Unidade</Text>
 
             <Controller
               control={control}
@@ -252,14 +266,15 @@ const handleFormSubmit = (data: ProdutoFormData) => {
 
         <Button
           title={submitButtonText}
-        onPress={handleSubmit(handleFormSubmit)}
-        fullWidth
-        loading={isSubmitting}
-        disabled={isBusy}
-        style={styles.submitButton}
+          onPress={handleSubmit(handleFormSubmit)}
+          fullWidth
+          loading={isSubmitting}
+          disabled={isBusy}
+          style={styles.submitButton}
         />
-        </View>
-      </ScrollView>
+      </View>
+      </View>
+</ScrollView>
 
       {isBusy && (
     <View style={styles.interactionBlocker} pointerEvents="auto">
@@ -289,40 +304,46 @@ const createStyles = (theme: ThemeType) =>
       backgroundColor: theme.colors.background,
     },
 
-    container: {
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: 72,
-      backgroundColor: theme.colors.background,
-    },
+container: {
+  paddingHorizontal: theme.spacing.lg,
+  paddingTop: theme.spacing.md,
+  paddingBottom: 72,
+  backgroundColor: theme.colors.background,
+},
 
-    section: {
-      marginBottom: theme.spacing.lg,
-    },
+section: {
+  padding: theme.spacing.md,
+  borderRadius: theme.borderRadius.lg,
+  backgroundColor: theme.colors.surface,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+},
 
-    sectionTitle: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "700",
-      color: theme.colors.textSecondary,
-      textTransform: "uppercase",
-      letterSpacing: 0.6,
-      marginBottom: theme.spacing.sm + theme.spacing.xs,
-      marginLeft: theme.spacing.xs,
-    },
+sectionTitle: {
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "800",
+  color: theme.colors.primary,
+  textTransform: "uppercase",
+  letterSpacing: 0.45,
+  marginBottom: theme.spacing.sm,
+},
 
-    formGroup: {
-      marginBottom: theme.spacing.sm,
-    },
+formGroup: {
+  marginBottom: theme.spacing.sm + theme.spacing.xs,
+},
 
-    label: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "700",
-      color: theme.colors.textSecondary,
-      marginBottom: theme.spacing.sm,
-      marginLeft: theme.spacing.xs,
-    },
+lastFormGroup: {
+  marginBottom: 0,
+},
+
+label: {
+  fontSize: theme.typography.footnote.fontSize,
+  lineHeight: theme.typography.footnote.lineHeight,
+  fontWeight: "700",
+  color: theme.colors.textSecondary,
+  marginBottom: theme.spacing.xs,
+},
 
     row: {
       flexDirection: "row",
@@ -333,10 +354,9 @@ const createStyles = (theme: ThemeType) =>
       flex: 1,
     },
 
-    submitButton: {
-      marginTop: theme.spacing.sm,
-      marginBottom: theme.spacing.xl,
-    },
+submitButton: {
+  marginTop: theme.spacing.xs,
+},
 
     formWrapper: {
   flex: 1,
@@ -370,5 +390,33 @@ busyText: {
   fontSize: theme.typography.footnote.fontSize,
   lineHeight: theme.typography.footnote.lineHeight,
   fontWeight: "700",
+},
+
+formCard: {
+  gap: theme.spacing.md,
+},
+
+formCardHeader: {
+  paddingHorizontal: theme.spacing.xs,
+},
+
+formCardTitle: {
+  color: theme.colors.text,
+  fontSize: theme.typography.subheadline.fontSize,
+  lineHeight: theme.typography.subheadline.lineHeight,
+  fontWeight: "800",
+},
+
+formCardDescription: {
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "600",
+  marginTop: theme.spacing.xxs,
+},
+
+dividedSection: {
+  borderTopWidth: 0,
+  paddingTop: theme.spacing.md,
 },
   });

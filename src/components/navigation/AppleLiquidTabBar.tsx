@@ -44,6 +44,11 @@ const ROUTE_CONFIG: Record<string, RouteConfig> = {
 
 const TAB_BAR_PADDING = 4;
 const TAB_GAP = 4;
+const TAB_BAR_HEIGHT = 62;
+const TAB_ITEM_HEIGHT = TAB_BAR_HEIGHT - TAB_BAR_PADDING * 2;
+const ACCESSORY_SIZE = 62;
+const TAB_ICON_SIZE = 21;
+const ACCESSORY_ICON_SIZE = 28;
 
 function LiquidGlassBackground({
   isDark,
@@ -227,7 +232,7 @@ export function AppleLiquidTabBar({
 
   const handleAccessoryPress = () => {
     triggerAccessoryHaptic();
-    router.push("/(tabs)/produtos/novo");
+    router.push("/produtos/novo");
   };
 
   return (
@@ -267,8 +272,6 @@ export function AppleLiquidTabBar({
                 />
 
                 <View style={styles.selectionTint} />
-                <View style={styles.selectionOuterRing} />
-                <View style={styles.selectionInnerRing} />
               </Animated.View>
             )}
 
@@ -304,7 +307,7 @@ export function AppleLiquidTabBar({
                   <View style={styles.tabItem}>
                     <Ionicons
                       name={isFocused ? config.activeIcon : config.icon}
-                      size={22}
+                      size={TAB_ICON_SIZE}
                       color={
                         isFocused
                           ? theme.colors.primary
@@ -352,11 +355,11 @@ export function AppleLiquidTabBar({
               borderRadius={theme.borderRadius.pill}
             />
 
-            <View style={styles.accessoryTint} />
-            <View style={styles.accessoryOuterRing} />
-            <View style={styles.accessoryInnerRing} />
-
-            <Ionicons name="add" size={30} color={theme.colors.primary} />
+<Ionicons
+  name="add"
+  size={ACCESSORY_ICON_SIZE}
+  color={theme.colors.primary}
+/>
           </Animated.View>
         </Pressable>
       </View>
@@ -364,15 +367,20 @@ export function AppleLiquidTabBar({
   );
 }
 
-const createStyles = (theme: ThemeType, isDark: boolean, bottomInset: number) =>
-  StyleSheet.create({
+const createStyles = (theme: ThemeType, isDark: boolean, bottomInset: number) => {
+const bottomSpacing = Math.max(
+  theme.spacing.md,
+  bottomInset - theme.spacing.sm,
+);
+
+  return StyleSheet.create({
     wrapper: {
       position: "absolute",
       left: 0,
       right: 0,
       bottom: 0,
       paddingHorizontal: theme.spacing.lg,
-      paddingBottom: Math.max(bottomInset, theme.spacing.md),
+      paddingBottom: bottomSpacing,
       alignItems: "center",
     },
 
@@ -382,23 +390,23 @@ const createStyles = (theme: ThemeType, isDark: boolean, bottomInset: number) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      gap: theme.spacing.sm + theme.spacing.xs,
+      gap: theme.spacing.sm,
     },
 
-    tabsShell: {
-      flex: 1,
-      height: 68,
-      borderRadius: theme.borderRadius.pill,
-      overflow: "hidden",
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.borderStrong,
-      backgroundColor: "transparent",
-      shadowColor: theme.shadow.lg.shadowColor,
-      shadowOffset: theme.shadow.lg.shadowOffset,
-      shadowOpacity: isDark ? 0 : 0.16,
-      shadowRadius: theme.shadow.lg.shadowRadius,
-      elevation: isDark ? 0 : 10,
-    },
+tabsShell: {
+  flex: 1,
+  height: TAB_BAR_HEIGHT,
+  borderRadius: theme.borderRadius.pill,
+  overflow: "hidden",
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  backgroundColor: "transparent",
+  shadowColor: theme.shadow.sm.shadowColor,
+  shadowOffset: theme.shadow.sm.shadowOffset,
+  shadowOpacity: isDark ? 0 : 0.08,
+  shadowRadius: theme.shadow.sm.shadowRadius,
+  elevation: isDark ? 0 : 4,
+},
 
     tabsContent: {
       flex: 1,
@@ -408,55 +416,41 @@ const createStyles = (theme: ThemeType, isDark: boolean, bottomInset: number) =>
       gap: TAB_GAP,
     },
 
-    selectionPill: {
-      position: "absolute",
-      top: TAB_BAR_PADDING,
-      bottom: TAB_BAR_PADDING,
-      left: 0,
-      borderRadius: theme.borderRadius.pill,
-      overflow: "hidden",
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.focused,
-      backgroundColor: "transparent",
-      shadowColor: theme.colors.primary,
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: isDark ? 0.12 : 0.18,
-      shadowRadius: 12,
-      elevation: isDark ? 0 : 4,
-      zIndex: 1,
-    },
+selectionPill: {
+  position: "absolute",
+  top: TAB_BAR_PADDING,
+  bottom: TAB_BAR_PADDING,
+  left: 0,
+  borderRadius: theme.borderRadius.pill,
+  overflow: "hidden",
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  backgroundColor: "transparent",
+  shadowColor: theme.colors.primary,
+  shadowOffset: { width: 0, height: 0 },
+  shadowOpacity: isDark ? 0 : 0.08,
+  shadowRadius: 8,
+  elevation: isDark ? 0 : 2,
+  zIndex: 1,
+},
 
-    selectionTint: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: isDark
-        ? theme.colors.surfaceElevated
-        : theme.colors.surfaceOverlay,
-    },
-
-    selectionOuterRing: {
-      ...StyleSheet.absoluteFillObject,
-      borderRadius: theme.borderRadius.pill,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.focused,
-    },
-
-    selectionInnerRing: {
-      ...StyleSheet.absoluteFillObject,
-      borderRadius: theme.borderRadius.pill,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.primarySubtle,
-    },
+selectionTint: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: isDark
+    ? theme.colors.surfaceElevated
+    : theme.colors.surfaceSecondary,
+},
 
     tabPressable: {
       flex: 1,
-      height: 60,
+      height: TAB_ITEM_HEIGHT,
       borderRadius: theme.borderRadius.pill,
       zIndex: 2,
     },
 
     tabItem: {
       flex: 1,
-      height: 60,
+      height: TAB_ITEM_HEIGHT,
       borderRadius: theme.borderRadius.pill,
       alignItems: "center",
       justifyContent: "center",
@@ -471,52 +465,32 @@ const createStyles = (theme: ThemeType, isDark: boolean, bottomInset: number) =>
       color: theme.colors.textSecondary,
     },
 
-    tabLabelActive: {
-      color: theme.colors.primary,
-      fontWeight: "800",
-    },
+tabLabelActive: {
+  color: theme.colors.primary,
+  fontWeight: "700",
+},
 
     accessoryPressable: {
-      width: 68,
-      height: 68,
+      width: ACCESSORY_SIZE,
+      height: ACCESSORY_SIZE,
       borderRadius: theme.borderRadius.pill,
     },
 
-    accessoryButton: {
-      width: 68,
-      height: 68,
-      borderRadius: theme.borderRadius.pill,
-      overflow: "hidden",
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.borderStrong,
-      backgroundColor: "transparent",
-      shadowColor: theme.colors.primary,
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: isDark ? 0.1 : 0.18,
-      shadowRadius: 14,
-      elevation: isDark ? 0 : 8,
-    },
-
-    accessoryTint: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: isDark
-        ? theme.colors.surfaceElevated
-        : theme.colors.surfaceOverlay,
-    },
-
-    accessoryOuterRing: {
-      ...StyleSheet.absoluteFillObject,
-      borderRadius: theme.borderRadius.pill,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.focused,
-    },
-
-    accessoryInnerRing: {
-      ...StyleSheet.absoluteFillObject,
-      borderRadius: theme.borderRadius.pill,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.primarySubtle,
-    },
+accessoryButton: {
+  width: ACCESSORY_SIZE,
+  height: ACCESSORY_SIZE,
+  borderRadius: theme.borderRadius.pill,
+  overflow: "hidden",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  backgroundColor: "transparent",
+  shadowColor: theme.shadow.sm.shadowColor,
+  shadowOffset: theme.shadow.sm.shadowOffset,
+  shadowOpacity: isDark ? 0 : 0.08,
+  shadowRadius: theme.shadow.sm.shadowRadius,
+  elevation: isDark ? 0 : 4,
+},
   });
+};

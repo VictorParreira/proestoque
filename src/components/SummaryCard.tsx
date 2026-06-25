@@ -19,6 +19,9 @@ type SummaryCardProps = ViewProps & {
   variant: SummaryCardVariant;
 };
 
+const ICON_CONTAINER_SIZE = 32;
+const ICON_SIZE = 17;
+
 export function SummaryCard({
   title,
   value,
@@ -69,7 +72,7 @@ export function SummaryCard({
         <View
           style={[styles.iconContainer, { backgroundColor: colors.background }]}
         >
-          <Ionicons name={icon} size={18} color={colors.icon} />
+          <Ionicons name={icon} size={ICON_SIZE} color={colors.icon} />
         </View>
       </View>
 
@@ -83,48 +86,49 @@ export function SummaryCard({
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     container: {
-      padding: theme.spacing.md,
-      borderRadius: theme.borderRadius.lg,
-      backgroundColor: theme.colors.surface,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
-    },
+  paddingHorizontal: theme.spacing.md,
+  paddingVertical: theme.spacing.sm + theme.spacing.xs,
+  borderRadius: theme.borderRadius.lg,
+  backgroundColor: theme.colors.surface,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  shadowColor: theme.shadow.sm.shadowColor,
+  shadowOffset: theme.shadow.sm.shadowOffset,
+  shadowOpacity: theme.shadow.sm.shadowOpacity,
+  shadowRadius: theme.shadow.sm.shadowRadius,
+  elevation: theme.shadow.sm.elevation,
+},
 
-    header: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      marginBottom: theme.spacing.md,
-    },
+header: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  marginBottom: theme.spacing.sm,
+},
 
-    title: {
-      flex: 1,
-      marginTop: theme.spacing.xs,
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "600",
-    },
+title: {
+  flex: 1,
+  marginTop: theme.spacing.xxs,
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.footnote.fontSize,
+  lineHeight: theme.typography.footnote.lineHeight,
+  fontWeight: "600",
+},
 
-    iconContainer: {
-      width: 36,
-      height: 36,
-      borderRadius: theme.borderRadius.pill,
-      justifyContent: "center",
-      alignItems: "center",
-      marginLeft: theme.spacing.sm,
-    },
+iconContainer: {
+  width: ICON_CONTAINER_SIZE,
+  height: ICON_CONTAINER_SIZE,
+  borderRadius: theme.borderRadius.pill,
+  justifyContent: "center",
+  alignItems: "center",
+  marginLeft: theme.spacing.sm,
+},
 
-    value: {
-      color: theme.colors.text,
-      fontSize: 26,
-      lineHeight: 32,
-      fontWeight: "800",
-      letterSpacing: -0.5,
-    },
+value: {
+  color: theme.colors.text,
+  fontSize: 24,
+  lineHeight: 30,
+  fontWeight: "800",
+  letterSpacing: -0.45,
+},
   });

@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -9,7 +11,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { CriticalStockAlert } from "../../src/components/CriticalStockAlert";
 import { EmptyState } from "../../src/components/EmptyState";
 import { ErrorView } from "../../src/components/ErrorView";
@@ -33,11 +39,15 @@ const wait = (milliseconds: number) => {
 export default function HomeScreen() {
   const { user } = useAuth();
   const { products, isLoading, error, carregarProdutos } = useProducts();
-  const { theme } = useAppTheme();
+const { theme, isDark } = useAppTheme();
+const insets = useSafeAreaInsets();
 
   const [refreshing, setRefreshing] = useState(false);
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+const styles = useMemo(
+  () => createStyles(theme, isDark, insets.top),
+  [theme, isDark, insets.top],
+);
 
   const { alertas, cardResumo, recentProducts } = useDashboardMetrics(products);
 
@@ -70,7 +80,7 @@ const refreshControl = (
     tintColor={theme.colors.primary}
     colors={[theme.colors.primary]}
     progressBackgroundColor={theme.colors.surface}
-    progressViewOffset={theme.spacing.lg}
+    progressViewOffset={insets.top + theme.spacing.lg}
   />
 );
 
@@ -102,11 +112,17 @@ const refreshControl = (
     <View style={styles.headerContainer}>
       <View style={styles.greetingContainer}>
         <View style={styles.greetingTextContainer}>
-          <Text style={styles.greetingTitle} numberOfLines={2}>
-            {greeting}, {displayName}
-          </Text>
+          <Text style={styles.greetingEyebrow} numberOfLines={1}>
+  {greeting},
+</Text>
 
-          <Text style={styles.greetingSubtitle}>{formattedDate}</Text>
+<Text style={styles.greetingName} numberOfLines={1}>
+  {displayName}
+</Text>
+
+<Text style={styles.greetingSubtitle} numberOfLines={1}>
+  {formattedDate}
+</Text>
         </View>
 
         <View style={styles.avatar}>
@@ -187,89 +203,146 @@ const refreshControl = (
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <FlatList
-        data={recentProducts}
-        keyExtractor={(item) => item.id}
-        renderItem={renderProduto}
-        ListHeaderComponent={DashboardHeader}
-        ListEmptyComponent={EmptyProducts}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={refreshControl}
-      />
+return (
+  <SafeAreaView style={styles.container} edges={["left", "right"]}>
+<View pointerEvents="none" style={styles.topBlur}>
+  <BlurView
+    intensity={Platform.OS === "android" ? 72 : 34}
+    tint={
+      isDark
+        ? "systemUltraThinMaterialDark"
+        : "systemUltraThinMaterialLight"
+    }
+    experimentalBlurMethod="dimezisBlurView"
+    style={StyleSheet.absoluteFill}
+  />
+
+  <View style={styles.topBlurScrim} />
+</View>
+
+{refreshing ? (
+  <View pointerEvents="none" style={styles.refreshIndicator}>
+    <ActivityIndicator size="small" color={theme.colors.primary} />
+  </View>
+) : null}
+
+<FlatList
+  data={recentProducts}
+  keyExtractor={(item) => item.id}
+  renderItem={renderProduto}
+  ListHeaderComponent={DashboardHeader}
+  ListEmptyComponent={EmptyProducts}
+  contentContainerStyle={styles.listContent}
+  showsVerticalScrollIndicator={false}
+  refreshControl={refreshControl}
+  contentInsetAdjustmentBehavior="never"
+/>
     </SafeAreaView>
   );
 }
 
-const createStyles = (theme: ThemeType) =>
+const createStyles = (
+  theme: ThemeType,
+  isDark: boolean,
+  topInset: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
 
+    topBlur: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: topInset + theme.spacing.xs,
+  zIndex: 10,
+  overflow: "hidden",
+},
+
+topBlurScrim: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: theme.colors.background,
+  opacity: isDark ? 0.18 : 0.28,
+},
+
+refreshIndicator: {
+  position: "absolute",
+  top: topInset + theme.spacing.sm,
+  alignSelf: "center",
+  zIndex: 20,
+},
+
     listContent: {
       flexGrow: 1,
       paddingBottom: 148,
     },
 
-    headerContainer: {
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.md,
-      paddingBottom: theme.spacing.sm,
-    },
+headerContainer: {
+  paddingHorizontal: theme.spacing.lg,
+  paddingTop: topInset + theme.spacing.xs,
+  paddingBottom: theme.spacing.xs,
+},
 
-    greetingContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: theme.spacing.xl,
-    },
+greetingEyebrow: {
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.subheadline.fontSize,
+  lineHeight: theme.typography.subheadline.lineHeight,
+  fontWeight: "600",
+  letterSpacing: -0.2,
+},
+
+greetingName: {
+  color: theme.colors.text,
+  fontSize: 24,
+  lineHeight: 29,
+  fontWeight: "800",
+  letterSpacing: -0.45,
+  marginTop: theme.spacing.xxs,
+},
+
+  greetingContainer: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: theme.spacing.md,
+},
 
     greetingTextContainer: {
       flex: 1,
       marginRight: theme.spacing.md,
     },
 
-    greetingTitle: {
-      fontSize: theme.typography.largeTitle.fontSize,
-      lineHeight: theme.typography.largeTitle.lineHeight,
-      fontWeight: theme.typography.largeTitle.fontWeight,
-      color: theme.colors.text,
-      letterSpacing: -0.7,
-    },
+  greetingSubtitle: {
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  color: theme.colors.textTertiary,
+  marginTop: theme.spacing.xxs,
+  fontWeight: "500",
+},
 
-    greetingSubtitle: {
-      fontSize: theme.typography.subheadline.fontSize,
-      lineHeight: theme.typography.subheadline.lineHeight,
-      color: theme.colors.textSecondary,
-      marginTop: theme.spacing.xs,
-      textTransform: "capitalize",
-      fontWeight: "500",
-    },
+avatar: {
+  width: 42,
+  height: 42,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.primary,
+  justifyContent: "center",
+  alignItems: "center",
+  shadowColor: theme.shadow.sm.shadowColor,
+  shadowOffset: theme.shadow.sm.shadowOffset,
+  shadowOpacity: theme.shadow.sm.shadowOpacity,
+  shadowRadius: theme.shadow.sm.shadowRadius,
+  elevation: theme.shadow.sm.elevation,
+},
 
-    avatar: {
-      width: 52,
-      height: 52,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.primary,
-      justifyContent: "center",
-      alignItems: "center",
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
-    },
-
-    avatarText: {
-      color: theme.colors.primaryContrast,
-      fontSize: theme.typography.title3.fontSize,
-      lineHeight: theme.typography.title3.lineHeight,
-      fontWeight: "700",
-    },
+avatarText: {
+  color: theme.colors.primaryContrast,
+  fontSize: theme.typography.subheadline.fontSize,
+  lineHeight: theme.typography.subheadline.lineHeight,
+  fontWeight: "800",
+},
 
     inlineError: {
       flexDirection: "row",
@@ -308,36 +381,36 @@ const createStyles = (theme: ThemeType) =>
     },
 
     cardsGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      justifyContent: "space-between",
-      marginBottom: theme.spacing.xl,
-    },
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+  marginBottom: theme.spacing.md,
+},
 
     summaryCard: {
-      width: "48%",
-      marginBottom: theme.spacing.md,
-    },
+  width: "48%",
+  marginBottom: theme.spacing.sm + theme.spacing.xs,
+},
 
     criticalStockAlert: {
-      marginBottom: theme.spacing.xl,
-    },
+  marginBottom: theme.spacing.lg,
+},
 
     sectionTitle: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "700",
-      textTransform: "uppercase",
-      letterSpacing: 0.6,
-      marginBottom: theme.spacing.sm + theme.spacing.xs,
-      marginLeft: theme.spacing.xs,
-    },
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.footnote.fontSize,
+  lineHeight: theme.typography.footnote.lineHeight,
+  fontWeight: "700",
+  textTransform: "uppercase",
+  letterSpacing: 0.6,
+  marginBottom: theme.spacing.sm,
+  marginLeft: theme.spacing.xs,
+},
 
     productListItem: {
-      marginHorizontal: theme.spacing.lg,
-      marginBottom: theme.spacing.sm + theme.spacing.xs,
-    },
+  marginHorizontal: theme.spacing.lg,
+  marginBottom: theme.spacing.sm,
+},
 
     emptyState: {
       marginHorizontal: theme.spacing.lg,

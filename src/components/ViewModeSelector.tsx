@@ -24,6 +24,8 @@ type ViewModeSelectorProps<TValue extends string> = {
   style?: StyleProp<ViewStyle>;
 };
 
+const VIEW_MODE_ICON_SIZE = 17;
+
 export function ViewModeSelector<TValue extends string>({
   value,
   options,
@@ -49,14 +51,14 @@ export function ViewModeSelector<TValue extends string>({
             style={[styles.button, isActive && styles.buttonActive]}
           >
             <Ionicons
-              name={option.icon}
-              size={18}
-              color={
-                isActive
-                  ? theme.colors.primaryContrast
-                  : theme.colors.textSecondary
-              }
-            />
+  name={option.icon}
+  size={VIEW_MODE_ICON_SIZE}
+  color={
+    isActive
+      ? theme.colors.primaryContrast
+      : theme.colors.textSecondary
+  }
+/>
           </TouchableOpacity>
         );
       })}
@@ -67,23 +69,23 @@ export function ViewModeSelector<TValue extends string>({
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     container: {
-      flexDirection: "row",
-      backgroundColor: theme.colors.surfaceSecondary,
-      borderRadius: theme.borderRadius.sm,
-      padding: theme.spacing.xs,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-    },
+  flexDirection: "row",
+  backgroundColor: theme.colors.surfaceSecondary,
+  borderRadius: theme.borderRadius.sm,
+  padding: theme.spacing.xxs,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+},
 
     button: {
-      minWidth: 36,
-      minHeight: 32,
-      paddingVertical: theme.spacing.xs,
-      paddingHorizontal: theme.spacing.sm,
-      borderRadius: theme.borderRadius.xs,
-      alignItems: "center",
-      justifyContent: "center",
-    },
+  minWidth: 34,
+  minHeight: 34,
+  paddingVertical: theme.spacing.xxs,
+  paddingHorizontal: theme.spacing.sm,
+  borderRadius: theme.borderRadius.xs,
+  alignItems: "center",
+  justifyContent: "center",
+},
 
     buttonActive: {
       backgroundColor: theme.colors.primary,

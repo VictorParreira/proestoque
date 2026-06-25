@@ -23,6 +23,9 @@ type SearchFieldProps = Omit<
   style?: StyleProp<ViewStyle>;
 };
 
+const SEARCH_ICON_SIZE = 20;
+const CLEAR_ICON_SIZE = 18;
+
 export function SearchField({
   value,
   onChangeText,
@@ -40,10 +43,10 @@ export function SearchField({
   return (
     <View style={[styles.container, style]}>
       <Ionicons
-        name="search-outline"
-        size={22}
-        color={theme.colors.textSecondary}
-      />
+  name="search-outline"
+  size={SEARCH_ICON_SIZE}
+  color={theme.colors.textSecondary}
+/>
 
       <TextInput
         style={styles.input}
@@ -73,10 +76,10 @@ export function SearchField({
           accessibilityLabel="Limpar busca"
         >
           <Ionicons
-            name="close-circle"
-            size={20}
-            color={theme.colors.textSecondary}
-          />
+  name="close-circle"
+  size={CLEAR_ICON_SIZE}
+  color={theme.colors.textSecondary}
+/>
         </TouchableOpacity>
       )}
     </View>
@@ -86,22 +89,22 @@ export function SearchField({
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     container: {
-      flexDirection: "row",
-      alignItems: "center",
-      minHeight: 56,
-      backgroundColor: theme.colors.inputBackground,
-      borderRadius: theme.borderRadius.md,
-      paddingHorizontal: theme.spacing.md,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.inputBorder,
-    },
+  flexDirection: "row",
+  alignItems: "center",
+  minHeight: 48,
+  backgroundColor: theme.colors.inputBackground,
+  borderRadius: theme.borderRadius.md,
+  paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.inputBorder,
+},
 
     input: {
-      flex: 1,
-      marginLeft: theme.spacing.sm + theme.spacing.xs,
-      fontSize: theme.typography.callout.fontSize,
-      lineHeight: theme.typography.callout.lineHeight,
-      color: theme.colors.text,
-      paddingVertical: 0,
-    },
+  flex: 1,
+  marginLeft: theme.spacing.sm,
+  fontSize: theme.typography.subheadline.fontSize,
+  lineHeight: theme.typography.subheadline.lineHeight,
+  color: theme.colors.text,
+  paddingVertical: 0,
+},
   });

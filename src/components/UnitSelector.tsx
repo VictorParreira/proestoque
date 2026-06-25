@@ -79,21 +79,21 @@ const createStyles = (theme: ThemeType) =>
       marginBottom: theme.spacing.sm,
     },
 
-    content: {
-      gap: theme.spacing.sm,
-      paddingRight: theme.spacing.lg,
-    },
+content: {
+  gap: theme.spacing.sm,
+  paddingRight: theme.spacing.xl,
+},
 
-    option: {
-      minWidth: 88,
-      minHeight: 56,
-      justifyContent: "center",
-      paddingHorizontal: theme.spacing.md,
-      borderRadius: theme.borderRadius.md,
-      backgroundColor: theme.colors.surface,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-    },
+option: {
+  minWidth: 78,
+  minHeight: 50,
+  justifyContent: "center",
+  paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+  borderRadius: theme.borderRadius.md,
+  backgroundColor: theme.colors.surface,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+},
 
     optionSelected: {
       backgroundColor: theme.colors.primarySubtle,
@@ -104,25 +104,25 @@ const createStyles = (theme: ThemeType) =>
       borderColor: theme.colors.error,
     },
 
-    value: {
-      color: theme.colors.text,
-      fontSize: theme.typography.callout.fontSize,
-      lineHeight: theme.typography.callout.lineHeight,
-      fontWeight: "800",
-      textTransform: "uppercase",
-    },
+value: {
+  color: theme.colors.text,
+  fontSize: theme.typography.subheadline.fontSize,
+  lineHeight: theme.typography.subheadline.lineHeight,
+  fontWeight: "800",
+  textTransform: "uppercase",
+},
 
     valueSelected: {
       color: theme.colors.primary,
     },
 
-    label: {
-      marginTop: theme.spacing.xs,
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.caption1.fontSize,
-      lineHeight: theme.typography.caption1.lineHeight,
-      fontWeight: "600",
-    },
+label: {
+  marginTop: theme.spacing.xxs,
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.caption2.fontSize,
+  lineHeight: theme.typography.caption2.lineHeight,
+  fontWeight: "600",
+},
 
     labelSelected: {
       color: theme.colors.primary,

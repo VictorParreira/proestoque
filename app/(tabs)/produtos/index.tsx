@@ -3,8 +3,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Image,
+  Platform,
   RefreshControl,
   ScrollView,
   SectionList,
@@ -13,7 +15,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { CategoryChip } from "../../../src/components/CategoryChip";
 import { EmptyState } from "../../../src/components/EmptyState";
 import { ErrorView } from "../../../src/components/ErrorView";
@@ -44,6 +50,8 @@ const VIEW_MODES: ViewModeSelectorOption<ViewMode>[] = [
 ];
 
 const MIN_REFRESH_DURATION_MS = 850;
+const GRID_MEDIA_SIZE = 56;
+const GRID_ICON_SIZE = 22;
 
 const wait = (milliseconds: number) => {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -75,7 +83,8 @@ export default function ListaProdutos() {
     carregarCategorias,
   } = useCategorias();
 
-  const { theme } = useAppTheme();
+const { theme, isDark } = useAppTheme();
+const insets = useSafeAreaInsets();
 
   const [busca, setBusca] = useState("");
   const [categoriaAtiva, setCategoriaAtiva] = useState<string | null>(null);
@@ -92,7 +101,10 @@ useFocusEffect(
   }, []),
 );
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+const styles = useMemo(
+  () => createStyles(theme, isDark, insets.top),
+  [theme, isDark, insets.top],
+);
 
   const isInitialLoading = isLoading && products.length === 0;
   const hasInitialError = Boolean(error && products.length === 0);
@@ -133,7 +145,7 @@ const refreshControl = (
     onRefresh={handleRefresh}
     tintColor={theme.colors.primary}
     colors={[theme.colors.primary]}
-    progressViewOffset={theme.spacing.lg}
+    progressViewOffset={insets.top + theme.spacing.lg}
   />
 );
 
@@ -174,12 +186,12 @@ const handleOpenProduct = useCallback(
     navigationLockRef.current = true;
 
     router.push({
-      pathname: "/(tabs)/produtos/[id]",
-      params: {
-        id: productId,
-        viewMode,
-      },
-    });
+  pathname: "/produtos/[id]",
+  params: {
+    id: productId,
+    viewMode,
+  },
+});
   },
   [router, viewMode],
 );
@@ -217,10 +229,10 @@ const handleOpenProduct = useCallback(
           ) : (
             <View style={styles.productIconContainerGrid}>
               <Ionicons
-                name="cube-outline"
-                size={24}
-                color={theme.colors.primary}
-              />
+  name="cube-outline"
+  size={GRID_ICON_SIZE}
+  color={theme.colors.primary}
+/>
             </View>
           )}
 
@@ -241,7 +253,9 @@ const handleOpenProduct = useCallback(
   const renderSectionHeader = ({ section }: { section: SecaoProduto }) => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{section.title}</Text>
-      <Text style={styles.sectionCount}>{section.data.length} itens</Text>
+      <Text style={styles.sectionCount}>
+  {section.data.length} {section.data.length === 1 ? "item" : "itens"}
+</Text>
     </View>
   );
 
@@ -397,84 +411,134 @@ if (hasInitialError) {
   );
 }
 
-  return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      {viewMode === "agrupado" ? (
+return (
+  <SafeAreaView style={styles.container} edges={["left", "right"]}>
+<View pointerEvents="none" style={styles.topBlur}>
+  <BlurView
+    intensity={Platform.OS === "android" ? 72 : 34}
+    tint={
+      isDark
+        ? "systemUltraThinMaterialDark"
+        : "systemUltraThinMaterialLight"
+    }
+    experimentalBlurMethod="dimezisBlurView"
+    style={StyleSheet.absoluteFill}
+  />
+
+  <View style={styles.topBlurScrim} />
+</View>
+
+{isRefreshing ? (
+  <View pointerEvents="none" style={styles.refreshIndicator}>
+    <ActivityIndicator size="small" color={theme.colors.primary} />
+  </View>
+) : null}
+
+{viewMode === "agrupado" ? (
         <SectionList
-          sections={secoesFiltradas}
-          keyExtractor={(item) => item.id}
-          renderItem={renderProduto}
-          renderSectionHeader={renderSectionHeader}
-          ListHeaderComponent={headerProdutos}
-          contentContainerStyle={styles.listContent}
-          stickySectionHeadersEnabled
-          ListEmptyComponent={emptyComponent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={refreshControl}
-        />
+  sections={secoesFiltradas}
+  keyExtractor={(item) => item.id}
+  renderItem={renderProduto}
+  renderSectionHeader={renderSectionHeader}
+  ListHeaderComponent={headerProdutos}
+  contentContainerStyle={styles.listContent}
+  stickySectionHeadersEnabled
+  ListEmptyComponent={emptyComponent}
+  showsVerticalScrollIndicator={false}
+  refreshControl={refreshControl}
+  contentInsetAdjustmentBehavior="never"
+/>
       ) : (
         <FlatList
-          key={viewMode}
-          data={produtosFiltrados}
-          keyExtractor={(item) => item.id}
-          renderItem={renderProduto}
-          ListHeaderComponent={headerProdutos}
-          numColumns={viewMode === "grade" ? 2 : 1}
-          columnWrapperStyle={
-            viewMode === "grade" ? styles.rowWrapper : undefined
-          }
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={emptyComponent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={refreshControl}
-        />
+  key={viewMode}
+  data={produtosFiltrados}
+  keyExtractor={(item) => item.id}
+  renderItem={renderProduto}
+  ListHeaderComponent={headerProdutos}
+  numColumns={viewMode === "grade" ? 2 : 1}
+  columnWrapperStyle={
+    viewMode === "grade" ? styles.rowWrapper : undefined
+  }
+  contentContainerStyle={styles.listContent}
+  ListEmptyComponent={emptyComponent}
+  showsVerticalScrollIndicator={false}
+  refreshControl={refreshControl}
+  contentInsetAdjustmentBehavior="never"
+/>
       )}
     </SafeAreaView>
   );
 }
 
-const createStyles = (theme: ThemeType) =>
+const createStyles = (
+  theme: ThemeType,
+  isDark: boolean,
+  topInset: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
 
-    header: {
-      paddingTop: theme.spacing.md,
-      backgroundColor: theme.colors.background,
-    },
+    topBlur: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: topInset + theme.spacing.xs,
+  zIndex: 10,
+  overflow: "hidden",
+},
+
+topBlurScrim: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: theme.colors.background,
+  opacity: isDark ? 0.18 : 0.28,
+},
+
+refreshIndicator: {
+  position: "absolute",
+  top: topInset + theme.spacing.sm,
+  alignSelf: "center",
+  zIndex: 20,
+},
+
+header: {
+  paddingTop: topInset + theme.spacing.xs,
+  backgroundColor: theme.colors.background,
+},
 
     titleRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: theme.spacing.md + theme.spacing.xs,
-      paddingHorizontal: theme.spacing.lg,
-    },
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: theme.spacing.sm + theme.spacing.xs,
+  paddingHorizontal: theme.spacing.lg,
+},
 
     title: {
-      fontSize: theme.typography.largeTitle.fontSize,
-      lineHeight: theme.typography.largeTitle.lineHeight,
-      fontWeight: theme.typography.largeTitle.fontWeight,
-      color: theme.colors.text,
-      letterSpacing: -0.7,
-    },
+  fontSize: 30,
+  lineHeight: 36,
+  fontWeight: theme.typography.largeTitle.fontWeight,
+  color: theme.colors.text,
+  letterSpacing: -0.6,
+},
 
     searchField: {
-      marginBottom: theme.spacing.md + theme.spacing.xs,
-      marginHorizontal: theme.spacing.lg,
-    },
+  marginBottom: theme.spacing.sm + theme.spacing.xs,
+  marginHorizontal: theme.spacing.lg,
+},
 
     categoriesScroll: {
-      marginBottom: theme.spacing.md,
-    },
+  marginBottom: theme.spacing.sm + theme.spacing.xs,
+},
 
     categoriesContent: {
-      gap: theme.spacing.sm,
-      paddingHorizontal: theme.spacing.lg,
-    },
-
+  gap: theme.spacing.sm,
+  paddingHorizontal: theme.spacing.lg,
+  paddingRight: theme.spacing.xl,
+},
     categoryStateChip: {
       minHeight: 36,
       flexDirection: "row",
@@ -556,101 +620,102 @@ const createStyles = (theme: ThemeType) =>
     },
 
     rowWrapper: {
-      paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
-    },
+  justifyContent: "space-between",
+  paddingHorizontal: theme.spacing.lg,
+},
 
     productListItem: {
-      marginHorizontal: theme.spacing.lg,
-      marginBottom: theme.spacing.sm + theme.spacing.xs,
-    },
+  marginHorizontal: theme.spacing.lg,
+  marginBottom: theme.spacing.sm,
+},
 
     productGridCard: {
-      flex: 1,
-      marginHorizontal: theme.spacing.sm + theme.spacing.xs,
-      marginBottom: theme.spacing.md,
-      padding: theme.spacing.md,
-      alignItems: "center",
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.md,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
-    },
+  width: "48%",
+  marginBottom: theme.spacing.sm + theme.spacing.xs,
+  paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+  paddingVertical: theme.spacing.md,
+  alignItems: "center",
+  backgroundColor: theme.colors.surface,
+  borderRadius: theme.borderRadius.md,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  shadowColor: theme.shadow.sm.shadowColor,
+  shadowOffset: theme.shadow.sm.shadowOffset,
+  shadowOpacity: theme.shadow.sm.shadowOpacity,
+  shadowRadius: theme.shadow.sm.shadowRadius,
+  elevation: theme.shadow.sm.elevation,
+},
 
     productInfoGrid: {
-      width: "100%",
-      alignItems: "center",
-      gap: theme.spacing.sm + theme.spacing.xs,
-    },
+  width: "100%",
+  alignItems: "center",
+  gap: theme.spacing.sm,
+},
 
     productIconContainerGrid: {
-      width: 64,
-      height: 64,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.primarySubtle,
-      justifyContent: "center",
-      alignItems: "center",
-    },
+  width: GRID_MEDIA_SIZE,
+  height: GRID_MEDIA_SIZE,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.primarySubtle,
+  justifyContent: "center",
+  alignItems: "center",
+},
 
     thumbnailGrid: {
-      width: 80,
-      height: 80,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.backgroundSecondary,
-    },
+  width: GRID_MEDIA_SIZE,
+  height: GRID_MEDIA_SIZE,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.backgroundSecondary,
+},
 
     textsGrid: {
-      width: "100%",
-      alignItems: "center",
-      marginTop: theme.spacing.xs,
-    },
+  width: "100%",
+  alignItems: "center",
+},
 
     productNameGrid: {
-      fontSize: theme.typography.callout.fontSize,
-      lineHeight: theme.typography.callout.lineHeight,
-      fontWeight: "700",
-      color: theme.colors.text,
-      textAlign: "center",
-    },
+  fontSize: theme.typography.subheadline.fontSize,
+  lineHeight: theme.typography.subheadline.lineHeight,
+  fontWeight: "700",
+  color: theme.colors.text,
+  textAlign: "center",
+},
 
     productDetailsGrid: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      color: theme.colors.textSecondary,
-      marginTop: theme.spacing.xs,
-      fontWeight: "500",
-      textAlign: "center",
-    },
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  color: theme.colors.textSecondary,
+  marginTop: theme.spacing.xxs,
+  fontWeight: "500",
+  textAlign: "center",
+},
 
     sectionHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      backgroundColor: theme.colors.background,
-      paddingHorizontal: theme.spacing.lg,
-      paddingVertical: theme.spacing.sm + theme.spacing.xs,
-      marginBottom: theme.spacing.sm,
-    },
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  backgroundColor: theme.colors.background,
+  paddingHorizontal: theme.spacing.lg,
+  paddingTop: theme.spacing.sm,
+  paddingBottom: theme.spacing.xs,
+  marginBottom: theme.spacing.xs,
+},
 
     sectionTitle: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "800",
-      color: theme.colors.primary,
-      textTransform: "uppercase",
-      letterSpacing: 0.6,
-    },
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "800",
+  color: theme.colors.primary,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+},
 
     sectionCount: {
-      fontSize: theme.typography.caption1.fontSize,
-      lineHeight: theme.typography.caption1.lineHeight,
-      color: theme.colors.textSecondary,
-      fontWeight: "700",
-    },
+  fontSize: theme.typography.caption2.fontSize,
+  lineHeight: theme.typography.caption2.lineHeight,
+  color: theme.colors.textSecondary,
+  fontWeight: "700",
+},
 
     emptyState: {
       marginTop: theme.spacing["3xl"],

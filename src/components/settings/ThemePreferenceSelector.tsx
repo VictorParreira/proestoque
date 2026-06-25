@@ -21,6 +21,8 @@ type ThemePreferenceSelectorProps = {
   onChange: (value: ThemePreference) => void;
 };
 
+const THEME_OPTION_ICON_SIZE = 17;
+
 export function ThemePreferenceSelector({
   value,
   onChange,
@@ -51,12 +53,12 @@ export function ThemePreferenceSelector({
               onPress={() => onChange(option.value)}
             >
               <Ionicons
-                name={option.icon}
-                size={18}
-                color={
-                  isSelected ? theme.colors.primary : theme.colors.textSecondary
-                }
-              />
+  name={option.icon}
+  size={THEME_OPTION_ICON_SIZE}
+  color={
+    isSelected ? theme.colors.primary : theme.colors.textSecondary
+  }
+/>
 
               <Text
                 style={[
@@ -76,38 +78,38 @@ export function ThemePreferenceSelector({
 
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
-    container: {
-      paddingBottom: theme.spacing.md,
-    },
+container: {
+  paddingBottom: theme.spacing.sm + theme.spacing.xs,
+},
 
-    options: {
-      flexDirection: "row",
-      gap: theme.spacing.sm,
-      paddingHorizontal: theme.spacing.md,
-    },
+options: {
+  flexDirection: "row",
+  gap: theme.spacing.sm,
+  paddingHorizontal: theme.spacing.md,
+},
 
-    option: {
-      flex: 1,
-      minHeight: 76,
-      alignItems: "center",
-      justifyContent: "center",
-      gap: theme.spacing.xs,
-      borderRadius: theme.borderRadius.md,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      backgroundColor: theme.colors.backgroundSecondary,
-    },
+option: {
+  flex: 1,
+  minHeight: 62,
+  alignItems: "center",
+  justifyContent: "center",
+  gap: theme.spacing.xxs,
+  borderRadius: theme.borderRadius.md,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  backgroundColor: theme.colors.backgroundSecondary,
+},
+
+optionText: {
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "700",
+  color: theme.colors.textSecondary,
+},
 
     optionSelected: {
       borderColor: theme.colors.primary,
       backgroundColor: theme.colors.primarySubtle,
-    },
-
-    optionText: {
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "600",
-      color: theme.colors.textSecondary,
     },
 
     optionTextSelected: {

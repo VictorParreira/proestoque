@@ -25,6 +25,9 @@ type ProductListItemProps = Omit<TouchableOpacityProps, "children"> & {
   showChevron?: boolean;
 };
 
+const PRODUCT_MEDIA_SIZE = 44;
+const PRODUCT_ICON_SIZE = 20;
+
 function getProductStatus(product: Produto): ProductStatus {
   if (product.quantidade === 0) {
     return {
@@ -88,10 +91,10 @@ export function ProductListItem({
         ) : (
           <View style={styles.iconContainer}>
             <Ionicons
-              name="cube-outline"
-              size={22}
-              color={theme.colors.primary}
-            />
+  name="cube-outline"
+  size={PRODUCT_ICON_SIZE}
+  color={theme.colors.primary}
+/>
           </View>
         )}
 
@@ -125,21 +128,21 @@ export function ProductListItem({
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     container: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      backgroundColor: theme.colors.surface,
-      paddingVertical: theme.spacing.sm + theme.spacing.xs,
-      paddingHorizontal: theme.spacing.md,
-      borderRadius: theme.borderRadius.md,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
-    },
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  backgroundColor: theme.colors.surface,
+  paddingVertical: theme.spacing.sm + theme.spacing.xxs,
+  paddingHorizontal: theme.spacing.md,
+  borderRadius: theme.borderRadius.md,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  shadowColor: theme.shadow.sm.shadowColor,
+  shadowOffset: theme.shadow.sm.shadowOffset,
+  shadowOpacity: theme.shadow.sm.shadowOpacity,
+  shadowRadius: theme.shadow.sm.shadowRadius,
+  elevation: theme.shadow.sm.elevation,
+},
 
     productInfo: {
       flex: 1,
@@ -148,27 +151,27 @@ const createStyles = (theme: ThemeType) =>
     },
 
     thumbnail: {
-      width: 48,
-      height: 48,
-      borderRadius: theme.borderRadius.sm,
-      marginRight: theme.spacing.sm + theme.spacing.xs,
-      backgroundColor: theme.colors.backgroundSecondary,
-    },
+  width: PRODUCT_MEDIA_SIZE,
+  height: PRODUCT_MEDIA_SIZE,
+  borderRadius: theme.borderRadius.sm,
+  marginRight: theme.spacing.sm + theme.spacing.xxs,
+  backgroundColor: theme.colors.backgroundSecondary,
+},
 
-    iconContainer: {
-      width: 48,
-      height: 48,
-      borderRadius: theme.borderRadius.sm,
-      backgroundColor: theme.colors.primarySubtle,
-      justifyContent: "center",
-      alignItems: "center",
-      marginRight: theme.spacing.sm + theme.spacing.xs,
-    },
+   iconContainer: {
+  width: PRODUCT_MEDIA_SIZE,
+  height: PRODUCT_MEDIA_SIZE,
+  borderRadius: theme.borderRadius.sm,
+  backgroundColor: theme.colors.primarySubtle,
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: theme.spacing.sm + theme.spacing.xxs,
+},
 
     textContainer: {
-      flex: 1,
-      paddingRight: theme.spacing.sm,
-    },
+  flex: 1,
+  paddingRight: theme.spacing.xs,
+},
 
     name: {
       color: theme.colors.text,

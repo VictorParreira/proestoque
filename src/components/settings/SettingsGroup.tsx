@@ -26,7 +26,7 @@ const createStyles = (theme: ThemeType) =>
     group: {
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.lg,
-      marginBottom: theme.spacing.lg + theme.spacing.xs,
+      marginBottom: theme.spacing.lg,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.separator,
       overflow: "hidden",

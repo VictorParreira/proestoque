@@ -18,6 +18,9 @@ type CriticalStockAlertProps = ViewProps & {
   maxVisibleItems?: number;
 };
 
+const ALERT_ICON_CONTAINER_SIZE = 30;
+const ALERT_ICON_SIZE = 18;
+
 export function CriticalStockAlert({
   items,
   maxVisibleItems = 5,
@@ -47,10 +50,10 @@ export function CriticalStockAlert({
       <View style={styles.header}>
         <View style={styles.iconContainer}>
           <Ionicons
-            name="alert-circle-outline"
-            size={20}
-            color={theme.colors.error}
-          />
+  name="alert-circle-outline"
+  size={ALERT_ICON_SIZE}
+  color={theme.colors.error}
+/>
         </View>
 
         <Text style={styles.title}>Estoque Crítico</Text>
@@ -106,32 +109,33 @@ export function CriticalStockAlert({
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     container: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.lg,
-      padding: theme.spacing.md,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      shadowColor: theme.shadow.sm.shadowColor,
-      shadowOffset: theme.shadow.sm.shadowOffset,
-      shadowOpacity: theme.shadow.sm.shadowOpacity,
-      shadowRadius: theme.shadow.sm.shadowRadius,
-      elevation: theme.shadow.sm.elevation,
-    },
+  backgroundColor: theme.colors.surface,
+  borderRadius: theme.borderRadius.lg,
+  paddingHorizontal: theme.spacing.md,
+  paddingVertical: theme.spacing.sm + theme.spacing.xs,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  shadowColor: theme.shadow.sm.shadowColor,
+  shadowOffset: theme.shadow.sm.shadowOffset,
+  shadowOpacity: theme.shadow.sm.shadowOpacity,
+  shadowRadius: theme.shadow.sm.shadowRadius,
+  elevation: theme.shadow.sm.elevation,
+},
 
     header: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: theme.spacing.md,
-    },
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: theme.spacing.sm,
+},
 
     iconContainer: {
-      width: 32,
-      height: 32,
-      borderRadius: theme.borderRadius.pill,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: theme.colors.errorSoft,
-    },
+  width: ALERT_ICON_CONTAINER_SIZE,
+  height: ALERT_ICON_CONTAINER_SIZE,
+  borderRadius: theme.borderRadius.pill,
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: theme.colors.errorSoft,
+},
 
     title: {
       flex: 1,
@@ -143,11 +147,14 @@ const createStyles = (theme: ThemeType) =>
     },
 
     badge: {
-      backgroundColor: theme.colors.errorSoft,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xxs,
-      borderRadius: theme.borderRadius.sm,
-    },
+  minWidth: 24,
+  height: 24,
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: theme.colors.errorSoft,
+  paddingHorizontal: theme.spacing.xs,
+  borderRadius: theme.borderRadius.pill,
+},
 
     badgeText: {
       color: theme.colors.error,
@@ -157,17 +164,17 @@ const createStyles = (theme: ThemeType) =>
     },
 
     list: {
-      gap: theme.spacing.sm,
-    },
-
+  gap: theme.spacing.xs,
+},
     row: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      backgroundColor: theme.colors.backgroundSecondary,
-      padding: theme.spacing.sm + theme.spacing.xs,
-      borderRadius: theme.borderRadius.sm,
-    },
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  backgroundColor: theme.colors.backgroundSecondary,
+  paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+  paddingVertical: theme.spacing.xs,
+  borderRadius: theme.borderRadius.sm,
+},
 
     itemName: {
       flex: 1,
@@ -186,16 +193,16 @@ const createStyles = (theme: ThemeType) =>
       lineHeight: theme.typography.footnote.lineHeight,
     },
 
-    toggleButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      paddingTop: theme.spacing.md,
-      marginTop: theme.spacing.sm,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: theme.colors.separator,
-      gap: theme.spacing.xs,
-    },
+toggleButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  paddingTop: theme.spacing.sm,
+  marginTop: theme.spacing.sm,
+  borderTopWidth: StyleSheet.hairlineWidth,
+  borderTopColor: theme.colors.separator,
+  gap: theme.spacing.xs,
+},
 
     toggleText: {
       color: theme.colors.primary,

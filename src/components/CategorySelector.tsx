@@ -19,6 +19,8 @@ type CategorySelectorProps = ViewProps & {
   error?: string;
 };
 
+const CATEGORY_OPTION_ICON_SIZE = 16;
+
 export function CategorySelector({
   value,
   onChange,
@@ -98,7 +100,7 @@ export function CategorySelector({
               >
                 <Ionicons
                   name={category.icone}
-                  size={18}
+                  size={CATEGORY_OPTION_ICON_SIZE}
                   color={
                     isSelected
                       ? theme.colors.primary
@@ -138,9 +140,9 @@ const createStyles = (theme: ThemeType) =>
     },
 
     content: {
-      gap: theme.spacing.sm,
-      paddingRight: theme.spacing.lg,
-    },
+  gap: theme.spacing.sm,
+  paddingRight: theme.spacing.xl,
+},
 
 loadingContainer: {
   height: 56,
@@ -194,17 +196,17 @@ errorStateContainer: {
       fontWeight: "700",
     },
 
-    option: {
-      minHeight: 48,
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: theme.spacing.md,
-      borderRadius: theme.borderRadius.pill,
-      backgroundColor: theme.colors.surface,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.separator,
-      gap: theme.spacing.xs,
-    },
+option: {
+  minHeight: 42,
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+  borderRadius: theme.borderRadius.pill,
+  backgroundColor: theme.colors.surface,
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.colors.separator,
+  gap: theme.spacing.xs,
+},
 
     optionSelected: {
       backgroundColor: theme.colors.primarySubtle,
@@ -215,12 +217,12 @@ errorStateContainer: {
       borderColor: theme.colors.error,
     },
 
-    optionText: {
-      color: theme.colors.textSecondary,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      fontWeight: "600",
-    },
+optionText: {
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "600",
+},
 
     optionTextSelected: {
       color: theme.colors.primary,

@@ -1,20 +1,19 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import { Alert, Keyboard, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-import { EmptyState } from "../../../src/components/EmptyState";
-import { ProductForm } from "../../../src/components/ProductForm";
-import { ProductFormHeader } from "../../../src/components/ProductFormHeader";
-import type { ThemeType } from "../../../src/constants/theme";
-import { useProducts } from "../../../src/contexts/ProductsContext";
-import { useAppTheme } from "../../../src/contexts/ThemeContext";
-import type { ProdutoFormData } from "../../../src/schemas/produtoSchema";
-import { useStableAlert } from "../../../src/hooks/useStableAlert";
-import { ProductMovementCard } from "../../../src/components/ProductMovementCard";
-import type { MovimentacaoProdutoData } from "../../../src/contexts/ProductsContext";
-import { ProductMovementHistoryCard } from "../../../src/components/ProductMovementHistoryCard";
-import { useProductMovements } from "../../../src/hooks/useProductMovements";
+import { ProductModalSheet } from "../../src/components/ProductModalSheet";
+import { EmptyState } from "../../src/components/EmptyState";
+import { ProductForm } from "../../src/components/ProductForm";
+import { ProductFormHeader } from "../../src/components/ProductFormHeader";
+import type { ThemeType } from "../../src/constants/theme";
+import { useProducts } from "../../src/contexts/ProductsContext";
+import { useAppTheme } from "../../src/contexts/ThemeContext";
+import type { ProdutoFormData } from "../../src/schemas/produtoSchema";
+import { useStableAlert } from "../../src/hooks/useStableAlert";
+import { ProductMovementCard } from "../../src/components/ProductMovementCard";
+import type { MovimentacaoProdutoData } from "../../src/contexts/ProductsContext";
+import { ProductMovementHistoryCard } from "../../src/components/ProductMovementHistoryCard";
+import { useProductMovements } from "../../src/hooks/useProductMovements";
 
 type ViewMode = "lista" | "grade" | "agrupado";
 
@@ -203,93 +202,88 @@ onPress: async () => {
     );
   };
 
-  if (!product) {
-    return (
-      <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-        <ProductFormHeader
-          title="Produto não encontrado"
-          subtitle="O item selecionado não está mais disponível."
-          backAccessibilityLabel="Voltar para produtos"
-          onBack={goBackToProducts}
-        />
+if (!product) {
+  return (
+    <ProductModalSheet heightRatio={0.62}>
+      <ProductFormHeader
+        title="Produto não encontrado"
+        subtitle="O item selecionado não está mais disponível."
+        backAccessibilityLabel="Voltar para produtos"
+        onBack={goBackToProducts}
+      />
 
+      <View style={styles.emptyContent}>
         <EmptyState
           icon="cube-outline"
           title="Nada para editar"
           description="Volte para a lista de produtos e selecione outro item."
           style={styles.emptyState}
         />
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <ProductFormHeader
-  title="Editar produto"
-  subtitle={product.nome}
-  backAccessibilityLabel="Voltar para produtos"
-  onBack={goBackToProducts}
-  disabled={isScreenBusy}
-  rightAction={{
-    icon: "trash-outline",
-    accessibilityLabel: `Excluir produto ${product.nome}`,
-    onPress: confirmDelete,
-    variant: "danger",
-    disabled: isScreenBusy,
-  }}
-/>
-
-      <View style={styles.content}>
-<ProductForm
-  initialValues={product}
-  onSubmit={handleUpdate}
-  submitButtonText="Salvar Alterações"
-  disabled={isScreenBusy}
-  lockQuantity
-  busyLabel={
-    isDeleting
-      ? "Excluindo produto..."
-      : isMoving
-        ? "Registrando movimentação..."
-        : "Salvando produto..."
-  }
-  headerComponent={
-    <>
-      <ProductMovementCard
-        product={product}
-        disabled={isScreenBusy}
-        onSubmit={handleRegisterMovement}
-        style={styles.movementCard}
-      />
-
-      <ProductMovementHistoryCard
-        movements={movimentacoes}
-        isLoading={isLoadingMovimentacoes}
-        error={movimentacoesError}
-        onRetry={() => {
-          void carregarMovimentacoes();
-        }}
-        style={styles.historyCard}
-      />
-    </>
-  }
-/>
       </View>
-    </SafeAreaView>
+    </ProductModalSheet>
   );
+}
+
+return (
+  <ProductModalSheet heightRatio={0.78}>
+    <ProductFormHeader
+      title="Editar produto"
+      subtitle={product.nome}
+      backAccessibilityLabel="Voltar para produtos"
+      onBack={goBackToProducts}
+      disabled={isScreenBusy}
+      rightAction={{
+        icon: "trash-outline",
+        accessibilityLabel: `Excluir produto ${product.nome}`,
+        onPress: confirmDelete,
+        variant: "danger",
+        disabled: isScreenBusy,
+      }}
+    />
+
+    <ProductForm
+      initialValues={product}
+      onSubmit={handleUpdate}
+      submitButtonText="Salvar Alterações"
+      disabled={isScreenBusy}
+      lockQuantity
+      busyLabel={
+        isDeleting
+          ? "Excluindo produto..."
+          : isMoving
+            ? "Registrando movimentação..."
+            : "Salvando produto..."
+      }
+      headerComponent={
+        <>
+          <ProductMovementCard
+            product={product}
+            disabled={isScreenBusy}
+            onSubmit={handleRegisterMovement}
+            style={styles.movementCard}
+          />
+
+          <ProductMovementHistoryCard
+            movements={movimentacoes}
+            isLoading={isLoadingMovimentacoes}
+            error={movimentacoesError}
+            onRetry={() => {
+              void carregarMovimentacoes();
+            }}
+            style={styles.historyCard}
+          />
+        </>
+      }
+    />
+  </ProductModalSheet>
+);
 }
 
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.background,
-    },
-
-    content: {
-      flex: 1,
-    },
+    emptyContent: {
+  flex: 1,
+},
 
     emptyState: {
       flex: 1,

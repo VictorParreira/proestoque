@@ -15,6 +15,10 @@ type SettingsRowProps = {
   accessibilityLabel?: string;
 };
 
+const SETTINGS_ROW_ICON_CONTAINER_SIZE = 32;
+const SETTINGS_ROW_ICON_SIZE = 18;
+const SETTINGS_ROW_CHEVRON_SIZE = 18;
+
 export function SettingsRow({
   icon,
   label,
@@ -30,10 +34,10 @@ export function SettingsRow({
     rightContent ??
     (showChevron ? (
       <Ionicons
-        name="chevron-forward"
-        size={20}
-        color={theme.colors.textTertiary}
-      />
+  name="chevron-forward"
+  size={SETTINGS_ROW_CHEVRON_SIZE}
+  color={theme.colors.textTertiary}
+/>
     ) : null);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -41,7 +45,11 @@ export function SettingsRow({
   const content = (
     <>
       <View style={styles.iconBackground}>
-        <Ionicons name={icon} size={20} color={theme.colors.textSecondary} />
+        <Ionicons
+  name={icon}
+  size={SETTINGS_ROW_ICON_SIZE}
+  color={theme.colors.textSecondary}
+/>
       </View>
 
       <View style={styles.textContainer}>
@@ -77,46 +85,46 @@ export function SettingsRow({
 
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
-    row: {
-      minHeight: 64,
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.sm + theme.spacing.xs,
-    },
+row: {
+  minHeight: 56,
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: theme.spacing.md,
+  paddingVertical: theme.spacing.sm,
+},
 
-    iconBackground: {
-      width: 36,
-      height: 36,
-      borderRadius: theme.borderRadius.sm,
-      backgroundColor: theme.colors.surfaceSecondary,
-      justifyContent: "center",
-      alignItems: "center",
-      marginRight: theme.spacing.sm + theme.spacing.xs,
-    },
+iconBackground: {
+  width: SETTINGS_ROW_ICON_CONTAINER_SIZE,
+  height: SETTINGS_ROW_ICON_CONTAINER_SIZE,
+  borderRadius: theme.borderRadius.sm,
+  backgroundColor: theme.colors.surfaceSecondary,
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: theme.spacing.sm + theme.spacing.xs,
+},
+
+label: {
+  fontSize: theme.typography.subheadline.fontSize,
+  lineHeight: theme.typography.subheadline.lineHeight,
+  fontWeight: "700",
+  color: theme.colors.text,
+},
+
+description: {
+  marginTop: theme.spacing.xxs,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  color: theme.colors.textSecondary,
+},
+
+rightContent: {
+  minHeight: 36,
+  alignItems: "center",
+  justifyContent: "center",
+  marginLeft: theme.spacing.sm,
+},
 
     textContainer: {
       flex: 1,
-    },
-
-    label: {
-      fontSize: theme.typography.callout.fontSize,
-      lineHeight: theme.typography.callout.lineHeight,
-      fontWeight: "600",
-      color: theme.colors.text,
-    },
-
-    description: {
-      marginTop: 2,
-      fontSize: theme.typography.footnote.fontSize,
-      lineHeight: theme.typography.footnote.lineHeight,
-      color: theme.colors.textSecondary,
-    },
-
-    rightContent: {
-      minHeight: 40,
-      alignItems: "center",
-      justifyContent: "center",
-      marginLeft: theme.spacing.sm,
     },
   });

@@ -80,8 +80,20 @@ function AppNavigator() {
           }}
         >
           <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="index" />
+<Stack.Screen name="(tabs)" />
+
+<Stack.Screen
+  name="produtos"
+  options={{
+    presentation: "transparentModal",
+    animation: "none",
+    contentStyle: {
+      backgroundColor: "transparent",
+    },
+  }}
+/>
+
+<Stack.Screen name="index" />
         </Stack>
       </NavigationGuard>
     </>
