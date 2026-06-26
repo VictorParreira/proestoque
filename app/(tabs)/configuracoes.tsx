@@ -187,27 +187,31 @@ if (nextEnabled) {
         <SettingsSectionTitle>Preferências</SettingsSectionTitle>
 
         <SettingsGroup>
-          <SettingsRow
-            icon="notifications-outline"
-            label="Notificações de Estoque"
-            rightContent={
-              <Switch
-  value={notificacoes}
-  onValueChange={(enabled) => {
-    void handleStockNotificationsChange(enabled);
-  }}
-  disabled={isUpdatingNotifications}
-  trackColor={{
-    false: theme.colors.surfaceTertiary,
-    true: theme.colors.primary,
-  }}
-  thumbColor={theme.colors.primaryContrast}
-  ios_backgroundColor={theme.colors.surfaceTertiary}
+<SettingsRow
+  icon="notifications-outline"
+  label="Notificações de Estoque"
+  rightContent={
+    <Switch
+      value={notificacoes}
+      onValueChange={(enabled) => {
+        void handleStockNotificationsChange(enabled);
+      }}
+      disabled={isUpdatingNotifications}
+      trackColor={{
+        false: theme.colors.surfaceTertiary,
+        true: theme.colors.primary,
+      }}
+      thumbColor={theme.colors.primaryContrast}
+      ios_backgroundColor={theme.colors.surfaceTertiary}
+    />
+  }
 />
-            }
-          />
+<Text style={styles.notificationHint}>
+  Alertas diários às 09:00 e avisos imediatos quando uma saída deixar um
+  produto abaixo do estoque mínimo.
+</Text>
 
-          <SettingsDivider />
+<SettingsDivider />
 
           <ThemePreferenceSelector
             value={preference}
@@ -284,6 +288,16 @@ titulo: {
   color: theme.colors.text,
   letterSpacing: -0.6,
   marginBottom: theme.spacing.sm + theme.spacing.xs,
+},
+
+notificationHint: {
+  marginTop: -theme.spacing.xs,
+  marginBottom: theme.spacing.sm,
+  paddingHorizontal: theme.spacing.md,
+  color: theme.colors.textSecondary,
+  fontSize: theme.typography.caption1.fontSize,
+  lineHeight: theme.typography.caption1.lineHeight,
+  fontWeight: "500",
 },
 
 scrollContent: {
