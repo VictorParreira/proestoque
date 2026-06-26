@@ -14,6 +14,10 @@ import { ProductMovementCard } from "../../src/components/ProductMovementCard";
 import type { MovimentacaoProdutoData } from "../../src/contexts/ProductsContext";
 import { ProductMovementHistoryCard } from "../../src/components/ProductMovementHistoryCard";
 import { useProductMovements } from "../../src/hooks/useProductMovements";
+import {
+  scheduleImmediateCriticalStockNotificationAsync,
+  syncStockNotificationsAsync,
+} from "../../src/services/stockNotifications";
 
 type ViewMode = "lista" | "grade" | "agrupado";
 
@@ -100,7 +104,7 @@ const isScreenBusy = isUpdating || isDeleting || isMoving;
   }, [productId, products]);
 
 const handleRegisterMovement = async (data: MovimentacaoProdutoData) => {
-  if (!productId || isScreenBusy || isMovingRef.current) return;
+  if (!product || !productId || isScreenBusy || isMovingRef.current) return;
 
   Keyboard.dismiss();
 
@@ -110,9 +114,29 @@ const handleRegisterMovement = async (data: MovimentacaoProdutoData) => {
   const minimumOperationDuration = wait(MIN_FORM_OPERATION_DURATION_MS);
 
   try {
-    await registrarMovimentacaoProduto(productId, data);
-await carregarMovimentacoes();
-await minimumOperationDuration;
+    const previousProduct = product;
+
+    const result = await registrarMovimentacaoProduto(productId, data);
+    const updatedProduct = result.produto;
+
+    const enteredCriticalStock =
+      data.tipo === "saida" &&
+      previousProduct.quantidade >= previousProduct.quantidadeMinima &&
+      updatedProduct.quantidade < updatedProduct.quantidadeMinima;
+
+    const updatedProducts = products.map((item) =>
+      item.id === updatedProduct.id ? updatedProduct : item,
+    );
+
+    await Promise.allSettled([
+      syncStockNotificationsAsync(updatedProducts),
+      enteredCriticalStock
+        ? scheduleImmediateCriticalStockNotificationAsync(updatedProduct)
+        : Promise.resolve(false),
+    ]);
+
+    await carregarMovimentacoes();
+    await minimumOperationDuration;
   } catch (error) {
     await minimumOperationDuration;
 

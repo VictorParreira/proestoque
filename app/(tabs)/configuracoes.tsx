@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Platform,
@@ -12,6 +12,11 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import {
+  getStockNotificationsPreferenceAsync,
+  setStockNotificationsEnabledAsync,
+  syncStockNotificationsAsync,
+} from "../../src/services/stockNotifications";
 import { BlurView } from "expo-blur";
 import { SettingsDivider } from "../../src/components/settings/SettingsDivider";
 import { SettingsGroup } from "../../src/components/settings/SettingsGroup";
@@ -23,18 +28,51 @@ import { ThemePreferenceSelector } from "../../src/components/settings/ThemePref
 import type { ThemeType } from "../../src/constants/theme";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { useAppTheme } from "../../src/contexts/ThemeContext";
+import { useProducts } from "../../src/contexts/ProductsContext";
 
 export default function ConfiguracoesScreen() {
   const { user, logout, isSubmitting } = useAuth();
+  const { products } = useProducts();
 const { preference, setThemePreference, theme, isDark } = useAppTheme();
 const insets = useSafeAreaInsets();
 
-const [notificacoes, setNotificacoes] = useState(true);
+const [notificacoes, setNotificacoes] = useState(false);
+const [isUpdatingNotifications, setIsUpdatingNotifications] = useState(false);
 
 const styles = useMemo(
   () => createStyles(theme, isDark, insets.top),
   [theme, isDark, insets.top],
 );
+
+useEffect(() => {
+  let isMounted = true;
+
+  const loadNotificationPreference = async () => {
+    try {
+      const storedPreference = await getStockNotificationsPreferenceAsync();
+
+      if (isMounted) {
+        setNotificacoes(storedPreference);
+      }
+    } catch {
+      if (isMounted) {
+        setNotificacoes(false);
+      }
+    }
+  };
+
+  void loadNotificationPreference();
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
+
+useEffect(() => {
+  if (!notificacoes) return;
+
+  void syncStockNotificationsAsync(products);
+}, [notificacoes, products]);
 
   const handleEditProfile = () => {
     Alert.alert(
@@ -56,6 +94,49 @@ const styles = useMemo(
       "A central de ajuda será implementada em uma próxima etapa.",
     );
   };
+
+  const handleStockNotificationsChange = useCallback(
+  async (enabled: boolean) => {
+    if (isUpdatingNotifications) return;
+
+    setIsUpdatingNotifications(true);
+
+    try {
+      const nextEnabled = await setStockNotificationsEnabledAsync(enabled);
+
+      setNotificacoes(nextEnabled);
+
+      if (enabled && !nextEnabled) {
+        Alert.alert(
+          "Permissão necessária",
+          "Para receber alertas de estoque crítico, permita notificações nas configurações do sistema.",
+        );
+        return;
+      }
+
+if (nextEnabled) {
+  const result = await syncStockNotificationsAsync(products);
+
+  Alert.alert(
+    "Notificações ativadas",
+    result.scheduled
+      ? "Você receberá alertas diários às 09:00 quando houver produtos com estoque crítico."
+      : "Você receberá alertas quando houver produtos com estoque crítico.",
+  );
+}
+    } catch {
+      setNotificacoes(false);
+
+      Alert.alert(
+        "Erro nas notificações",
+        "Não foi possível atualizar sua preferência de notificações. Tente novamente.",
+      );
+    } finally {
+      setIsUpdatingNotifications(false);
+    }
+  },
+  [isUpdatingNotifications, products],
+);
 
   const handleLogout = () => {
     if (isSubmitting) return;
@@ -111,15 +192,18 @@ const styles = useMemo(
             label="Notificações de Estoque"
             rightContent={
               <Switch
-                value={notificacoes}
-                onValueChange={setNotificacoes}
-                trackColor={{
-                  false: theme.colors.surfaceTertiary,
-                  true: theme.colors.primary,
-                }}
-                thumbColor={theme.colors.primaryContrast}
-                ios_backgroundColor={theme.colors.surfaceTertiary}
-              />
+  value={notificacoes}
+  onValueChange={(enabled) => {
+    void handleStockNotificationsChange(enabled);
+  }}
+  disabled={isUpdatingNotifications}
+  trackColor={{
+    false: theme.colors.surfaceTertiary,
+    true: theme.colors.primary,
+  }}
+  thumbColor={theme.colors.primaryContrast}
+  ios_backgroundColor={theme.colors.surfaceTertiary}
+/>
             }
           />
 

@@ -8,6 +8,9 @@ import type { ThemeType } from "../src/constants/theme";
 import { AuthProvider, useAuth } from "../src/contexts/AuthContext";
 import { ProductsProvider } from "../src/contexts/ProductsContext";
 import { ThemeProvider, useAppTheme } from "../src/contexts/ThemeContext";
+import { configureStockNotificationHandler } from "../src/services/stockNotifications";
+
+configureStockNotificationHandler();
 
 function NavigationGuard({ children }: { children: React.ReactNode }) {
   const { isRestoringSession, isAuthenticated } = useAuth();
