@@ -11,7 +11,8 @@ export const API_AUTH_STORAGE_KEYS = {
   refreshToken: "@ProEstoque:refreshToken",
 } as const;
 
-const API_BASE_URL = "http://192.168.48.111:3333/api";
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL;
 
 type AuthTokens = {
   accessToken: string;
