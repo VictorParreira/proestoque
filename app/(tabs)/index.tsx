@@ -19,7 +19,7 @@ import {
 import { CriticalStockAlert } from "../../src/components/CriticalStockAlert";
 import { EmptyState } from "../../src/components/EmptyState";
 import { ErrorView } from "../../src/components/ErrorView";
-import { LoadingView } from "../../src/components/LoadingView";
+import { DashboardSkeleton } from "../../src/components/DashboardSkeleton";
 import { ProductListItem } from "../../src/components/ProductListItem";
 import { SummaryCard } from "../../src/components/SummaryCard";
 import type { ThemeType } from "../../src/constants/theme";
@@ -170,16 +170,13 @@ const refreshControl = (
     );
   };
 
-  if (isInitialLoading) {
-    return (
-      <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-        <LoadingView
-          title="Carregando dashboard"
-          description="Buscando produtos, alertas e indicadores atualizados."
-        />
-      </SafeAreaView>
-    );
-  }
+if (isInitialLoading) {
+  return (
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+      <DashboardSkeleton />
+    </SafeAreaView>
+  );
+}
 
   if (hasInitialError) {
     return (

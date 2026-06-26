@@ -23,7 +23,7 @@ import {
 import { CategoryChip } from "../../../src/components/CategoryChip";
 import { EmptyState } from "../../../src/components/EmptyState";
 import { ErrorView } from "../../../src/components/ErrorView";
-import { LoadingView } from "../../../src/components/LoadingView";
+import { ProductsSkeleton } from "../../../src/components/ProductsSkeleton";
 import { ProductListItem } from "../../../src/components/ProductListItem";
 import { SearchField } from "../../../src/components/SearchField";
 import {
@@ -379,16 +379,13 @@ const emptyComponent = (
     </View>
   );
 
-  if (isInitialLoading) {
-    return (
-      <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-        <LoadingView
-          title="Carregando produtos"
-          description="Buscando os produtos cadastrados."
-        />
-      </SafeAreaView>
-    );
-  }
+if (isInitialLoading) {
+  return (
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+      <ProductsSkeleton />
+    </SafeAreaView>
+  );
+}
 
 if (hasInitialError) {
   return (
